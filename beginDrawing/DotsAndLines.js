@@ -56,6 +56,7 @@ function main() {
   }
 
   // Initialize shaders
+  // error test
   if (!initShaders(gl, VSHADER_SOURCE, FSHADER_SOURCE)) {
     console.log('Failed to intialize shaders.');
     return;
@@ -76,7 +77,7 @@ function main() {
 
   // Draw connect-the-dots for 6 vertices (never 'vertexes'!!).
   // see http://www.khronos.org/opengles/sdk/docs/man/xhtml/glDrawArrays.xml
- gl.drawArrays(gl.LINE_LOOP, 0, n); // gl.drawArrays(mode, first, count)
+ gl.drawArrays(gl.LINES, 0, n); // gl.drawArrays(mode, first, count)
 			//mode: sets drawing primitive to use. Other valid choices: 
 				// gl.LINES, gl.LINE_STRIP, gl.LINE_LOOP, 
 				// gl.TRIANGLES, gl.TRIANGLES_STRIP, gl.TRIANGLE_FAN
@@ -84,7 +85,8 @@ function main() {
 			// count; number of elements to read from the array.
 
   // That went well. Let's draw the dots themselves!
-  //
+
+  // gl.drawArrays(mode, first, count)
   gl.drawArrays(gl.POINTS, 0, n); // gl.drawArrays(mode, first, count)
 			//mode: sets drawing primitive to use. Other valid choices: 
 				// gl.LINES, gl.LINE_STRIP, gl.LINE_LOOP, 
@@ -107,15 +109,40 @@ function initVertexBuffers(gl) {
   
 // ]);
   var vertices = new Float32Array([
-     0.0,  0.5, 0.0, 1.0,	// CAREFUL! I made these into 4D points/ vertices: x,y,z,w.
-    -0.1,  0.0, 0.0, 1.0,	// new point!  (? What happens if I make w=0 instead of 1.0?)
-    -0.5, -0.5, 0.0, 1.0,   
-     0.1, -0.2, 0.0, 1.0, 	// new point!
-     0.5, -0.5, 0.0, 1.0,	// 
-     0.1,  0.0, 0.0, 1.0, 	// new point!  (note we need a trailing comma here)
-     
+     0.0, 0.5, 0.0, 1.0,	// 1
+     0.0, 0.0, 0.0, 1.0,  // 2
+
+     0.0, 0.0, 0.0, 1.0,  // 2
+     0.5, 0.0, 0.0, 1.0,  // 3
+
+     0.5, 0.0, 0.0, 1.0,
+     0.5, 0.5, 0.0, 1.0,  // 4
+
+     0.5, 0.5, 0.0, 1.0,
+     0.0, 0.5, 0.0, 1.0,  // 1
+
+     0.0, 0.5, 0.0, 1.0,
+     0.0, 0.5, 0.5, 1.0,  // 5
+
+     0.0, 0.5, 0.5, 1.0,
+     0.0, 0.0, 0.5, 0.0,  // 6 
+
+     0.0, 0.0, 0.5, 0.0,
+     0.5, 0.0, 0.5, 1.0,  // 7
+
+     0.5, 0.0, 0.5, 1.0, 
+     0.5, 0.5, 0.5, 1.0,  // 8
+
+     0.5, 0.5, 0.5, 1.0,
+     0.0, 0.5, 0.5, 1.0,  // 5
+
+     0.5, 0.5, 0.5, 1.0,  // 8
+     0.5, 0.5, 0.0, 1.0,  // 4
+
+     0.5, 0.0, 0.5, 1.0,  // 7
+     0.5, 0.0, 0.0, 1.0,  // 3
   ]);
-  var n = 6; // The number of vertices
+  var n = 17; // The number of vertices
 
   // Then in the Graphics hardware, create a vertex buffer object (VBO)
   var vertexBuffer = gl.createBuffer();	// get it's 'handle'
