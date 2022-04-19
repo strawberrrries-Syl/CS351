@@ -34,7 +34,9 @@ var g_lastMS = Date.now();
 
 // flags
 var SW = 0;                     // switch of sit and walk
-var Run = 0;                    // switch of walk and run
+var Run = false;                    // switch of walk and run
+var boneExist = false;
+var keyPressed;
 
 // array of moving infomation (now, rate, brake, min, max);
 
@@ -117,8 +119,6 @@ var g_tail = -0.2;
 
 
 
-
-
 // ---- For Animation -----
 var g_isRun = true;                 // run/stop for animation; used in tick().
 var g_lastMS = Date.now();    			// Timestamp for most-recently-drawn image; 
@@ -146,7 +146,7 @@ var g_yKmove = 0.0;
 
 function main() {
     // Retrieve <canvas> element
-
+    sit();
 
     // Get the rendering context for WebGL
     gl = g_canvasID.getContext("webgl", { preserveDrawingBuffer: true });
@@ -1084,16 +1084,13 @@ function drawDog() {
 function drawAll() {
 
     initVertexBuffers();
-    //drawDog();
     // clear <canvas>
     gl.clear(gl.CLEAR_COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     // CLEAR BOTH the color AND the depth buffers before you draw stuff!!
-
     gl.clear(gl.COLOR_BUFFER_BIT);
-
     g_modelMatrix.setIdentity();
     // ---------------------------------
-    g_modelMatrix.rotate(g_angle4now, 0, 1, 0);
+    g_modelMatrix.rotate(g_angle01, 1, 1, 1);
 
     pushMatrix(g_modelMatrix);
         drawLoop();
@@ -1102,8 +1099,14 @@ function drawAll() {
         gl.drawArrays(gl.TRIANGLES, 0, g_vertCount);	// draw all vertices.
     g_modelMatrix = popMatrix();
 
-    if((g_xKmove < 0.3 && g_yKmove > -0.4 && g_yKmove < 0.1) && SW)
+    if(g_yKmove > 0.1 && g_xKmove < 0.4 && SW && !Run)
     {
+        Run = true;
+        walk();
+    }
+    if((g_yKmove < 0.1 || g_xKmove > 0.4) && SW && Run)
+    {
+        Run = false;
         runForBone();
     }
 
@@ -1114,8 +1117,6 @@ function drawAll() {
     g_modelMatrix = popMatrix();
     
 
-    //g_modelMatrix.scale(2,2,2);
-
     g_modelMatrix.translate(-0.6, -0.2, 0);	
     g_modelMatrix.translate(g_xKmove, g_yKmove, 0);	
     g_modelMatrix.rotate(40, 0, 0, 1);
@@ -1125,61 +1126,80 @@ function drawAll() {
     						// why add 0.001? avoids divide-by-zero in next statement
     						// in cases where user didn't drag the mouse.)
     g_modelMatrix.rotate(dist*120.0, -g_yMdragTot+0.0001, g_xMdragTot+0.0001, 0.0);
-
-    drawBone();
-}
-
-function A0_runStop() {
-    //==============================================================================
-    if (g_angle0brake > 0.5)	// if running,
+    
+    if(keyPressed == "b" && !boneExist)
     {
-        g_angle0brake = 0.0;	// stop, and change button label:
-        document.getElementById("A0button").value = "Angle 0 OFF";
+        console.log(keyPressed);
+        keyPressed = "";
+        boneExist = true;
+        
+        console.log(keyPressed);
     }
-    else {
-        g_angle0brake = 1.0;	// Otherwise, go.
-        document.getElementById("A0button").value = "Angle 0 ON-";
+    if(keyPressed == "b" && boneExist ) {
+        console.log(keyPressed);
+        keyPressed = "";
+        boneExist = false;
+        console.log(keyPressed);
     }
+
+    if(boneExist)
+    {
+        drawBone();
+    }
+
+    
 }
 
-function A1_runStop() {
-    //==============================================================================
-    if (g_angle1brake > 0.5)	// if running,
-    {
-        g_angle1brake = 0.0;	// stop, and change button label:
-        document.getElementById("A1button").value = "Angle 1 OFF";
-    }
-    else {
-        g_angle1brake = 1.0;	// Otherwise, go.
-        document.getElementById("A1button").value = "Angle 1 ON-";
-    }
-}
+// function A0_runStop() {
+//     //==============================================================================
+//     if (g_angle0brake > 0.5)	// if running,
+//     {
+//         g_angle0brake = 0.0;	// stop, and change button label:
+//         document.getElementById("A0button").value = "Angle 0 OFF";
+//     }
+//     else {
+//         g_angle0brake = 1.0;	// Otherwise, go.
+//         document.getElementById("A0button").value = "Angle 0 ON-";
+//     }
+// }
+// function A1_runStop() {
+//     //==============================================================================
+//     if (g_angle1brake > 0.5)	// if running,
+//     {
+//         g_angle1brake = 0.0;	// stop, and change button label:
+//         document.getElementById("A1button").value = "Angle 1 OFF";
+//     }
+//     else {
+//         g_angle1brake = 1.0;	// Otherwise, go.
+//         document.getElementById("A1button").value = "Angle 1 ON-";
+//     }
+// }
+// function A2_runStop() {
+//     //==============================================================================
+//     if (g_angle2brake > 0.5)	// if running,
+//     {
+//         g_angle2brake = 0.0;	// stop, and change button label:
+//         document.getElementById("A2button").value = "Angle 2 OFF";
+//     }
+//     else {
+//         g_angle2brake = 1.0;	// Otherwise, go.
+//         document.getElementById("A2button").value = "Angle 2 ON-";
+//     }
+// }
+// function A3_runStop() {
+//     //==============================================================================
+//     if (g_angle3brake > 0.5)	// if running,
+//     {
+//         g_angle3brake = 0.0;	// stop, and change button label:
+//         document.getElementById("A3button").value = "Angle 3 OFF";
+//     }
+//     else {
+//         g_angle3brake = 1.0;	// Otherwise, go.
+//         document.getElementById("A3button").value = "Angle 3 ON-";
+//     }
+// }
 
-function A2_runStop() {
-    //==============================================================================
-    if (g_angle2brake > 0.5)	// if running,
-    {
-        g_angle2brake = 0.0;	// stop, and change button label:
-        document.getElementById("A2button").value = "Angle 2 OFF";
-    }
-    else {
-        g_angle2brake = 1.0;	// Otherwise, go.
-        document.getElementById("A2button").value = "Angle 2 ON-";
-    }
-}
 
-function A3_runStop() {
-    //==============================================================================
-    if (g_angle3brake > 0.5)	// if running,
-    {
-        g_angle3brake = 0.0;	// stop, and change button label:
-        document.getElementById("A3button").value = "Angle 3 OFF";
-    }
-    else {
-        g_angle3brake = 1.0;	// Otherwise, go.
-        document.getElementById("A3button").value = "Angle 3 ON-";
-    }
-}
 
 //==================HTML Button Callbacks======================
 function angleSubmit() {
@@ -1220,22 +1240,22 @@ function spinDown() {
 
 function runForBone() {
     g_angle0now = -20;       // init Current rotation angle, in degrees
-    g_angle0rate = -60;       // init Rotation angle rate, in degrees/second.
+    g_angle0rate = -40;       // init Rotation angle rate, in degrees/second.
     g_angle0min = -40;       // init min, max allowed angle, in degrees.
     g_angle0max = 50;
     // right front                                //---------------
     g_angle1now = -20; 			// init Current rotation angle, in degrees > 0
-    g_angle1rate = -60;				// init Rotation angle rate, in degrees/second.
+    g_angle1rate = -40;				// init Rotation angle rate, in degrees/second.
     g_angle1min = -40;       // init min, max allowed angle, in degrees
     g_angle1max = 50;
     // left back                                 //---------------
     g_angle2now = 20; 			// init Current rotation angle, in degrees.
-    g_angle2rate = 60;				// init Rotation angle rate, in degrees/second.
+    g_angle2rate = 40;				// init Rotation angle rate, in degrees/second.
     g_angle2min = -60;       // init min, max allowed angle, in degrees
     g_angle2max = 30;
     // right back
     g_angle3now = 20; 			// init Current rotation angle, in degrees.
-    g_angle3rate = 60;				// init Rotation angle rate, in degrees/second.
+    g_angle3rate = 40;				// init Rotation angle rate, in degrees/second.
     g_angle3min = -60;       // init min, max allowed angle, in degrees
     g_angle3max = 30;
 
@@ -1267,84 +1287,76 @@ function runForBone() {
     //front paws
     g_angle9now = 0 			// init Current rotation angle, in degrees.
     g_angle9rate = 10;				// init Rotation angle rate, in degrees/second.
-    g_angle9min = -20;       // init min, max allowed angle, in degrees
+    g_angle9min = 20;       // init min, max allowed angle, in degrees
     g_angle9max = 30;
     // back paws
     g_angle10now = 0; 			// init Current rotation angle, in degrees.
     g_angle10rate = 10;				// init Rotation angle rate, in degrees/second.
     g_angle10min = 20;       // init min, max allowed angle, in degrees
     g_angle10max = 30;
+
 }
 
 function walk() {
-    
+    g_angle0now = 15;       // init Current rotation angle, in degrees
+    g_angle0rate = 10;       // init Rotation angle rate, in degrees/second.
+    g_angle0min = -30;       // init min, max allowed angle, in degrees.
+    g_angle0max = 30;
+    // right front                                //---------------
+    g_angle1now = 40; 			// init Current rotation angle, in degrees > 0
+    g_angle1rate = -10;				// init Rotation angle rate, in degrees/second.
+    g_angle1min = -30;       // init min, max allowed angle, in degrees
+    g_angle1max = 30;
+    // left back                                 //---------------
+    g_angle2now = -15; 			// init Current rotation angle, in degrees.
+    g_angle2rate = 10;				// init Rotation angle rate, in degrees/second.
+    g_angle2min = -60;       // init min, max allowed angle, in degrees
+    g_angle2max = 10;
+    // right back
+    g_angle3now = -40; 			// init Current rotation angle, in degrees.
+    g_angle3rate = -10;				// init Rotation angle rate, in degrees/second.
+    g_angle3min = -60;       // init min, max allowed angle, in degrees
+    g_angle3max = 10;
+
+    g_anglebody = 0;
+    g_transheadx = 0.0;
+    g_transheady = 0.0;
+    g_frontlegs = 0.0;
+    g_tail = 0.0;
+
+    g_angle5now = 0;       // init Current rotation angle, in degrees
+    g_angle5rate = 20;       // init Rotation angle rate, in degrees/second.
+    g_angle5min = 0;       // init min, max allowed angle, in degrees.
+    g_angle5max = 10;
+    // right front                                //---------------
+    g_angle6now = 0; 			// init Current rotation angle, in degrees > 0
+    g_angle6rate = 20;				// init Rotation angle rate, in degrees/second.
+    g_angle6min = 0;       // init min, max allowed angle, in degrees
+    g_angle6max = 10;
+    // left back                                 //---------------
+    g_angle7now = 30 			// init Current rotation angle, in degrees.
+    g_angle7rate = 40;				// init Rotation angle rate, in degrees/second.
+    g_angle7min = 0;       // init min, max allowed angle, in degrees
+    g_angle7max = 30;
+    // right back
+    g_angle8now = 30; 			// init Current rotation angle, in degrees.
+    g_angle8rate = 40;				// init Rotation angle rate, in degrees/second.
+    g_angle8min = 10;       // init min, max allowed angle, in degrees
+    g_angle8max = 30;
+
+    g_angle9now = 0 			// init Current rotation angle, in degrees.
+    g_angle9rate = 10;				// init Rotation angle rate, in degrees/second.
+    g_angle9min = -20;       // init min, max allowed angle, in degrees
+    g_angle9max = 30;
+    // right back
+    g_angle10now = 0; 			// init Current rotation angle, in degrees.
+    g_angle10rate = 10;				// init Rotation angle rate, in degrees/second.
+    g_angle10min = 20;       // init min, max allowed angle, in degrees
+    g_angle10max = 30;
 }
 
-function runStop() {
-    // Called when user presses the 'Sit/Walk' button
-    SW = (SW+1)%2; // !
-    console.log("SW", SW);
-
-    if(SW == 1)                 // walk
-        {
-            g_angle0now = 15;       // init Current rotation angle, in degrees
-            g_angle0rate = 20;       // init Rotation angle rate, in degrees/second.
-            g_angle0min = -30;       // init min, max allowed angle, in degrees.
-            g_angle0max = 30;
-            // right front                                //---------------
-            g_angle1now = 40; 			// init Current rotation angle, in degrees > 0
-            g_angle1rate = -20;				// init Rotation angle rate, in degrees/second.
-            g_angle1min = -30;       // init min, max allowed angle, in degrees
-            g_angle1max = 30;
-            // left back                                 //---------------
-            g_angle2now = -15; 			// init Current rotation angle, in degrees.
-            g_angle2rate = 20;				// init Rotation angle rate, in degrees/second.
-            g_angle2min = -60;       // init min, max allowed angle, in degrees
-            g_angle2max = 10;
-            // right back
-            g_angle3now = -40; 			// init Current rotation angle, in degrees.
-            g_angle3rate = -20;				// init Rotation angle rate, in degrees/second.
-            g_angle3min = -60;       // init min, max allowed angle, in degrees
-            g_angle3max = 10;
-
-            g_anglebody = 0;
-            g_transheadx = 0.0;
-            g_transheady = 0.0;
-            g_frontlegs = 0.0;
-            g_tail = 0.0;
-
-            g_angle5now = 0;       // init Current rotation angle, in degrees
-            g_angle5rate = 20;       // init Rotation angle rate, in degrees/second.
-            g_angle5min = 0;       // init min, max allowed angle, in degrees.
-            g_angle5max = 10;
-            // right front                                //---------------
-            g_angle6now = 0; 			// init Current rotation angle, in degrees > 0
-            g_angle6rate = 20;				// init Rotation angle rate, in degrees/second.
-            g_angle6min = 0;       // init min, max allowed angle, in degrees
-            g_angle6max = 10;
-            // left back                                 //---------------
-            g_angle7now = 30 			// init Current rotation angle, in degrees.
-            g_angle7rate = 40;				// init Rotation angle rate, in degrees/second.
-            g_angle7min = 0;       // init min, max allowed angle, in degrees
-            g_angle7max = 30;
-            // right back
-            g_angle8now = 30; 			// init Current rotation angle, in degrees.
-            g_angle8rate = 40;				// init Rotation angle rate, in degrees/second.
-            g_angle8min = 10;       // init min, max allowed angle, in degrees
-            g_angle8max = 30;
-
-            g_angle9now = 0 			// init Current rotation angle, in degrees.
-            g_angle9rate = 10;				// init Rotation angle rate, in degrees/second.
-            g_angle9min = -20;       // init min, max allowed angle, in degrees
-            g_angle9max = 30;
-            // right back
-            g_angle10now = 0; 			// init Current rotation angle, in degrees.
-            g_angle10rate = 10;				// init Rotation angle rate, in degrees/second.
-            g_angle10min = 20;       // init min, max allowed angle, in degrees
-            g_angle10max = 30;
-
-        } else if (SW == 0) {                   // sit
-            g_angle0now = -10.0;
+function sit() {
+    g_angle0now = -10.0;
             g_angle1now = -10.0;
             g_angle2now = -60.0;
             g_angle3now = -60.0;
@@ -1371,8 +1383,19 @@ function runStop() {
             g_angle8rate = 0.0;
             g_angle9rate = 0.0;
             g_angle10rate = 0.0;
+}
 
-        }
+function runStop() {
+    // Called when user presses the 'Sit/Walk' button
+    SW = (SW+1)%2; // !
+    console.log("SW", SW);
+
+    if(SW == 1)                 // walk
+    {
+        runForBone();
+    } else if (SW == 0) {                   // sit
+        sit();
+    }
 
 
     if (g_angle01Rate * g_angle01Rate > 1) {  // if nonzero rate,
@@ -1524,10 +1547,14 @@ function myKeyDown(kev) {
     //        Revised 2/2019:  use kev.key and kev.code instead.
     //
     // Report EVERYTHING in console:
+
+
     console.log("--kev.code:", kev.code, "\t\t--kev.key:", kev.key,
         "\n--kev.ctrlKey:", kev.ctrlKey, "\t--kev.shiftKey:", kev.shiftKey,
         "\n--kev.altKey:", kev.altKey, "\t--kev.metaKey:", kev.metaKey);
     console.log("Bone is at: ", g_xKmove + ", " + g_yKmove)
+
+    keyPressed = kev.key;
 
     // and report EVERYTHING on webpage:
     document.getElementById('KeyDownResult').innerHTML = ''; // clear old results

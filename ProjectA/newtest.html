@@ -10,12 +10,17 @@
             Pleas use a browser that supports "canvas"
         </canvas>
 		<br>(If there's no figures, open Console, please!)
+		<hr> <!--  angle of scene------>
 		<p>
 		<!-- Make a 'div' element to hold changeable HTML made in our JavaScript file;
 			 (where? look inside main(), inside its 'tick()' function, where we
 			 display the 'current angle' value.
 		-->
+		
+		<b>Type in different angle to see the scene! </b> -- 0 for reset
 		<div id= CurAngleDisplay></div> 
+		
+		
 		<!-- Next, make a simple block of text 
 		-->
 		New Current Angle (-180 < x < +180 deg): 
@@ -27,10 +32,31 @@
 			<button type="button" onClick='angleSubmit()'>Submit</button><BR> 
 			<div id= EditBoxOut></div>
 		</p>
-		Open the JavaScript Console, please: <br>
-			</t> (right-click-->'Inspect' or 'Inspect element'-->'Console' tab) <br>
+		
+	<hr> <!-- petting --->
+		<b>Try press "B" and find what will happen!</b> 
+		<br>
+		<b>Telling the dog to sit or walk by pressing button below!</b>
+		<p>
+			<!--BUTTONS: commands below create HTML push-buttons with labels
+				Spin <<, runStop, and Spin >>.  
+			When users click the button, HTML calls JavaScript functions
+				"spinDown()", "runStop()" and "spinUp()"   
+		  <button type="button" onclick="spinDown()">Spin << </button>
+		  
+		  <button type="button" onclick="spinUp()">Spin >> </button> -->
+		  
+		  <button type="button" onclick="runStop()">Sit/Walk</button>
+		</p>
+	
 	<hr> <!-- Draw a horizontal-line separator------------->
-		Try keyboard & mouse click/drag inside the canvas, and:
+		
+		
+		<br>
+		After that, try to drag the screen and  press "W", "A", "S", and"D"!
+		
+		
+		<br> Try keyboard & mouse click/drag inside the canvas, and:
 			<br>
 			<span id='KeyDownResult'  > KeyDown:    </span> <!-- myKeyDown() modifies this span object -->		
 			<br>
@@ -39,7 +65,8 @@
 			<span id='MouseAtResult'  >   Mouse At: </span> <!-- myMouseMove() modifies this span object -->
 			<br>
 			<span id='MouseDragResult'> Mouse Drag: </span> <!-- myMouseUp() modifies this span object -->
-
+		<br>
+		<b> What's happenning if you press longer "W"?</b>
 		<!--  Mouse click/drag amounts.  Look in 'console' for event reports;
 				the 'clear' button calls Javascript function 'clearDrag()'
 				whose sole purpose is to set global vars xMdragTot,yMdragTot ==0.0
@@ -47,16 +74,8 @@
 		-->
 			<div id='Mouse'> Mouse Drag totals (CVV coords) </div>
 				<button type="button" onClick='clearDrag()'>Clear</button>
-		<p>
-			<!--BUTTONS: commands below create HTML push-buttons with labels
-				Spin <<, runStop, and Spin >>.  
-			When users click the button, HTML calls JavaScript functions
-				"spinDown()", "runStop()" and "spinUp()"   -->
-		  <button type="button" onclick="spinDown()">Spin << </button>
-		  <button type="button" onclick="runStop()">Sit/Walk</button>
-		  <button type="button" onclick="spinUp()">Spin >> </button>
-		</p>
-        
+		
+        <!--
         <p> 
             <input type = "button" id = "A0button" onclick = "A0_runStop()" value = "Angle 0 ON">
             <input type = "button" id = "A1button" onclick = "A1_runStop()" value = "Angle 1 ON">
@@ -64,6 +83,7 @@
             <! these commands create a push-button with labels 'Angle 0', 'Angle 1', etc.
             When users click the button, call the function name held in 'onclick'>
         </p>
+		--->
         <script src="../lib/webgl-utils.js"></script>
         <script src="../lib/webgl-debug.js"></script>
         <script src="../lib/cuon-utils.js"></script>
