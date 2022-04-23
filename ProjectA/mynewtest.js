@@ -12,10 +12,8 @@ var VSHADER_SOURCE =
     '  v_Color = a_Color;\n' +
     '}\n';
 // Fragment shader prog
-var FSHADER_SOURCE =
-    //  '#ifdef GL_ES\n' +					
+var FSHADER_SOURCE =				
     'precision mediump float;\n' +
-    //  '#endif GL_ES\n' +
     'varying vec4 v_Color;\n' +
     'void main() {\n' +
     '  gl_FragColor = v_Color;\n' +
@@ -275,7 +273,6 @@ function timerAll() {
     // paws
     [g_angle9now, g_angle9rate] = rotateNow(g_angle9now, g_angle9rate, 1, elapsedMS, g_angle9min, g_angle9max);
     [g_angle10now, g_angle10rate] = rotateNow(g_angle10now, g_angle10rate, 1, elapsedMS, g_angle10min, g_angle10max);
-
 }
 
 function verPosnNum() {
@@ -321,9 +318,9 @@ function initVertexBuffers() {
 
 
 
-    // var vertices = new Float32Array(Array.prototype.concat.call(
-    //     v1, v2, v4,
-    // ));
+    var vertices = new Float32Array(Array.prototype.concat.call(
+        v1, v2, v4,
+    ));
 
     var vertices = new Float32Array([
         0.00, 0.30, 0.00, 1.00, 1.0, 0.0, 0.0,
@@ -828,7 +825,7 @@ function drawLoop() {
 
     SetVBO(vertices);
 
-    return 0;
+    return vertices;
 }
 
 
@@ -873,17 +870,13 @@ function drawSquare() {
 
 function drawBone() {
     pushMatrix(g_modelMatrix);
-
     drawSquare();
-
     pushMatrix(g_modelMatrix);
     //g_modelMatrix.translate(-0.1, 0.2, 0.0);	
     g_modelMatrix.scale(0.1, 0.1, 0.1);				// Make new drawing axes that
     //g_modelMatrix.rotate(g_angle4now, 0, 0, 0);
     gl.uniformMatrix4fv(uLoc_modelMatrix, false, g_modelMatrix.elements);
     gl.drawArrays(gl.TRIANGLES, 0, g_vertCount);	// draw all vertices.
-
-    //  .scale(1,4,1);				// Make new drawing axes that
     g_modelMatrix.translate(0.8, 0.0, 0.0);
     //g_modelMatrix.scale(1,4,1);				// Make new drawing axes that
     //g_modelMatrix.rotate(g_angle4now, 0, 0, 0);
@@ -1087,7 +1080,7 @@ function drawAll() {
     g_modelMatrix.setIdentity();
     // ---------------------------------
     g_modelMatrix.rotate(g_angle01, 1, 1, 1);
-
+    // ---------------------------------
     pushMatrix(g_modelMatrix);
         drawLoop();
         //g_modelMatrix.translate(0.0, 0.0, 0.0);	
@@ -1146,57 +1139,7 @@ function drawAll() {
     
 }
 
-// function A0_runStop() {
-//     //==============================================================================
-//     if (g_angle0brake > 0.5)	// if running,
-//     {
-//         g_angle0brake = 0.0;	// stop, and change button label:
-//         document.getElementById("A0button").value = "Angle 0 OFF";
-//     }
-//     else {
-//         g_angle0brake = 1.0;	// Otherwise, go.
-//         document.getElementById("A0button").value = "Angle 0 ON-";
-//     }
-// }
-// function A1_runStop() {
-//     //==============================================================================
-//     if (g_angle1brake > 0.5)	// if running,
-//     {
-//         g_angle1brake = 0.0;	// stop, and change button label:
-//         document.getElementById("A1button").value = "Angle 1 OFF";
-//     }
-//     else {
-//         g_angle1brake = 1.0;	// Otherwise, go.
-//         document.getElementById("A1button").value = "Angle 1 ON-";
-//     }
-// }
-// function A2_runStop() {
-//     //==============================================================================
-//     if (g_angle2brake > 0.5)	// if running,
-//     {
-//         g_angle2brake = 0.0;	// stop, and change button label:
-//         document.getElementById("A2button").value = "Angle 2 OFF";
-//     }
-//     else {
-//         g_angle2brake = 1.0;	// Otherwise, go.
-//         document.getElementById("A2button").value = "Angle 2 ON-";
-//     }
-// }
-// function A3_runStop() {
-//     //==============================================================================
-//     if (g_angle3brake > 0.5)	// if running,
-//     {
-//         g_angle3brake = 0.0;	// stop, and change button label:
-//         document.getElementById("A3button").value = "Angle 3 OFF";
-//     }
-//     else {
-//         g_angle3brake = 1.0;	// Otherwise, go.
-//         document.getElementById("A3button").value = "Angle 3 ON-";
-//     }
-// }
-
-
-
+{
 //==================HTML Button Callbacks======================
 function angleSubmit() {
     // Called when user presses 'Submit' button on our webpage
@@ -1516,35 +1459,10 @@ function myMouseClick(ev) {
 }
 
 function myMouseDblClick(ev) {
-    //=============================================================================
-    // Called when user completes a mouse-button double-click event 
-    // 									   
-    //    WHICH button? try:  console.log('ev.button='+ev.button); 
-    // 		ev.clientX, ev.clientY == mouse pointer location, but measured in webpage 
-    //		pixels: left-handed coords; UPPER left origin; Y increases DOWNWARDS (!) 
-    //    See myMouseUp(), myMouseDown() for conversions to  CVV coordinates.
-
-    // STUB
     console.log("myMouse-DOUBLE-Click() on button: ", ev.button);
 }
 
 function myKeyDown(kev) {
-    //===============================================================================
-    // Called when user presses down ANY key on the keyboard;
-    //
-    // For a light, easy explanation of keyboard events in JavaScript,
-    // see:    http://www.kirupa.com/html5/keyboard_events_in_javascript.htm
-    // For a thorough explanation of a mess of JavaScript keyboard event handling,
-    // see:    http://javascript.info/tutorial/keyboard-events
-    //
-    // NOTE: Mozilla deprecated the 'keypress' event entirely, and in the
-    //        'keydown' event deprecated several read-only properties I used
-    //        previously, including kev.charCode, kev.keyCode. 
-    //        Revised 2/2019:  use kev.key and kev.code instead.
-    //
-    // Report EVERYTHING in console:
-
-
     console.log("--kev.code:", kev.code, "\t\t--kev.key:", kev.key,
         "\n--kev.ctrlKey:", kev.ctrlKey, "\t--kev.shiftKey:", kev.shiftKey,
         "\n--kev.altKey:", kev.altKey, "\t--kev.metaKey:", kev.metaKey);
@@ -1634,6 +1552,6 @@ function myKeyDown(kev) {
 function myKeyUp(kev) {
     //===============================================================================
     // Called when user releases ANY key on the keyboard; captures scancodes well
-
     console.log('myKeyUp()--keyCode=' + kev.keyCode + ' released.');
+}
 }
