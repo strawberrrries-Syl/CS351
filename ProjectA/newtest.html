@@ -35,9 +35,10 @@
 		
 	<hr> <!-- petting --->
 		<b>Try press "B" and find what will happen!</b> 
+
 		<br>
-		<b>Telling the dog to sit or walk by pressing button below!</b>
-		<p>
+		Telling the dog to sit or run by pressing button below!
+		
 			<!--BUTTONS: commands below create HTML push-buttons with labels
 				Spin <<, runStop, and Spin >>.  
 			When users click the button, HTML calls JavaScript functions
@@ -46,14 +47,15 @@
 		  
 		  <button type="button" onclick="spinUp()">Spin >> </button> -->
 		  
-		  <button type="button" onclick="runStop()">Sit/Walk</button>
-		</p>
+		  <button type="button" onclick="runStop()">Sit/Run</button>
+		
 	
 	<hr> <!-- Draw a horizontal-line separator------------->
 		
 		
-		<br>
-		After that, try to drag the screen and  press "W", "A", "S", and"D"!
+		<b>
+		Try dragging the screen or  press "W", "A", "S", and"D"!
+		</b>
 		
 		
 		<br> Try keyboard & mouse click/drag inside the canvas, and:
@@ -66,7 +68,7 @@
 			<br>
 			<span id='MouseDragResult'> Mouse Drag: </span> <!-- myMouseUp() modifies this span object -->
 		<br>
-		<b> What's happenning if you press longer "W"?</b>
+		
 		<!--  Mouse click/drag amounts.  Look in 'console' for event reports;
 				the 'clear' button calls Javascript function 'clearDrag()'
 				whose sole purpose is to set global vars xMdragTot,yMdragTot ==0.0
@@ -74,7 +76,8 @@
 		-->
 			<div id='Mouse'> Mouse Drag totals (CVV coords) </div>
 				<button type="button" onClick='clearDrag()'>Clear</button>
-		
+			<br>
+			<b> What's happenning if you press "W" longer?</b>
         <!--
         <p> 
             <input type = "button" id = "A0button" onclick = "A0_runStop()" value = "Angle 0 ON">
@@ -88,6 +91,6 @@
         <script src="../lib/webgl-debug.js"></script>
         <script src="../lib/cuon-utils.js"></script>
 		<script src="../lib/cuon-matrix-quat03.js"></script>
-        <script src="mynewtest.js"></script>
+        <script src="LiZhaojie_ProjA.js"></script>
     </body>
 </html>>

@@ -1,4 +1,4 @@
-// These is the test js file with newtest.html
+// These is the test js file of projectA
 // By Sylvia Li in Northwestern U, Mudd lib
 
 // Vertex shader prog
@@ -11,7 +11,6 @@ var VSHADER_SOURCE =
     '  gl_Position = u_modelMatrix * a_Position;\n' +
     '  v_Color = a_Color;\n' +
     '}\n';
-
 // Fragment shader prog
 var FSHADER_SOURCE =
     //  '#ifdef GL_ES\n' +					
@@ -22,6 +21,11 @@ var FSHADER_SOURCE =
     '  gl_FragColor = v_Color;\n' +
     '}\n';
 
+
+//// ------------------------------------
+//            global variable
+//// ------------------------------------
+
 var gl;
 var g_canvasID = document.getElementById('webgl');
 var g_modelMatrix;
@@ -30,43 +34,60 @@ var uLoc_modelMatrix;
 
 // For animation:---------------------
 var g_lastMS = Date.now();
+var g_isRun = true;                 // run/stop for animation; used in tick().
+var g_lastMS = Date.now();    			// Timestamp for most-recently-drawn image; 
+// in milliseconds; used by 'animate()' fcn 
+// (now called 'timerAll()' ) to find time
+// elapsed since last on-screen image.
+// used for turning whole scene.
+var g_angle01 = 0;                  // initial rotation angle
+var g_angle01Rate = 45.0;           // rotation speed, in degrees/second 
+//------------For mouse click-and-drag: -------------------------------
+var g_isDrag = false;		// mouse-drag: true when user holds down mouse button
+var g_xMclik = 0.0;			// last mouse button-down position (in CVV coords)
+var g_yMclik = 0.0;
+var g_xMdragTot = 0.0;	// total (accumulated) mouse-drag amounts (in CVV coords).
+var g_yMdragTot = 0.0;
+var g_digits = 5;			// DIAGNOSTICS: # of digits to print in console.log (
+//    console.log('xVal:', xVal.toFixed(g_digits)); // print 5 digits
+var g_xKmove = 0.0;	// total (accumulated) keyboard-drag amounts (in CVV coords).
+var g_yKmove = 0.0;
 // All of our time-dependent params (you can add more!)
+// flags of movement
+var SW = 0;                     // flag of switching dog to sit or walk
+var Run = false;                // flag of switchinf dog to walk or run
+var boneExist = false;          // flag of whether bone is showing
+var keyPressed;                 // 
 
-// flags
-var SW = 0;                     // switch of sit and walk
-var Run = false;                    // switch of walk and run
-var boneExist = false;
-var keyPressed;
-
-// array of moving infomation (now, rate, brake, min, max);
-
-
-// left front                                //---------------
+// ============================
+// self-rotating varialbles:
+// ============================
+// left front leg                                //---------------
 var g_angle0now = 0.0;       // init Current rotation angle, in degrees
 var g_angle0rate = 0.0;       // init Rotation angle rate, in degrees/second.
 var g_angle0brake = 1.0;				// init Speed control; 0=stop, 1=full speed.
 var g_angle0min = 0.0;       // init min, max allowed angle, in degrees.
 var g_angle0max = 0.0;
-// right front                                //---------------
+// right front leg                                //---------------
 var g_angle1now = 0.0; 			// init Current rotation angle, in degrees > 0
 var g_angle1rate = 0.0;				// init Rotation angle rate, in degrees/second.
 var g_angle1brake = 1.0;				// init Rotation start/stop. 0=stop, 1=full speed.
 var g_angle1min = 0.0;       // init min, max allowed angle, in degrees
 var g_angle1max = 0.0;
-// left back                                 //---------------
+// left back leg                                 //---------------
 var g_angle2now = -60; 			// init Current rotation angle, in degrees.
 var g_angle2rate = 0.0;				// init Rotation angle rate, in degrees/second.
 var g_angle2brake = 1.0;				// init Speed control; 0=stop, 1=full speed.
 var g_angle2min = 0.0;       // init min, max allowed angle, in degrees
 var g_angle2max = 0.0;
-// right back
+// right back leg
 var g_angle3now = -60; 			// init Current rotation angle, in degrees.
 var g_angle3rate = 0.0;				// init Rotation angle rate, in degrees/second.
 var g_angle3brake = 1.0;				// init Speed control; 0=stop, 1=full speed.
 var g_angle3min = 0.0;       // init min, max allowed angle, in degrees
 var g_angle3max = 0.0;
 
-// tail                                //---------------
+// tail                                 //---------------
 var g_angle4now = 0.0;       // init Current rotation angle, in degrees
 var g_angle4rate = -10.0;       // init Rotation angle rate, in degrees/second.
 var g_angle4brake = 1.0;				// init Speed control; 0=stop, 1=full speed.
@@ -78,76 +99,54 @@ var g_angle4max = 360.0;
 // moving back-and-forth smoothly and sinusoidally?
 
 // calves:
-// left calf
+// left front calf
 var g_angle5now = 0.0; 			// init Current rotation angle, in degrees.
 var g_angle5rate = 0.0;				// init Rotation angle rate, in degrees/second.
 var g_angle5min = 0.0;       // init min, max allowed angle, in degrees
 var g_angle5max = 0.0;
-
+// right front calf
 var g_angle6now = 0.0; 			// init Current rotation angle, in degrees.
 var g_angle6rate = 0.0;				// init Rotation angle rate, in degrees/second.
 var g_angle6min = 0.0;       // init min, max allowed angle, in degrees
 var g_angle6max = 0.0;
-
+// left back calf
 var g_angle7now = -10; 			// init Current rotation angle, in degrees.
 var g_angle7rate = 0.0;				// init Rotation angle rate, in degrees/second.
 var g_angle7min = 0.0;       // init min, max allowed angle, in degrees
 var g_angle7max = 0.0;
-
+// right back calf
 var g_angle8now = -10; 			// init Current rotation angle, in degrees.
 var g_angle8rate = 0.0;				// init Rotation angle rate, in degrees/second.
 var g_angle8min = 0.0;       // init min, max allowed angle, in degrees
 var g_angle8max = 0.0;
 
-// paws
+// front paws
 var g_angle9now = 0; 			// init Current rotation angle, in degrees.
 var g_angle9rate = 0.0;				// init Rotation angle rate, in degrees/second.
 var g_angle9min = 0.0;       // init min, max allowed angle, in degrees
 var g_angle9max = 0.0;
-
+// back paws
 var g_angle10now = 30; 			// init Current rotation angle, in degrees.
 var g_angle10rate = 0.0;				// init Rotation angle rate, in degrees/second.
 var g_angle10min = 0.0;       // init min, max allowed angle, in degrees
 var g_angle10max = 0.0;
 
-// body
+// body position --> for reseting sit/walk dog's gesture
 var g_anglebody = -50; 			// init Current rotation angle, in degrees.
 var g_transheadx = 0.15;
 var g_transheady = 0.25;
 var g_frontlegs = 0.1;
 var g_tail = -0.2;
 
-
-
-// ---- For Animation -----
-var g_isRun = true;                 // run/stop for animation; used in tick().
-var g_lastMS = Date.now();    			// Timestamp for most-recently-drawn image; 
-// in milliseconds; used by 'animate()' fcn 
-// (now called 'timerAll()' ) to find time
-// elapsed since last on-screen image.
-var g_angle01 = 0;                  // initial rotation angle
-var g_angle01Rate = 45.0;           // rotation speed, in degrees/second 
-
-var g_angle02 = 0;                  // initial rotation angle
-var g_angle02Rate = 40.0;           // rotation speed, in degrees/second 
-
-//------------For mouse click-and-drag: -------------------------------
-var g_isDrag = false;		// mouse-drag: true when user holds down mouse button
-var g_xMclik = 0.0;			// last mouse button-down position (in CVV coords)
-var g_yMclik = 0.0;
-var g_xMdragTot = 0.0;	// total (accumulated) mouse-drag amounts (in CVV coords).
-var g_yMdragTot = 0.0;
-var g_digits = 5;			// DIAGNOSTICS: # of digits to print in console.log (
-//    console.log('xVal:', xVal.toFixed(g_digits)); // print 5 digits
-
-var g_xKmove = 0.0;	// total (accumulated) keyboard-drag amounts (in CVV coords).
-var g_yKmove = 0.0;
+//// ------------------------------------
+//         global variable end
+//// ------------------------------------
 
 
 function main() {
-    // Retrieve <canvas> element
+    // set sitting parameters (global variables)
     sit();
-
+    // Retrieve <canvas> element
     // Get the rendering context for WebGL
     gl = g_canvasID.getContext("webgl", { preserveDrawingBuffer: true });
     if (!gl) {
@@ -155,18 +154,9 @@ function main() {
         return;
     }
 
-    // THE 'REVERSED DEPTH' PROBLEM:=======================================
-    // IF we don't transform our vertices by a 3D Camera Projection Matrix
-    // (and we don't -- not until Project B) then the GPU will compute reversed 
-    // depth values: depth==0 for vertex z == -1; depth==1 for vertex z==-1.
-    // To correct the 'REVERSED DEPTH' problem, we will
-    // reverse the depth-buffer's usage of computed depth values, like this:
-    gl.enable(gl.DEPTH_TEST); // enabled by default, but let's be SURE.
-    gl.clearDepth(0.0); // each time we 'clear' our depth buffer, set all
-    // pixel depths to 0.0 (1.0 is DEFAULT)
-    gl.depthFunc(gl.GREATER); // (gl.LESS is DEFAULT; reverse it!)
-    // draw a pixel only if its depth value is GREATER
-    // than the depth buffer's stored value.
+    gl.enable(gl.DEPTH_TEST); 
+    gl.clearDepth(0.0); 
+    gl.depthFunc(gl.GREATER);
     //=====================================================================
 
     //Initialize shaders
@@ -182,6 +172,7 @@ function main() {
         return;
     }
 
+    // setting background color
     gl.clearColor(3, 0, 2, 0.3);   // stored in gl.COLOR_BUFFER_BIT
 
     g_modelMatrix = new Matrix4();
@@ -228,12 +219,6 @@ function main() {
         requestAnimationFrame(tick, g_canvasID);
         timerAll();
         drawAll();
-
-        //console.log(moveInfoLFT);
-        //console.log(moveInfoRFT);
-        //console.log(moveInfoLBT);
-        //console.log(moveInfoRBT);
-
         document.getElementById('CurAngleDisplay').innerHTML =
             'g_angle01= ' + g_angle01.toFixed(g_digits);
         // Also display our current mouse-dragging state:
@@ -243,7 +228,6 @@ function main() {
     }
 
     tick();
-    //drawAll();
 }
 
 function rotateNow(anglenow, anglerate, anglebreak, elapsedtime, min, max) {
@@ -251,12 +235,10 @@ function rotateNow(anglenow, anglerate, anglebreak, elapsedtime, min, max) {
     if ((anglenow >= max && anglerate > 0) || (anglenow <= min && anglerate < 0)) {
         anglerate *= -1;
     }
-    //console.log("before: ", anglenow);
     if (min > max) {// if min and max don't limit the angle, then
         if (anglenow < -180.0) anglenow += 360.0;	// go to >= -180.0 or
         else if (anglenow > 180.0) anglenow -= 360.0;	// go to <= +180.0
     }
-    //console.log("after: ",anglenow);
     return [anglenow, anglerate];
 }
 
@@ -278,21 +260,28 @@ function timerAll() {
         // let's pretend that only a nominal 1/30th second passed:
         elapsedMS = 1000.0 / 30.0;
     }
-
+    // thighs
     [g_angle0now, g_angle0rate] = rotateNow(g_angle0now, g_angle0rate, g_angle0brake, elapsedMS, g_angle0min, g_angle0max);
     [g_angle1now, g_angle1rate] = rotateNow(g_angle1now, g_angle1rate, g_angle1brake, elapsedMS, g_angle1min, g_angle1max);
     [g_angle2now, g_angle2rate] = rotateNow(g_angle2now, g_angle2rate, g_angle2brake, elapsedMS, g_angle2min, g_angle2max);
     [g_angle3now, g_angle3rate] = rotateNow(g_angle3now, g_angle3rate, g_angle3brake, elapsedMS, g_angle3min, g_angle3max);
+    // tail
     [g_angle4now, g_angle4rate] = rotateNow(g_angle4now, g_angle4rate, g_angle4brake, elapsedMS, g_angle4min, g_angle4max);
-
+    // calves
     [g_angle5now, g_angle5rate] = rotateNow(g_angle5now, g_angle5rate, 1, elapsedMS, g_angle5min, g_angle5max);
     [g_angle6now, g_angle6rate] = rotateNow(g_angle6now, g_angle6rate, 1, elapsedMS, g_angle6min, g_angle6max);
     [g_angle7now, g_angle7rate] = rotateNow(g_angle7now, g_angle7rate, 1, elapsedMS, g_angle7min, g_angle7max);
     [g_angle8now, g_angle8rate] = rotateNow(g_angle8now, g_angle8rate, 1, elapsedMS, g_angle8min, g_angle8max);
+    // paws
     [g_angle9now, g_angle9rate] = rotateNow(g_angle9now, g_angle9rate, 1, elapsedMS, g_angle9min, g_angle9max);
     [g_angle10now, g_angle10rate] = rotateNow(g_angle10now, g_angle10rate, 1, elapsedMS, g_angle10min, g_angle10max);
 
 }
+
+function verPosnNum() {
+
+}
+
 
 function SetVBO(vertices_here) {
     // create a buffer in GPU, its ID is vertexBufferID
@@ -329,6 +318,13 @@ function SetVBO(vertices_here) {
 function initVertexBuffers() {
 
     // vertices information
+
+
+
+    // var vertices = new Float32Array(Array.prototype.concat.call(
+    //     v1, v2, v4,
+    // ));
+
     var vertices = new Float32Array([
         0.00, 0.30, 0.00, 1.00, 1.0, 0.0, 0.0,
         -0.50, 0.00, 0.00, 1.00, 1.0, 0.0, 0.0,
