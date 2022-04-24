@@ -44,6 +44,12 @@ var g_yMclik = 0.0;
 var g_xMdragTot = 0.0;	// total (accumulated) mouse-drag amounts (in CVV coords).
 var g_yMdragTot = 0.0;
 var g_digits = 5;			// DIAGNOSTICS: # of digits to print in console.log (
+
+var cloud_x = 0, cloud_y = 0;
+var a_X = 0, a_y = 0;
+var target_x, target_y;
+var bf_target_x, bf_target_y;
+
 //    console.log('xVal:', xVal.toFixed(g_digits)); // print 5 digits
 var g_xKmove = 0.0;	// total (accumulated) keyboard-drag amounts (in CVV coords).
 var g_yKmove = 0.0;
@@ -126,13 +132,19 @@ var g_angle10rate = 0.0;				// init Rotation angle rate, in degrees/second.
 var g_angle10min = 0.0;       // init min, max allowed angle, in degrees
 var g_angle10max = 0.0;
 
+// cloud
+var g_angle11now = 0; 			// init Current rotation angle, in degrees.
+var g_angle11rate = 10;				// init Rotation angle rate, in degrees/second.
+var g_angle11min = -40;       // init min, max allowed angle, in degrees
+var g_angle11max = 40;
+
+
 // body position --> for reseting sit/walk dog's gesture
 var g_anglebody = -50; 			// init Current rotation angle, in degrees.
 var g_transheadx = 0.15;
 var g_transheady = 0.25;
 var g_frontlegs = 0.1;
 var g_tail = -0.2;
-
 
 // rigid objects' starting position and length.
 var loop_S, loop_C;
@@ -142,6 +154,7 @@ var body_S, body_C;
 var fthigh_S, fthigh_C, bthigh_S, bthigh_C;
 var fcalf_S, fcalf_C, bcalf_S, bcalf_C;
 var paw_S, paw_C, tail_S, tail_C;
+var cloud_C, cloud_S;
 
 //// ------------------------------------
 //         global variable end
@@ -280,6 +293,7 @@ function timerAll() {
     // paws
     [g_angle9now, g_angle9rate] = rotateNow(g_angle9now, g_angle9rate, 1, elapsedMS, g_angle9min, g_angle9max);
     [g_angle10now, g_angle10rate] = rotateNow(g_angle10now, g_angle10rate, 1, elapsedMS, g_angle10min, g_angle10max);
+    [g_angle11now, g_angle11rate] = rotateNow(g_angle11now, g_angle11rate, 1, elapsedMS, g_angle11min, g_angle11max);
 }
 
 function initVertexBuffers() {
@@ -355,6 +369,14 @@ function initVertexBuffers() {
     curr_v = tailV();
     tail_S = v_ans.length / 7;
     tail_C = curr_v.length / 7;
+    v_ans = Array.prototype.concat.call(
+        v_ans, curr_v,
+    );
+    curr_v.clear;
+
+    curr_v = cloudV();
+    cloud_S = v_ans.length / 7;
+    cloud_C = curr_v.length / 7;
     v_ans = Array.prototype.concat.call(
         v_ans, curr_v,
     );
@@ -964,7 +986,196 @@ function initVertexBuffers() {
             return 0;
         }
 
+        function cloudV() {
+            // vertices information
+            var v1 = [0.0, 0.1, 0.0, 1.0, 0.0, 0.7, 1.0,];
+            var v2 = [0.1, 0.1, 0.0, 1.0, 0.0, 0.7, 1.0,];
+            var v3 = [0.1, 0.2, 0.0, 1.0, 1.0, 0.9, 1.0,];
+            var v4 = [0.2, 0.2, 0.0, 1.0, 1.0, 0.8, 0.8,];
+            var v5 = [0.2, 0.3, 0.0, 1.0, 1.0, 1.0, 1.0,];
+            var v6 = [0.3, 0.3, 0.0, 1.0, 1.0, 0.9, 0.9,];
+            var v7 = [0.3, 0.2, 0.0, 1.0,  1.0, 0.9, 0.9,];
+            var v8 = [0.4, 0.2, 0.0, 1.0, 1.0, 0.8, 0.8,];
+            var v9 = [0.4, 0.1, 0.0, 1.0, 1.0, 0.8, 0.8,];
+            var v10 = [0.5, 0.1, 0.0, 1.0,  1.0, 0.8, 0.8,];
+            var v11 = [0.5, 0.2, 0.0, 1.0,  1.0, 0.9, 0.9,];
+            var v12 = [0.6, 0.2, 0.0, 1.0,  1.0, 0.8, 0.8,];
+            var v13 = [0.6, 0.1, 0.0, 1.0,  1.0, 1.0, 1.0,];
+            var v14 = [0.7, 0.1, 0.0, 1.0,  1.0, 0.8, 0.8,];
+            var v15 = [0.7, 0.0, 0.0, 1.0, 0.0, 0.5, 1.0,];
+            var v16 = [0.6, 0.0, 0.0, 1.0, 0.0, 0.5, 1.0,];
+            var v17 = [0.6, -0.1, 0.0, 1.0, 0.0, 0.5, 1.0,];
+            var v18 = [0.5, -0.1, 0.0, 1.0, 0.4, 0.4, 0.8,];
+            var v19 = [0.5, 0., 0.0, 1.0, 0.0, 0.5, 1.0,];
+            var v20 = [0.4, 0.0, 0.0, 1.0, 0.0, 0.5, 1.0,];
+            var v21 = [0.4, -0.1, 0.0, 1.0, 0.4, 0.4, 0.8,];
+            var v22 = [0.1, -0.1, 0.0, 1.0, 0.0, 0.5, 1.0,];
+            var v23 = [0.1, 0.0, 0.0, 1.0, 0.4, 0.4, 0.8,];
+            var v24 = [0.0, 0.0, 0.0, 1.0, 0.4, 0.4, 0.8,];
+
+            var v1_b = [0.0, 0.1, 0.1, 1.0, 0.0, 0.7, 1.0,];
+            var v2_b = [0.1, 0.1, 0.1, 1.0, 0.0, 0.7, 1.0,];
+            var v3_b = [0.1, 0.2, 0.1, 1.0, 1.0, 0.9, 1.0,];
+            var v4_b = [0.2, 0.2, 0.1, 1.0, 1.0, 0.8, 0.8,];
+            var v5_b = [0.2, 0.3, 0.1, 1.0, 1.0, 1.0, 1.0,];
+            var v6_b = [0.3, 0.3, 0.1, 1.0, 1.0, 0.9, 0.9,];
+            var v7_b = [0.3, 0.2, 0.1, 1.0,  1.0, 0.9, 0.9,];
+            var v8_b = [0.4, 0.2, 0.1, 1.0, 1.0, 0.8, 0.8,];
+            var v9_b = [0.4, 0.1, 0.1, 1.0, 1.0, 0.8, 0.8,];
+            var v10_b = [0.5, 0.1, 0.1, 1.0,  1.0, 0.8, 0.8,];
+            var v11_b = [0.5, 0.2, 0.1, 1.0,  1.0, 0.9, 0.9,];
+            var v12_b = [0.6, 0.2, 0.1, 1.0,  1.0, 0.8, 0.8,];
+            var v13_b = [0.6, 0.1, 0.1, 1.0,  1.0, 1.0, 1.0,];
+            var v14_b = [0.7, 0.1, 0.1, 1.0,  1.0, 0.8, 0.8,];
+            var v15_b = [0.7, 0.0, 0.1, 1.0, 0.0, 0.5, 1.0,];
+            var v16_b = [0.6, 0.0, 0.1, 1.0, 0.0, 0.5, 1.0,];
+            var v17_b = [0.6, -0.1, 0.1, 1.0, 0.0, 0.5, 1.0,];
+            var v18_b = [0.5, -0.1, 0.1, 1.0, 0.4, 0.4, 0.8,];
+            var v19_b = [0.5, 0., 0.1, 1.0, 0.0, 0.5, 1.0,];
+            var v20_b = [0.4, 0.0, 0.1, 1.0, 0.0, 0.5, 1.0,];
+            var v21_b = [0.4, -0.1, 0.1, 1.0, 0.0, 0.5, 1.0,];
+            var v22_b = [0.1, -0.1, 0.1, 1.0, 0.4, 0.4, 0.8,];
+            var v23_b = [0.1, 0.0, 0.1, 1.0, 0.4, 0.4, 0.8,];
+            var v24_b = [0.0, 0.0, 0.1, 1.0, 0.4, 0.4, 0.8,];
+
+
+    
+            var vertices = Array.prototype.concat.call(
+
+                //side:
+                v1, v1_b, v24_b,
+                v1, v24_b, v24,
+
+                v2, v2_b, v1_b,
+                v2, v1_b, v1,
+
+                v3, v3_b, v2_b,
+                v3, v2_b, v2,
+
+                v4, v4_b, v3_b,
+                v4, v3_b, v3,
+
+                v5, v5_b, v4_b,
+                v5, v4_b, v4,
+
+                v6, v6_b, v5_b,
+                v6, v5_b, v5,
+
+                v7, v7_b, v6_b,
+                v7, v6_b, v6,
+
+                v8, v8_b, v7_b,
+                v8, v7_b, v7,
+
+                v9, v9_b, v8_b,
+                v9, v8_b, v8,
+
+                v10, v10_b, v9_b,
+                v10, v9_b, v9,
+
+                v11, v11_b, v10_b,
+                v11, v10_b, v10,
+
+                v12, v12_b, v11_b,
+                v12, v11_b, v11,
+
+                v13, v13_b, v12_b,
+                v13, v12_b, v12,
+
+                v14, v14_b, v13_b,
+                v14, v13_b, v13,
+
+                v15, v15_b, v14_b,
+                v15, v14_b, v14,
+
+                v16, v16_b, v15_b,
+                v16, v15_b, v15,
+
+                v17, v17_b, v16_b,
+                v17, v16_b, v16,
+
+                v18, v18_b, v17_b,
+                v18, v17_b, v17,
+
+                v19, v19_b, v18_b,
+                v19, v18_b, v18,
+
+                v20, v20_b, v19_b,
+                v20, v19_b, v19,
+
+                v21, v21_b, v20_b,
+                v21, v20_b, v20,
+
+                v22, v22_b, v21_b,
+                v22, v21_b, v21,
+
+                v23, v23_b, v22_b,
+                v23, v22_b, v22,
+
+                v24, v24_b, v23_b,
+                v24, v23_b, v23,
+                // front:
+                v2, v1, v24,
+                v2, v24, v23,
+                v1_b, v2_b, v24_b, 
+                v2_b, v23_b, v24_b,
+
+                v4, v3, v22,
+                v3_b, v4_b, v22_b,
+                v6, v4, v22,
+                v4_b, v6_b, v22_b,
+                v6, v5, v4,
+                v5_b, v6_b, v4_b,
+                v7, v6, v22,
+                v6_b, v7_b, v22_b,
+                v7, v21, v22,
+                v21_b, v7_b, v22_b,
+                v8, v7, v21,
+                v7_b, v8_b, v21_b,
+
+                v10, v9, v20,
+                v9_b, v10_b, v20_b,
+                v10, v20, v19,
+                v20_b, v10_b, v19_b,
+
+                v11, v18, v12,
+                v18_b, v11_b, v12_b,
+                v12, v18, v17,
+                v18_b, v12_b, v17_b,
+
+                v14, v13, v16,
+                v13_b, v14_b, v16_b,
+                v14, v16, v15,
+                v14_b, v15_b, v16_b,
+            );
+            return vertices;
+        }
+
+        function drawCloud() {
+            pushMatrix(g_modelMatrix);
+                    
+                gl.uniformMatrix4fv(uLoc_modelMatrix, false, g_modelMatrix.elements);
+                gl.drawArrays(gl.TRIANGLES, cloud_S, cloud_C);	// draw all vertices.
+                g_modelMatrix.scale(0.6, 0.6, 0.5);
+                g_modelMatrix.translate(0.3, 0.05, 0.2);
+                gl.uniformMatrix4fv(uLoc_modelMatrix, false, g_modelMatrix.elements);
+                gl.drawArrays(gl.TRIANGLES, cloud_S, cloud_C);	// draw all vertices.
+                g_modelMatrix.translate(0, 0, -0.3);
+                gl.uniformMatrix4fv(uLoc_modelMatrix, false, g_modelMatrix.elements);
+                gl.drawArrays(gl.TRIANGLES, cloud_S, cloud_C);	// draw all vertices.
+            g_modelMatrix = popMatrix();
+        }
+
     }   // =========== end dog parts ============
+
+    function setTarget() {
+        target_x = Math.random() * 2 - 1;
+        target_y = Math.random() * 2 - 1;
+
+        a_x = (target_x - cloud_x) / 600;
+        a_y = (target_y - cloud_y) / 600;
+        return 0;
+    }
 
 
 }
@@ -986,6 +1197,30 @@ function drawAll() {
         drawLoop();
     g_modelMatrix = popMatrix();
 
+    // cloud
+    pushMatrix(g_modelMatrix);
+        g_modelMatrix.scale(0.6, 0.6, 0.6);
+        g_modelMatrix.rotate(g_angle11now * 2, 1, 0, 0);
+        g_modelMatrix.rotate(g_angle11now, 0, 1, 0);
+        g_modelMatrix.translate(-0.35, 0, 0);
+
+        
+        if(Math.abs(cloud_x - target_x) > 0.0001  || Math.abs(cloud_y - target_y) > 0.0001)
+        {
+            cloud_x = cloud_x + a_x;
+            cloud_y = cloud_y + a_y;
+            g_modelMatrix.translate(cloud_x, cloud_y, 0);
+            
+        } else {
+            setTarget();
+            g_modelMatrix.translate(cloud_x, cloud_y, 0);
+        }
+        // console.log(target_x, target_y);
+        // console.log(target_y);
+        drawCloud();
+        
+    g_modelMatrix = popMatrix();
+
     if(g_yKmove > 0.1 && g_xKmove < 0.4 && SW && !Run)
     {
         Run = true;
@@ -1003,28 +1238,29 @@ function drawAll() {
         drawDog();
     g_modelMatrix = popMatrix();
 
-    g_modelMatrix.translate(-0.6, -0.2, 0);	
-    g_modelMatrix.translate(g_xKmove, g_yKmove, 0);	
-    g_modelMatrix.rotate(40, 0, 0, 1);
+    pushMatrix(g_modelMatrix);
+        g_modelMatrix.translate(-0.6, -0.2, 0);	
+        g_modelMatrix.translate(g_xKmove, g_yKmove, 0);	
+        g_modelMatrix.rotate(40, 0, 0, 1);
 
-    var dist = Math.sqrt(g_xMdragTot*g_xMdragTot + g_yMdragTot*g_yMdragTot);
-    g_modelMatrix.rotate(dist*120.0, -g_yMdragTot+0.0001, g_xMdragTot+0.0001, 0.0);
-    
-    if(keyPressed == "b" && !boneExist)
-    {
-        keyPressed = "";
-        boneExist = true;
-    }
-    if(keyPressed == "b" && boneExist ) {
-        keyPressed = "";
-        boneExist = false;
-    }
-
-    if(boneExist)
-    {
-         drawBone();
-    }
-
+        var dist = Math.sqrt(g_xMdragTot*g_xMdragTot + g_yMdragTot*g_yMdragTot);
+        g_modelMatrix.rotate(dist*120.0, -g_yMdragTot+0.0001, g_xMdragTot+0.0001, 0.0);
+        
+        if(keyPressed == "b" && !boneExist)
+        {
+            keyPressed = "";
+            boneExist = true;
+        }
+        if(keyPressed == "b" && boneExist ) {
+            keyPressed = "";
+            boneExist = false;
+        }
+        
+        if(boneExist)
+        {
+            drawBone();
+        }
+    g_modelMatrix = popMatrix();
     return 0;
 }
 
@@ -1070,22 +1306,22 @@ function drawAll() {
 
 
         g_angle0now = -20;       // init Current rotation angle, in degrees
-        g_angle0rate = -40;       // init Rotation angle rate, in degrees/second.
-        g_angle0min = -40;       // init min, max allowed angle, in degrees.
-        g_angle0max = 50;
+        g_angle0rate = -60;       // init Rotation angle rate, in degrees/second.
+        g_angle0min = -30;       // init min, max allowed angle, in degrees.
+        g_angle0max = 60;
         // right front                                //---------------
         g_angle1now = -20; 			// init Current rotation angle, in degrees > 0
-        g_angle1rate = -40;				// init Rotation angle rate, in degrees/second.
-        g_angle1min = -40;       // init min, max allowed angle, in degrees
-        g_angle1max = 50;
+        g_angle1rate = -60;				// init Rotation angle rate, in degrees/second.
+        g_angle1min = -30;       // init min, max allowed angle, in degrees
+        g_angle1max = 60;
         // left back                                 //---------------
         g_angle2now = 20; 			// init Current rotation angle, in degrees.
-        g_angle2rate = 40;				// init Rotation angle rate, in degrees/second.
+        g_angle2rate = 60;				// init Rotation angle rate, in degrees/second.
         g_angle2min = -60;       // init min, max allowed angle, in degrees
         g_angle2max = 30;
         // right back
         g_angle3now = 20; 			// init Current rotation angle, in degrees.
-        g_angle3rate = 40;				// init Rotation angle rate, in degrees/second.
+        g_angle3rate = 60;				// init Rotation angle rate, in degrees/second.
         g_angle3min = -60;       // init min, max allowed angle, in degrees
         g_angle3max = 30;
     
