@@ -235,7 +235,8 @@ function main() {
     var tick = function () {
         requestAnimationFrame(tick, g_canvasID);
         timerAll();
-        drawAll();
+        drawResize()
+        //drawAll();
         document.getElementById('CurAngleDisplay').innerHTML =
             'g_angle01= ' + g_angle01.toFixed(g_digits);
         // Also display our current mouse-dragging state:
@@ -244,9 +245,30 @@ function main() {
             g_xMdragTot.toFixed(5) + ', \t' + g_yMdragTot.toFixed(g_digits);
     }
 
+    //drawResize();   
     tick();
     //drawAll();
 }
+
+function drawResize() {
+    //==============================================================================
+    // Called when user re-sizes their browser window , because our HTML file
+    // contains:  <body onload="main()" onresize="winResize()">
+    
+        //Report our current browser-window contents:
+    
+        console.log('g_canvasID width,height=', g_canvasID.width, g_canvasID.height);		
+        console.log('Browser window: innerWidth,innerHeight=', 
+                                                                    innerWidth, innerHeight);	
+                                                                    // http://www.w3schools.com/jsref/obj_window.asp
+        //Make canvas fill the top 3/4 of our browser window:
+        var xtraMargin = 16;    // keep a margin (otherwise, browser adds scroll-bars)
+        g_canvasID.width = innerWidth - xtraMargin;
+        g_canvasID.height = (innerHeight*2/3) - xtraMargin;
+        //g_canvasID.width = g_canvasID.height;
+
+        drawAll();
+    }
 
 function rotateNow(anglenow, anglerate, anglebreak, elapsedtime, min, max) {
     anglenow += anglerate * anglebreak * elapsedtime * 0.001;
@@ -1266,6 +1288,94 @@ function initVertexBuffers() {
         return 0;
     }
 
+    function drawThings() {
+        pushMatrix(g_modelMatrix);
+
+
+        
+        g_modelMatrix.rotate(g_angle01, 1, 1, 1);
+
+        pushMatrix(g_modelMatrix);
+            g_modelMatrix.translate(0, -1, 0);
+            g_modelMatrix.scale(4, 4, 4);
+            drawAxis();
+        g_modelMatrix = popMatrix();
+        
+        drawGrid();
+
+        pushMatrix(g_modelMatrix);
+            g_modelMatrix.rotate(g_angle4now, 0, 0, 1);
+            drawLoop();
+        g_modelMatrix = popMatrix();
+
+        // cloud
+        pushMatrix(g_modelMatrix);
+            g_modelMatrix.scale(0.6, 0.6, 0.6);
+            g_modelMatrix.rotate(g_angle11now * 2, 1, 0, 0);
+            g_modelMatrix.rotate(g_angle11now, 0, 1, 0);
+            g_modelMatrix.translate(-0.35, 0, 0);
+
+            
+            if(Math.abs(cloud_x - target_x) > 0.0001  || Math.abs(cloud_y - target_y) > 0.0001)
+            {
+                cloud_x = cloud_x + a_x;
+                cloud_y = cloud_y + a_y;
+                g_modelMatrix.translate(cloud_x, cloud_y, 0);
+                
+            } else {
+                setTarget();
+                g_modelMatrix.translate(cloud_x, cloud_y, 0);
+            }
+            // console.log(target_x, target_y);
+            // console.log(target_y);
+            drawCloud();
+            
+        g_modelMatrix = popMatrix();
+
+        if(g_yKmove > 0.1 && g_xKmove < 0.4 && SW && !Run)
+        {
+            Run = true;
+            walk();
+        }
+        if((g_yKmove < 0.1 || g_xKmove > 0.4) && SW && Run)
+        {
+            Run = false;
+            runForBone();
+        }
+
+        pushMatrix(g_modelMatrix);
+            g_modelMatrix.scale(0.5,0.5,0.5);	
+            g_modelMatrix.translate(0.0, -1.4, 0);
+            drawDog();
+        g_modelMatrix = popMatrix();
+
+        pushMatrix(g_modelMatrix);
+            g_modelMatrix.translate(-0.6, -0.2, 0);	
+            g_modelMatrix.translate(g_xKmove, g_yKmove, 0);	
+            g_modelMatrix.rotate(40, 0, 0, 1);
+
+            var dist = Math.sqrt(g_xMdragTot*g_xMdragTot + g_yMdragTot*g_yMdragTot);
+            g_modelMatrix.rotate(dist*120.0, -g_yMdragTot+0.0001, g_xMdragTot+0.0001, 0.0);
+            
+            if(keyPressed == "b" && !boneExist)
+            {
+                keyPressed = "";
+                boneExist = true;
+            }
+            if(keyPressed == "b" && boneExist ) {
+                keyPressed = "";
+                boneExist = false;
+            }
+            
+            if(boneExist)
+            {
+                drawBone();
+            }
+        g_modelMatrix = popMatrix();
+
+        g_modelMatrix = popMatrix();
+        return 0;
+    }
 
 }
 
@@ -1280,8 +1390,20 @@ function drawAll() {
     // ---------------------------------
     //
     // set perspective:
+
+
+    gl.viewport(0,											// Viewport lower-left corner
+				0, 			// location(in pixels)
+                g_canvasID.width/2, 				// viewport width,
+                g_canvasID.height);			// viewport height in pixels.
+
+    var vpAspect = g_canvasID.width/2 /			// On-screen aspect ratio for
+                    (g_canvasID.height);	// this camera: width/height.
+
+    pushMatrix(g_modelMatrix);
+                   
     g_modelMatrix.perspective(  35.0,
-                                1,
+                                vpAspect,
                                 1,
                                 1000.0);
 
@@ -1291,90 +1413,39 @@ function drawAll() {
 
                             // orth (left, right, bottom, top, near, far). A square
                             // perspective (fov, aspect, near, far)
-
     
-    
-    
-
-    g_modelMatrix.rotate(g_angle01, 1, 1, 1);
+    // g_modelMatrix.rotate(g_angle01, 1, 1, 1);
     // ---------------------------------
-    pushMatrix(g_modelMatrix);
-        g_modelMatrix.translate(0, -1, 0);
-        g_modelMatrix.scale(4, 4, 4);
-        drawAxis();
+    drawThings();
     g_modelMatrix = popMatrix();
+
+
+
+    gl.viewport(g_canvasID.width/2,											// Viewport lower-left corner
+				0, 			// location(in pixels)
+                g_canvasID.width/2, 				// viewport width,
+                g_canvasID.height);			// viewport height in pixels.
+
+
+    pushMatrix(g_modelMatrix);
+    g_modelMatrix.perspective(  35.0,
+                                vpAspect,
+                                1,
+                                1000.0);
+
+    g_modelMatrix.lookAt(   0, 0, 5,	// center of projection
+                            0, 0, 0,	// look-at point 
+                            0.0, 1.0, 0.0);	// View UP vector.
+
+
+    //g_modelMatrix.rotate(g_angle01, 1, 1, 1);
+    // ---------------------------------
+    drawThings();
     
-    drawGrid();
-
-    pushMatrix(g_modelMatrix);
-        g_modelMatrix.rotate(g_angle4now, 0, 0, 1);
-        drawLoop();
     g_modelMatrix = popMatrix();
 
-    // cloud
-    pushMatrix(g_modelMatrix);
-        g_modelMatrix.scale(0.6, 0.6, 0.6);
-        g_modelMatrix.rotate(g_angle11now * 2, 1, 0, 0);
-        g_modelMatrix.rotate(g_angle11now, 0, 1, 0);
-        g_modelMatrix.translate(-0.35, 0, 0);
 
-        
-        if(Math.abs(cloud_x - target_x) > 0.0001  || Math.abs(cloud_y - target_y) > 0.0001)
-        {
-            cloud_x = cloud_x + a_x;
-            cloud_y = cloud_y + a_y;
-            g_modelMatrix.translate(cloud_x, cloud_y, 0);
-            
-        } else {
-            setTarget();
-            g_modelMatrix.translate(cloud_x, cloud_y, 0);
-        }
-        // console.log(target_x, target_y);
-        // console.log(target_y);
-        drawCloud();
-        
-    g_modelMatrix = popMatrix();
 
-    if(g_yKmove > 0.1 && g_xKmove < 0.4 && SW && !Run)
-    {
-        Run = true;
-        walk();
-    }
-    if((g_yKmove < 0.1 || g_xKmove > 0.4) && SW && Run)
-    {
-        Run = false;
-        runForBone();
-    }
-
-    pushMatrix(g_modelMatrix);
-        g_modelMatrix.scale(0.5,0.5,0.5);	
-        g_modelMatrix.translate(0.0, -1.4, 0);
-        drawDog();
-    g_modelMatrix = popMatrix();
-
-    pushMatrix(g_modelMatrix);
-        g_modelMatrix.translate(-0.6, -0.2, 0);	
-        g_modelMatrix.translate(g_xKmove, g_yKmove, 0);	
-        g_modelMatrix.rotate(40, 0, 0, 1);
-
-        var dist = Math.sqrt(g_xMdragTot*g_xMdragTot + g_yMdragTot*g_yMdragTot);
-        g_modelMatrix.rotate(dist*120.0, -g_yMdragTot+0.0001, g_xMdragTot+0.0001, 0.0);
-        
-        if(keyPressed == "b" && !boneExist)
-        {
-            keyPressed = "";
-            boneExist = true;
-        }
-        if(keyPressed == "b" && boneExist ) {
-            keyPressed = "";
-            boneExist = false;
-        }
-        
-        if(boneExist)
-        {
-            drawBone();
-        }
-    g_modelMatrix = popMatrix();
     return 0;
 }
 
