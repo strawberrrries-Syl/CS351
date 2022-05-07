@@ -147,8 +147,8 @@ var g_frontlegs = 0.1;
 var g_tail = -0.2;
 
 // rigid objects' starting position and length.
-var loop_S, loop_C;
-var cube_S, cube_C;
+var loop_S, loop_C, grid_S, grid_C;
+var cube_S, cube_C, axis_S, axis_C;
 var head_S, head_C;
 var body_S, body_C;
 var fthigh_S, fthigh_C, bthigh_S, bthigh_C;
@@ -383,6 +383,22 @@ function initVertexBuffers() {
     );
     curr_v.clear;
 
+    curr_v = groundgridV();
+    grid_S = v_ans.length / 7;
+    grid_C = curr_v.length / 7;
+    v_ans = Array.prototype.concat.call(
+        v_ans, curr_v,
+    );
+    curr_v.clear;
+
+    curr_v = axisV();
+    axis_S = v_ans.length / 7;
+    axis_C = curr_v.length / 7;
+    v_ans = Array.prototype.concat.call(
+        v_ans, curr_v,
+    );
+    curr_v.clear;
+
 
     var vertices = new Float32Array(v_ans);
     // create a buffer in GPU, its ID is vertexBufferID
@@ -503,6 +519,11 @@ function initVertexBuffers() {
 
     function drawBone() {
         pushMatrix(g_modelMatrix);
+            pushMatrix(g_modelMatrix);
+            gl.uniformMatrix4fv(uLoc_modelMatrix, false, g_modelMatrix.elements);
+            gl.drawArrays(gl.LINES, axis_S, axis_C);	// draw all vertices.
+            popMatrix(g_modelMatrix);
+
         //drawSquare();
             pushMatrix(g_modelMatrix);
             //g_modelMatrix.translate(-0.1, 0.2, 0.0);	
@@ -1154,7 +1175,7 @@ function initVertexBuffers() {
 
         function drawCloud() {
             pushMatrix(g_modelMatrix);
-                    
+                drawAxis();
                 gl.uniformMatrix4fv(uLoc_modelMatrix, false, g_modelMatrix.elements);
                 gl.drawArrays(gl.TRIANGLES, cloud_S, cloud_C);	// draw all vertices.
                 g_modelMatrix.scale(0.6, 0.6, 0.5);
@@ -1168,6 +1189,73 @@ function initVertexBuffers() {
         }
 
     }   // =========== end dog parts ============
+
+    function groundgridV() {
+        var ans_ver;
+        var x_max = 100;
+
+        var x_num = -100;
+        var x_gap = 1;
+
+        while(x_num < x_max) {
+            x_num = x_num + x_gap;
+            var p1 = [x_num, -1, -100, 1.0, 204/255, 255/255, 229/255,];
+            var p2 = [x_num, -1, 3, 1.0, 204/255, 255/255, 229/255,];
+
+            var p3 = [-100, -1, x_num, 1.0, 255/255, 229/255, 204/255,];
+            var p4 = [100, -1, x_num, 1.0, 255/255, 229/255, 204/255,];
+
+            var curr_ver = Array.prototype.concat.call(
+                p1, p2,
+                p3, p4,
+            );
+
+            if (ans_ver == null) {
+                ans_ver = curr_ver;
+            }
+            else {
+                ans_ver = Array.prototype.concat.call(ans_ver, curr_ver);
+            }
+        }
+        return ans_ver;
+    }
+
+    function drawGrid() {
+        pushMatrix(g_modelMatrix);
+            gl.uniformMatrix4fv(uLoc_modelMatrix, false, g_modelMatrix.elements);
+            //console.log("before draw-----");
+            gl.drawArrays(gl.LINES, grid_S, grid_C);	// draw all vertices.
+            //console.log("end draw-----");
+        g_modelMatrix = popMatrix();
+        return 0;
+    }
+
+    function axisV() {
+        var v1 = [-0.3, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0,];
+        var v2 = [0.3, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0,];
+        var v3 = [0.0, -0.3, 0.0, 1.0, 0.0, 1.0, 0.0,];
+        var v4 = [0.0, 0.3, 0.0, 1.0, 0.0, 1.0, 0.0,];
+        var v5 = [0.0, 0.0, -0.3, 1.0, 0.0, 0.0, 1.0,];
+        var v6 = [0.0, 0.0, 0.3, 1.0, 0.0, 0.0, 1.0,];
+
+        var vertices = Array.prototype.concat.call(
+            v1, v2,
+            v3, v4,
+            v5, v6,
+        );
+        
+        return vertices;
+    }
+
+    function drawAxis() {
+        pushMatrix(g_modelMatrix);
+            gl.uniformMatrix4fv(uLoc_modelMatrix, false, g_modelMatrix.elements);
+            //console.log("before draw-----");
+            gl.drawArrays(gl.LINES, axis_S, axis_C);	// draw all vertices.
+            //console.log("end draw-----");
+        g_modelMatrix = popMatrix();
+        return 0;
+    }
 
     function setTarget() {
         target_x = Math.random() * 2 - 1;
@@ -1192,19 +1280,32 @@ function drawAll() {
     // ---------------------------------
     //
     // set perspective:
-    g_modelMatrix.perspective(  42.0,
+    g_modelMatrix.perspective(  35.0,
                                 1,
                                 1,
                                 1000.0);
 
-    g_modelMatrix.lookAt(   5, 5, 3,	// center of projection
-                            -1, -2, -0.5,	// look-at point 
-                            0.0, 0.0, 1.0);	// View UP vector.
+    g_modelMatrix.lookAt(   0, 0, 5,	// center of projection
+                            0, 0, 0,	// look-at point 
+                            0.0, 1.0, 0.0);	// View UP vector.
 
+                            // orth (left, right, bottom, top, near, far). A square
+                            // perspective (fov, aspect, near, far)
 
+    
+    
+    
 
     g_modelMatrix.rotate(g_angle01, 1, 1, 1);
     // ---------------------------------
+    pushMatrix(g_modelMatrix);
+        g_modelMatrix.translate(0, -1, 0);
+        g_modelMatrix.scale(4, 4, 4);
+        drawAxis();
+    g_modelMatrix = popMatrix();
+    
+    drawGrid();
+
     pushMatrix(g_modelMatrix);
         g_modelMatrix.rotate(g_angle4now, 0, 0, 1);
         drawLoop();
