@@ -541,10 +541,7 @@ function initVertexBuffers() {
 
     function drawBone() {
         pushMatrix(g_modelMatrix);
-            pushMatrix(g_modelMatrix);
-            gl.uniformMatrix4fv(uLoc_modelMatrix, false, g_modelMatrix.elements);
-            gl.drawArrays(gl.LINES, axis_S, axis_C);	// draw all vertices.
-            popMatrix(g_modelMatrix);
+            drawAxis();
 
         //drawSquare();
             pushMatrix(g_modelMatrix);
@@ -663,6 +660,8 @@ function initVertexBuffers() {
                 v2, v4, v6,
                 v1, v3, v4,
                 v1, v2, v4,
+                v1, v5, v2,
+                v6, v2, v5,
                 //head
                 v7, v8, v10,
                 v8, v9, v10,
@@ -1214,18 +1213,18 @@ function initVertexBuffers() {
 
     function groundgridV() {
         var ans_ver;
-        var x_max = 100;
+        var x_max = 3;
 
-        var x_num = -100;
-        var x_gap = 1;
+        var x_num = -3;
+        var x_gap = 0.1;
 
-        while(x_num < x_max) {
-            x_num = x_num + x_gap;
-            var p1 = [x_num, -1, -100, 1.0, 204/255, 255/255, 229/255,];
+        while(x_num <= x_max) {
+            
+            var p1 = [x_num, -1, -3, 1.0, 204/255, 255/255, 229/255,];
             var p2 = [x_num, -1, 3, 1.0, 204/255, 255/255, 229/255,];
 
-            var p3 = [-100, -1, x_num, 1.0, 255/255, 229/255, 204/255,];
-            var p4 = [100, -1, x_num, 1.0, 255/255, 229/255, 204/255,];
+            var p3 = [-3, -1, x_num, 1.0, 255/255, 229/255, 204/255,];
+            var p4 = [3, -1, x_num, 1.0, 255/255, 229/255, 204/255,];
 
             var curr_ver = Array.prototype.concat.call(
                 p1, p2,
@@ -1238,6 +1237,7 @@ function initVertexBuffers() {
             else {
                 ans_ver = Array.prototype.concat.call(ans_ver, curr_ver);
             }
+            x_num = x_num + x_gap;
         }
         return ans_ver;
     }
@@ -1253,11 +1253,11 @@ function initVertexBuffers() {
     }
 
     function axisV() {
-        var v1 = [-0.3, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0,];
+        var v1 = [0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0,];
         var v2 = [0.3, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0,];
-        var v3 = [0.0, -0.3, 0.0, 1.0, 0.0, 1.0, 0.0,];
+        var v3 = [0.0, 0, 0.0, 1.0, 0.0, 1.0, 0.0,];
         var v4 = [0.0, 0.3, 0.0, 1.0, 0.0, 1.0, 0.0,];
-        var v5 = [0.0, 0.0, -0.3, 1.0, 0.0, 0.0, 1.0,];
+        var v5 = [0.0, 0.0, 0, 1.0, 0.0, 0.0, 1.0,];
         var v6 = [0.0, 0.0, 0.3, 1.0, 0.0, 0.0, 1.0,];
 
         var vertices = Array.prototype.concat.call(
@@ -1271,6 +1271,7 @@ function initVertexBuffers() {
 
     function drawAxis() {
         pushMatrix(g_modelMatrix);
+            g_modelMatrix.rotate(-90, 1, 0, 0);
             gl.uniformMatrix4fv(uLoc_modelMatrix, false, g_modelMatrix.elements);
             //console.log("before draw-----");
             gl.drawArrays(gl.LINES, axis_S, axis_C);	// draw all vertices.
@@ -1291,16 +1292,22 @@ function initVertexBuffers() {
     function drawThings() {
         pushMatrix(g_modelMatrix);
 
-
-        
+        g_modelMatrix.rotate(90, 1, 0, 0);
         g_modelMatrix.rotate(g_angle01, 1, 1, 1);
 
         pushMatrix(g_modelMatrix);
-            g_modelMatrix.translate(0, -1, 0);
+            //g_modelMatrix.translate(0, 0, -1);
             g_modelMatrix.scale(4, 4, 4);
             drawAxis();
         g_modelMatrix = popMatrix();
         
+        
+
+        
+        pushMatrix(g_modelMatrix);
+
+        g_modelMatrix.translate(0, 1, 0);
+
         drawGrid();
 
         pushMatrix(g_modelMatrix);
@@ -1308,6 +1315,10 @@ function initVertexBuffers() {
             drawLoop();
         g_modelMatrix = popMatrix();
 
+        // stuffs
+        
+        
+        //g_modelMatrix.translate(0, 0, 1);
         // cloud
         pushMatrix(g_modelMatrix);
             g_modelMatrix.scale(0.6, 0.6, 0.6);
@@ -1374,6 +1385,8 @@ function initVertexBuffers() {
         g_modelMatrix = popMatrix();
 
         g_modelMatrix = popMatrix();
+
+        g_modelMatrix = popMatrix();
         return 0;
     }
 
@@ -1404,12 +1417,12 @@ function drawAll() {
                    
     g_modelMatrix.perspective(  35.0,
                                 vpAspect,
-                                1,
-                                1000.0);
+                                1,              // near
+                                1000.0);        // far
 
-    g_modelMatrix.lookAt(   0, 0, 5,	// center of projection
-                            0, 0, 0,	// look-at point 
-                            0.0, 1.0, 0.0);	// View UP vector.
+    g_modelMatrix.lookAt(   -5, -5, 5,	// center of projection
+                            0, 0, 1,	// look-at point 
+                            0.0, 0.0, 1.0);	// View UP vector.
 
                             // orth (left, right, bottom, top, near, far). A square
                             // perspective (fov, aspect, near, far)
@@ -1426,16 +1439,20 @@ function drawAll() {
                 g_canvasID.width/2, 				// viewport width,
                 g_canvasID.height);			// viewport height in pixels.
 
-
+    // ----- viewport2 ------
     pushMatrix(g_modelMatrix);
-    g_modelMatrix.perspective(  35.0,
-                                vpAspect,
-                                1,
-                                1000.0);
+    //var sca = g_canvasID.height / 400;
+    
+    g_modelMatrix.ortho(    -1.57 * vpAspect,   // left
+                            1.57 *vpAspect,   // right
+                            -1.57,          // bottom
+                            1.57,     // top
+                            1,          // near
+                            1000);         //far
 
-    g_modelMatrix.lookAt(   0, 0, 5,	// center of projection
-                            0, 0, 0,	// look-at point 
-                            0.0, 1.0, 0.0);	// View UP vector.
+    g_modelMatrix.lookAt(   -5, -5, 5,	// center of projection
+                            0, 0, 1,	// look-at point 
+                            0.0, 0.0, 1.0);	// View UP vector.
 
 
     //g_modelMatrix.rotate(g_angle01, 1, 1, 1);
