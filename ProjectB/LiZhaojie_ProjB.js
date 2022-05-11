@@ -1318,9 +1318,9 @@ function initVertexBuffers() {
         target_y = Math.random() * 4 - 1;
         target_z = Math.random() * 4 - 2;
 
-        a_x = (target_x - cloud_x) / 600;
-        a_y = (target_y - cloud_y) / 600;
-        a_z = (target_z - cloud_z) / 600;
+        a_x = (target_x - cloud_x) / 1000;
+        a_y = (target_y - cloud_y) / 1000;
+        a_z = (target_z - cloud_z) / 1000;
         return 0;
     }
 
@@ -1465,14 +1465,9 @@ function drawAll() {
     // ---------------------------------
     //
     
-    
-    
     inst_x = cloud_x;
     inst_y = cloud_z;
     inst_z = cloud_y;
-
-    
-
 
     // set perspective:
 
