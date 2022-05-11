@@ -1951,7 +1951,7 @@ function drawAll() {
             var dist = Math.sqrt(xdrag*xdrag + ydrag*ydrag);
             // console.log('xdrag,ydrag=',xdrag.toFixed(5),ydrag.toFixed(5),'dist=',dist.toFixed(5));
             //qNew.setFromAxisAngle(-ydrag * direc_x + 0.0001, -xdrag * direc_y + 0.0001, 0.0, -dist*150.0 * direc_z);
-            qNew.setFromAxisAngle(-ydrag*Math.cos(sphere_theta) + 0.0001, xdrag*Math.cos(sphere_gamma) + 0.0001, -ydrag*Math.sin(sphere_theta) - xdrag * Math.sin(sphere_gamma), dist*150.0);             
+            qNew.setFromAxisAngle(-ydrag*Math.cos(sphere_theta) + 0.0001, xdrag*Math.cos(sphere_gamma) + 0.0001, -ydrag*Math.sin(sphere_theta) + xdrag * Math.sin(sphere_gamma), dist*150.0);             
             qTmp.multiply(qNew,qTot);			// apply new rotation to current rotation. 
             //--------------------------
             // IMPORTANT! Why qNew*qTot instead of qTot*qNew? (Try it!)
