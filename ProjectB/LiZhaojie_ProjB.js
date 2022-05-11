@@ -51,9 +51,9 @@ var g_xMdragTot = 0.0;	// total (accumulated) mouse-drag amounts (in CVV coords)
 var g_yMdragTot = 0.0;
 var g_digits = 5;			// DIAGNOSTICS: # of digits to print in console.log (
 
-var cloud_x = 0, cloud_y = 0;
-var a_X = 0, a_y = 0;
-var target_x, target_y;
+var cloud_x = 0, cloud_y = 0, cloud_z = 0; 
+var a_x = 0, a_y = 0, a_z = 0;
+var target_x, target_y, target_z;
 var bf_target_x, bf_target_y;
 
 //    console.log('xVal:', xVal.toFixed(g_digits)); // print 5 digits
@@ -1314,11 +1314,13 @@ function initVertexBuffers() {
     }
 
     function setTarget() {
-        target_x = Math.random() * 2 - 1;
-        target_y = Math.random() * 2 - 1;
+        target_x = Math.random() * 4 - 2;
+        target_y = Math.random() * 4 - 1;
+        target_z = Math.random() * 4 - 2;
 
         a_x = (target_x - cloud_x) / 600;
         a_y = (target_y - cloud_y) / 600;
+        a_z = (target_z - cloud_z) / 600;
         return 0;
     }
 
@@ -1364,15 +1366,16 @@ function initVertexBuffers() {
             g_modelMatrix.translate(-0.35, 0, 0);
 
             
-            if(Math.abs(cloud_x - target_x) > 0.0001  || Math.abs(cloud_y - target_y) > 0.0001)
+            if(Math.abs(cloud_x - target_x) > 0.0001  || Math.abs(cloud_y - target_y) > 0.0001 || Math.abs(cloud_z - target_z) > 0.0001)
             {
                 cloud_x = cloud_x + a_x;
                 cloud_y = cloud_y + a_y;
-                g_modelMatrix.translate(cloud_x, cloud_y, 0);
+                cloud_z = cloud_z + a_z;
+                g_modelMatrix.translate(cloud_x, cloud_y, cloud_z);
                 
             } else {
                 setTarget();
-                g_modelMatrix.translate(cloud_x, cloud_y, 0);
+                g_modelMatrix.translate(cloud_x, cloud_y, cloud_z);
             }
             // console.log(target_x, target_y);
             // console.log(target_y);
@@ -1465,7 +1468,7 @@ function drawAll() {
     
     
     inst_x = cloud_x;
-    inst_y = 0;
+    inst_y = cloud_z;
     inst_z = cloud_y;
 
     
