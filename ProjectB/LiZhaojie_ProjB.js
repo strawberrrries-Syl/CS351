@@ -1288,7 +1288,7 @@ function initVertexBuffers() {
     function axisV() {
         var v1 = [0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0,];
         var v2 = [0.3, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0,];
-        var v3 = [0.0, 0, 0.0, 1.0, 0.0, 1.0, 0.0,];
+        var v3 = [0.0, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0,];
         var v4 = [0.0, 0.3, 0.0, 1.0, 0.0, 1.0, 0.0,];
         var v5 = [0.0, 0.0, 0, 1.0, 0.0, 0.0, 1.0,];
         var v6 = [0.0, 0.0, 0.3, 1.0, 0.0, 0.0, 1.0,];
@@ -1411,7 +1411,7 @@ function initVertexBuffers() {
 
             quatMatrix.setFromQuat(qTot.x, qTot.y, qTot.z, qTot.w);	// Quaternion-->Matrix
             g_modelMatrix.concat(quatMatrix);	// apply that matrix.
-            g_modelMatrix.rotate(40, 0, 0, 1);
+            //g_modelMatrix.rotate(40, 0, 0, 1);
             // var dist = Math.sqrt(g_xMdragTot*g_xMdragTot + g_yMdragTot*g_yMdragTot);
             // g_modelMatrix.rotate(dist*120.0, -g_yMdragTot+0.0001, g_xMdragTot+0.0001, 0.0);
             
@@ -1948,24 +1948,11 @@ function drawAll() {
         // matrix for drawing. 
             var res = 5;
             var qTmp = new Quaternion(0,0,0,1);
-            var qTmp2 = new Quaternion(0,0,0,1);
-            var qdirec = new Quaternion();
-            
             var dist = Math.sqrt(xdrag*xdrag + ydrag*ydrag);
-            var dist2 = Math.sqrt(direc_x*direc_x + direc_y*direc_y + direc_z*direc_z);
             // console.log('xdrag,ydrag=',xdrag.toFixed(5),ydrag.toFixed(5),'dist=',dist.toFixed(5));
             //qNew.setFromAxisAngle(-ydrag * direc_x + 0.0001, -xdrag * direc_y + 0.0001, 0.0, -dist*150.0 * direc_z);
-             qNew.setFromAxisAngle(-ydrag + 0.0001, xdrag + 0.0001, 0.0, dist*150.0);
-
-             qdirec.setFromAxisAngle(direc_x + 0.0001, direc_y + 0.0001, direc_z + 0.0001, dist2*150.0);
-             //qNew.multiply(qdirec);
-            // (why add tiny 0.0001? To ensure we never have a zero-length rotation axis)
-                                    // why axis (x,y,z) = (-yMdrag,+xMdrag,0)? 
-                                    // -- to rotate around +x axis, drag mouse in -y direction.
-                                    // -- to rotate around +y axis, drag mouse in +x direction.
-                                    
+            qNew.setFromAxisAngle(-ydrag*Math.cos(sphere_theta) + 0.0001, xdrag*Math.cos(sphere_gamma) + 0.0001, -ydrag*Math.sin(sphere_theta) - xdrag * Math.sin(sphere_gamma), dist*150.0);             
             qTmp.multiply(qNew,qTot);			// apply new rotation to current rotation. 
-            qTmp2.multiply(qdirec,qTmp);
             //--------------------------
             // IMPORTANT! Why qNew*qTot instead of qTot*qNew? (Try it!)
             // ANSWER: Because 'duality' governs ALL transformations, not just matrices. 
@@ -1981,7 +1968,7 @@ function drawAll() {
             // A non-unit-length quaternion won't work with our quaternion-to-matrix fcn.
             // Matrix4.prototype.setFromQuat().
         //	qTmp.normalize();						// normalize to ensure we stay at length==1.0.
-            qTot.copy(qTmp2);
+            qTot.copy(qTmp);
             // show the new quaternion qTot on our webpage in the <div> element 'QuatValue'
             document.getElementById('QuatValue').innerHTML= 
                                                                  '\t X=' +qTot.x.toFixed(res)+
