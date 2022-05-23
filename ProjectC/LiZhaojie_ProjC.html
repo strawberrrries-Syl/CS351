@@ -64,12 +64,20 @@
 			<span id='KeyDownResult'  > KeyDown:    </span> <!-- myKeyDown() modifies this span object -->		
 			<br>
 			<span id='KeyModResult'   > KeyMod :<br><br>   </span> <!-- myKeyDown() modifies this span object -->
+			<br>
+			<span id='MouseAtResult'  >   Mouse At: </span> <!-- myMouseMove() modifies this span object -->
+			<br>
+			<span id='MouseDragResult'> Mouse Drag: </span> <!-- myMouseUp() modifies this span object -->
+		<br>
 		
 		<!--  Mouse click/drag amounts.  Look in 'console' for event reports;
 				the 'clear' button calls Javascript function 'clearDrag()'
 				whose sole purpose is to set global vars xMdragTot,yMdragTot ==0.0
 			  Note we use these totals to rotate the triangle at upper left.
 		-->
+		<div id='Mouse'> Mouse Drag totals (CVV coords) </div>
+		<button type="button" onClick='clearDrag()'>Clear</button>
+	<br>
 
         <!--
         <p> 
