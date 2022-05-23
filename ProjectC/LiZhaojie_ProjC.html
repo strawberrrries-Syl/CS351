@@ -9,14 +9,17 @@
         <canvas id="webgl" width="400" height="400">
             Pleas use a browser that supports "canvas"
         </canvas>
-		<hr> <!--  angle of scene------>
+		<!--<hr>   angle of scene------>
 		<p>
 		<!-- Make a 'div' element to hold changeable HTML made in our JavaScript file;
 			 (where? look inside main(), inside its 'tick()' function, where we
 			 display the 'current angle' value.
 		-->
 		<b>Press "J", "L", "I", "K" to control the camera direction! </b>
+		
 		<b>“↑” Go forward, “↓” go backward, “←” strafe left, “→” strafe right.</b>
+		<br>
+		<b> Or try to press "C" to play as the CLOUD! </b>
 		<hr> <!--  angle of scene------>
 		<b>Type in different angle to see the scene! </b> -- 0 for reset
 		<div id= CurAngleDisplay></div> 
@@ -38,11 +41,8 @@
 		<b>Try press "B" to give him a bone!</b> 
 		<br>
 		Current Quaternion: w + xi + yj + zk where (i,j,k) are 3-way imaginary numbers:
-		<div id=QuatValue>  X=0i, Y=0j, Z=0k, W=1. <br> length=1. </div>
-		<button type="button" onClick="resetQuat()">Reset</button>
-
-		<br>
-		Telling the dog to sit or run by pressing button below!
+		<div id=QuatValue>  X=0i, Y=0j, Z=0k, W=1.  length=1. <button type="button" onClick="resetQuat()">Reset</button></div>
+		Telling the dog to sit or run by pressing "Sit/Run" button!
 		
 			<!--BUTTONS: commands below create HTML push-buttons with labels
 				Spin <<, runStop, and Spin >>.  
@@ -53,26 +53,11 @@
 		  <button type="button" onclick="spinUp()">Spin >> </button> -->
 		  
 		  <button type="button" onclick="runStop()">Sit/Run</button>
-		
-	<hr> <!-- Cloud --->
-		<b>Try press "C" to play as the CLOUD!</b> 
-			<!--BUTTONS: commands below create HTML push-buttons with labels
-				Spin <<, runStop, and Spin >>.  
-			When users click the button, HTML calls JavaScript functions
-				"spinDown()", "runStop()" and "spinUp()"   
-		  <button type="button" onclick="spinDown()">Spin << </button>
-		  
-		  <button type="button" onclick="spinUp()">Spin >> </button> -->
-		  
-		  <!--<button type="button" onclick="change()">Be a cloud!</button>-->
-		
-	
-
-
-	<hr> <!-- Draw a horizontal-line separator------------->
+		<br>
+	<!-- Draw a horizontal-line separator------------->
 		<b>
-		Try dragging the screen or press "W", "A", "S", and"D"!
-		</b>
+		Try dragging the screen or press "W", "A", "S", or "D"! 
+		</b>    When the bone is far away above his head, he will get upset and start walking slowly :(
 		
 		<br> Try keyboard & mouse click/drag inside the canvas, and:
 			<br>
@@ -85,7 +70,7 @@
 				whose sole purpose is to set global vars xMdragTot,yMdragTot ==0.0
 			  Note we use these totals to rotate the triangle at upper left.
 		-->
-			<b> Press "W" longer to let the bone far away from him!</b>
+
         <!--
         <p> 
             <input type = "button" id = "A0button" onclick = "A0_runStop()" value = "Angle 0 ON">
