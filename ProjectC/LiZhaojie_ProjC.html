@@ -16,7 +16,9 @@
 			 (where? look inside main(), inside its 'tick()' function, where we
 			 display the 'current angle' value.
 		-->
-		
+		<b>Press "J", "L", "I", "K" to control the camera direction! </b>
+		<b>“↑” Go forward, “↓” go backward, “←” strafe left, “→” strafe right.</b>
+		<hr> <!--  angle of scene------>
 		<b>Type in different angle to see the scene! </b> -- 0 for reset
 		<div id= CurAngleDisplay></div> 
 		
@@ -34,7 +36,7 @@
 		</p>
 		
 	<hr> <!-- petting --->
-		<b>Try press "B" and find what will happen!</b> 
+		<b>Try press "B" to give him a bone!</b> 
 		<br>
 		Current Quaternion: w + xi + yj + zk where (i,j,k) are 3-way imaginary numbers:
 		<div id=QuatValue>  X=0i, Y=0j, Z=0k, W=1. <br> length=1. </div>
@@ -81,21 +83,14 @@
 			<span id='KeyDownResult'  > KeyDown:    </span> <!-- myKeyDown() modifies this span object -->		
 			<br>
 			<span id='KeyModResult'   > KeyMod :<br><br>   </span> <!-- myKeyDown() modifies this span object -->
-			<br>
-			<span id='MouseAtResult'  >   Mouse At: </span> <!-- myMouseMove() modifies this span object -->
-			<br>
-			<span id='MouseDragResult'> Mouse Drag: </span> <!-- myMouseUp() modifies this span object -->
-		<br>
+			
 		
 		<!--  Mouse click/drag amounts.  Look in 'console' for event reports;
 				the 'clear' button calls Javascript function 'clearDrag()'
 				whose sole purpose is to set global vars xMdragTot,yMdragTot ==0.0
 			  Note we use these totals to rotate the triangle at upper left.
 		-->
-			<div id='Mouse'> Mouse Drag totals (CVV coords) </div>
-				<button type="button" onClick='clearDrag()'>Clear</button>
-			<br>
-			<b> What's happenning if you press "W" longer?</b>
+			<b> Press "W" longer to let the bone far away from him!</b>
         <!--
         <p> 
             <input type = "button" id = "A0button" onclick = "A0_runStop()" value = "Angle 0 ON">
@@ -110,5 +105,8 @@
         <script src="lib/cuon-utils.js"></script>
 		<script src="lib/cuon-matrix-quat03.js"></script>
         <script src="LiZhaojie_ProjC.js"></script>
+		<script src="JT_VBObox-Lib.js"></script>
+		<script src="lights-JT.js"></script>
+		<script src="materials_Ayerdi.js"></script>
     </body>
 </html>>
