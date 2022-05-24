@@ -1393,7 +1393,6 @@ function initVertexBuffers() {
         g_modelMatrix.translate(0, 1, 0);
 
         drawGrid();
-        
         drawSphere();
 
         g_modelMatrix.translate(0, 0, -1);
