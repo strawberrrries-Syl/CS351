@@ -162,6 +162,7 @@ var fthigh_S, fthigh_C, bthigh_S, bthigh_C;
 var fcalf_S, fcalf_C, bcalf_S, bcalf_C;
 var paw_S, paw_C, tail_S, tail_C;
 var cloud_C, cloud_S;
+var sphere_C, sphere_S;
 
 // Cameras:
 var eye_x = 0, eye_y = -4, eye_z = 3;
@@ -444,6 +445,15 @@ function initVertexBuffers() {
     );
     curr_v.clear;
 
+    curr_v = sphereV();
+    sphere_S = v_ans.length / 7;
+    sphere_C = curr_v.length / 7;
+    
+    v_ans = Array.prototype.concat.call(
+        v_ans, curr_v,
+    );
+    curr_v.clear;
+
 
     var vertices = new Float32Array(v_ans);
     // create a buffer in GPU, its ID is vertexBufferID
@@ -473,6 +483,54 @@ function initVertexBuffers() {
 
 // vertices & draw function
 {
+    function sphereV() {
+        var ans_ver;
+        var d1 = 0, d2 = 0; // d1-degree to y, d2-degree to x
+        var step = 36;
+        var offset = Math.PI * 2 / step;
+        //console.log("new");
+        while(d1 <= Math.PI)
+        {
+            
+            while(d2 <= Math.PI * 2)
+            {
+                //console.log(d1, d2);
+                var p1 = [Math.sin(d1)*Math.cos(d2), Math.cos(d1), Math.sin(d1)*Math.sin(d2), 1.0, 153/255, 153/255, 255/255,];
+                var p2 = [Math.sin(d1+offset)*Math.cos(d2), Math.cos(d1+offset), Math.sin(d1+offset)*Math.sin(d2), 1.0,  153/255, 153/255, 255/255,];
+                var p3 = [Math.sin(d1+offset)*Math.cos(d2+offset), Math.cos(d1+offset), Math.sin(d1+offset)*Math.sin(d2+offset), 1.0, 153/255, 153/255, 255/255,];
+                var p4 = [Math.sin(d1)*Math.cos(d2+offset), Math.cos(d1), Math.sin(d1)*Math.sin(d2+offset), 1.0,  153/255, 153/255, 255/255,];
+                
+                var curr_ver = Array.prototype.concat.call(
+                    p1, p2, p3,
+                    p1, p3, p4,
+                );
+    
+                if (ans_ver == null) {
+                    ans_ver = curr_ver;
+                }
+                else {
+                    ans_ver = Array.prototype.concat.call(ans_ver, curr_ver);
+                }
+                d2 = d2 + offset;
+            }
+            d1 = d1 + offset;
+            d2 = 0;
+        }
+        return ans_ver;
+        
+    }
+
+    function drawSphere() {
+        pushMatrix(g_modelMatrix);
+            g_modelMatrix.translate(0, -1, 0);	
+            g_modelMatrix.scale(0.4, 0.4, 0.4);	
+            
+            gl.uniformMatrix4fv(uLoc_modelMatrix, false, g_modelMatrix.elements);
+            gl.drawArrays(gl.TRIANGLES, sphere_S, sphere_C);	// draw all vertices.
+        g_modelMatrix = popMatrix();
+        return 0;
+    }
+
     // loop's vertices
     function loopV() {
         var ans_ver;
@@ -1314,7 +1372,7 @@ function initVertexBuffers() {
         a_z = (target_z - cloud_z) / 1000;
         return 0;
     }
-
+}
 
     function drawThings() {
         pushMatrix(g_modelMatrix);
@@ -1330,13 +1388,18 @@ function initVertexBuffers() {
         g_modelMatrix = popMatrix();
         }
         
-
+        
         
         pushMatrix(g_modelMatrix);
 
         g_modelMatrix.translate(0, 1, 0);
 
         drawGrid();
+        
+        drawSphere();
+
+        g_modelMatrix.translate(0, 0, -1);
+
         // loop
         {
         pushMatrix(g_modelMatrix);
@@ -1431,7 +1494,7 @@ function initVertexBuffers() {
         g_modelMatrix = popMatrix();
         return 0;
     }
-}
+
 
 // calculation functions
 {
@@ -1464,10 +1527,10 @@ function drawAll() {
 
     gl.viewport(0,											// Viewport lower-left corner
 				0, 			// location(in pixels)
-                g_canvasID.width/2, 				// viewport width,
+                g_canvasID.width, 				// viewport width,
                 g_canvasID.height);			// viewport height in pixels.
 
-    var vpAspect = g_canvasID.width/2 /			// On-screen aspect ratio for
+    var vpAspect = g_canvasID.width /			// On-screen aspect ratio for
                     (g_canvasID.height);	// this camera: width/height.
 
     pushMatrix(g_modelMatrix);
@@ -1488,7 +1551,7 @@ function drawAll() {
             
     if(cloudView)
     {
-        g_modelMatrix.perspective(  35.0,
+        g_modelMatrix.perspective(  30.0,
             vpAspect,
             0.1,              // near
             far);        // far
@@ -1501,7 +1564,7 @@ function drawAll() {
     }
     else {
 
-        g_modelMatrix.perspective(  35.0,
+        g_modelMatrix.perspective(  30.0,
             vpAspect,
             near,              // near
             far);        // far
@@ -1522,35 +1585,35 @@ function drawAll() {
 
 
 
-    gl.viewport(g_canvasID.width/2,											// Viewport lower-left corner
-				0, 			// location(in pixels)
-                g_canvasID.width/2, 				// viewport width,
-                g_canvasID.height);			// viewport height in pixels.
+    // gl.viewport(g_canvasID.width/2,											// Viewport lower-left corner
+	// 			0, 			// location(in pixels)
+    //             g_canvasID.width/2, 				// viewport width,
+    //             g_canvasID.height);			// viewport height in pixels.
 
-    // ----- viewport2 ------
-    pushMatrix(g_modelMatrix);
-    //var sca = g_canvasID.height / 400;
+    // // ----- viewport2 ------
+    // pushMatrix(g_modelMatrix);
+    // //var sca = g_canvasID.height / 400;
     
     
 
     
 
-    g_modelMatrix.ortho(    -wid * vpAspect + orthox,   // left
-                            wid *vpAspect + orthox,   // right
-                            -wid,          // bottom
-                            wid,     // top
-                            near,          // near
-                            far);         //far
+    // g_modelMatrix.ortho(    -wid * vpAspect + orthox,   // left
+    //                         wid *vpAspect + orthox,   // right
+    //                         -wid,          // bottom
+    //                         wid,     // top
+    //                         near,          // near
+    //                         far);         //far
 
 
-    g_modelMatrix.lookAt(   eye_x, eye_y, eye_z,	// center of projection
-                            la_x, la_y, la_z,	// look-at point 
-                            0.0, 0.0, 1.0);	// View UP vector.
+    // g_modelMatrix.lookAt(   eye_x, eye_y, eye_z,	// center of projection
+    //                         la_x, la_y, la_z,	// look-at point 
+    //                         0.0, 0.0, 1.0);	// View UP vector.
 
-    // ---------------------------------
-    drawThings();
+    // // ---------------------------------
+    // drawThings();
     
-    g_modelMatrix = popMatrix();
+    // g_modelMatrix = popMatrix();
 
 
 
