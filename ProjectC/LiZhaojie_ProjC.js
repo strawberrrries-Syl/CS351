@@ -42,7 +42,7 @@ var g_lastMS = Date.now();    			// Timestamp for most-recently-drawn image;
 // elapsed since last on-screen image.
 // used for turning whole scene.
 var g_angle01 = 0;                  // initial rotation angle
-var g_angle01Rate = 45.0;           // rotation speed, in degrees/second 
+
 //------------For mouse click-and-drag: -------------------------------
 var g_isDrag = false;		// mouse-drag: true when user holds down mouse button
 var g_xMclik = 0.0;			// last mouse button-down position (in CVV coords)
@@ -56,7 +56,6 @@ var a_x = 0, a_y = 0, a_z = 0;
 var target_x, target_y, target_z;
 var bf_target_x, bf_target_y;
 
-//    console.log('xVal:', xVal.toFixed(g_digits)); // print 5 digits
 var g_xKmove = 0.0;	// total (accumulated) keyboard-drag amounts (in CVV coords).
 var g_yKmove = 0.0;
 // All of our time-dependent params (you can add more!)
@@ -73,32 +72,27 @@ var keyPressed;                 //
 // left front leg                                //---------------
 var g_angle0now = 0.0;       // init Current rotation angle, in degrees
 var g_angle0rate = 0.0;       // init Rotation angle rate, in degrees/second.
-var g_angle0brake = 1.0;				// init Speed control; 0=stop, 1=full speed.
 var g_angle0min = 0.0;       // init min, max allowed angle, in degrees.
 var g_angle0max = 0.0;
 // right front leg                                //---------------
 var g_angle1now = 0.0; 			// init Current rotation angle, in degrees > 0
 var g_angle1rate = 0.0;				// init Rotation angle rate, in degrees/second.
-var g_angle1brake = 1.0;				// init Rotation start/stop. 0=stop, 1=full speed.
 var g_angle1min = 0.0;       // init min, max allowed angle, in degrees
 var g_angle1max = 0.0;
 // left back leg                                 //---------------
 var g_angle2now = -60; 			// init Current rotation angle, in degrees.
 var g_angle2rate = 0.0;				// init Rotation angle rate, in degrees/second.
-var g_angle2brake = 1.0;				// init Speed control; 0=stop, 1=full speed.
 var g_angle2min = 0.0;       // init min, max allowed angle, in degrees
 var g_angle2max = 0.0;
 // right back leg
 var g_angle3now = -60; 			// init Current rotation angle, in degrees.
 var g_angle3rate = 0.0;				// init Rotation angle rate, in degrees/second.
-var g_angle3brake = 1.0;				// init Speed control; 0=stop, 1=full speed.
 var g_angle3min = 0.0;       // init min, max allowed angle, in degrees
 var g_angle3max = 0.0;
 
 // loop                                 //---------------
 var g_angle4now = 0.0;       // init Current rotation angle, in degrees
 var g_angle4rate = 0.0;       // init Rotation angle rate, in degrees/second.
-var g_angle4brake = 1.0;				// init Speed control; 0=stop, 1=full speed.
 var g_angle4min = -360.0;       // init min, max allowed angle, in degrees.
 var g_angle4max = 360.0;
 // YOU can add more time-varying params of your own here -- try it!
@@ -145,6 +139,12 @@ var g_angle11rate = 10;				// init Rotation angle rate, in degrees/second.
 var g_angle11min = -40;       // init min, max allowed angle, in degrees
 var g_angle11max = 40;
 
+// sphere
+var g_angle12now = 0; 			// init Current rotation angle, in degrees.
+var g_angle12rate = 20;				// init Rotation angle rate, in degrees/second.
+var g_angle12min = -180;       // init min, max allowed angle, in degrees
+var g_angle12max = 180;
+
 
 // body position --> for reseting sit/walk dog's gesture
 var g_anglebody = -50; 			// init Current rotation angle, in degrees.
@@ -156,13 +156,11 @@ var g_tail = -0.2;
 // rigid objects' starting position and length.
 var loop_S, loop_C, grid_S, grid_C;
 var cube_S, cube_C, axis_S, axis_C;
-var head_S, head_C;
-var body_S, body_C;
+var head_S, head_C, body_S, body_C;
 var fthigh_S, fthigh_C, bthigh_S, bthigh_C;
 var fcalf_S, fcalf_C, bcalf_S, bcalf_C;
 var paw_S, paw_C, tail_S, tail_C;
-var cloud_C, cloud_S;
-var sphere_C, sphere_S;
+var cloud_C, cloud_S, sphere_C, sphere_S;
 
 // Cameras:
 var eye_x = 0, eye_y = -4, eye_z = 3;
@@ -176,7 +174,7 @@ var orthox = 0, orthoy = 0, orthoz = 0;
 //90 * Math.PI / 180, sphere_gamma = -53 * Math.PI / 180;
 
 
-var inst_x, nst_y, inst_z;
+var inst_x, inst_y, inst_z;
 var newdirx =1, newdiry = 0, newdirz = -1;
 
 
@@ -330,7 +328,6 @@ function timerAll() {
     [g_angle2now, g_angle2rate] = rotateNow(g_angle2now, g_angle2rate, 1, elapsedMS, g_angle2min, g_angle2max);
     [g_angle3now, g_angle3rate] = rotateNow(g_angle3now, g_angle3rate, 1, elapsedMS, g_angle3min, g_angle3max);
     // loop
-    //[g_angle4now, g_angle4rate] = rotateNow(g_angle4now, g_angle4rate, g_angle4brake, elapsedMS, g_angle4min, g_angle4max);
     g_angle4now += g_angle4rate * elapsedMS * 0.001;
     // calves
     [g_angle5now, g_angle5rate] = rotateNow(g_angle5now, g_angle5rate, 1, elapsedMS, g_angle5min, g_angle5max);
@@ -341,6 +338,7 @@ function timerAll() {
     [g_angle9now, g_angle9rate] = rotateNow(g_angle9now, g_angle9rate, 1, elapsedMS, g_angle9min, g_angle9max);
     [g_angle10now, g_angle10rate] = rotateNow(g_angle10now, g_angle10rate, 1, elapsedMS, g_angle10min, g_angle10max);
     [g_angle11now, g_angle11rate] = rotateNow(g_angle11now, g_angle11rate, 1, elapsedMS, g_angle11min, g_angle11max);
+    [g_angle12now, g_angle12rate] = rotateNow(g_angle12now, g_angle12rate, 1, elapsedMS, g_angle12min, g_angle12max);
 }
 
 function initVertexBuffers() {
@@ -496,9 +494,9 @@ function initVertexBuffers() {
             {
                 //console.log(d1, d2);
                 var p1 = [Math.sin(d1)*Math.cos(d2), Math.cos(d1), Math.sin(d1)*Math.sin(d2), 1.0, 153/255, 153/255, 255/255,];
-                var p2 = [Math.sin(d1+offset)*Math.cos(d2), Math.cos(d1+offset), Math.sin(d1+offset)*Math.sin(d2), 1.0,  153/255, 153/255, 255/255,];
+                var p2 = [Math.sin(d1+offset)*Math.cos(d2), Math.cos(d1+offset), Math.sin(d1+offset)*Math.sin(d2), 1.0,  204/255, 204/255, 255/255,];
                 var p3 = [Math.sin(d1+offset)*Math.cos(d2+offset), Math.cos(d1+offset), Math.sin(d1+offset)*Math.sin(d2+offset), 1.0, 153/255, 153/255, 255/255,];
-                var p4 = [Math.sin(d1)*Math.cos(d2+offset), Math.cos(d1), Math.sin(d1)*Math.sin(d2+offset), 1.0,  153/255, 153/255, 255/255,];
+                var p4 = [Math.sin(d1)*Math.cos(d2+offset), Math.cos(d1), Math.sin(d1)*Math.sin(d2+offset), 1.0,  204/255, 204/255, 255/255,];
                 
                 var curr_ver = Array.prototype.concat.call(
                     p1, p2, p3,
@@ -524,7 +522,7 @@ function initVertexBuffers() {
         pushMatrix(g_modelMatrix);
             g_modelMatrix.translate(0, -1, 0);	
             g_modelMatrix.scale(0.4, 0.4, 0.4);	
-            
+            g_modelMatrix.rotate(g_angle12now, 0, 1, 0);
             gl.uniformMatrix4fv(uLoc_modelMatrix, false, g_modelMatrix.elements);
             gl.drawArrays(gl.TRIANGLES, sphere_S, sphere_C);	// draw all vertices.
         g_modelMatrix = popMatrix();
@@ -1659,18 +1657,6 @@ function drawAll() {
                                                                 '<br>length='+qTot.length().toFixed(res);
     }
 
-    function spinUp() {
-        // Called when user presses the 'Spin >>' button on our webpage.
-        // ?HOW? Look in the HTML file (e.g. ControlMulti.html) to find
-        // the HTML 'button' element with onclick='spinUp()'.
-        g_angle01Rate += 25;
-    }
-    
-    function spinDown() {
-        // Called when user presses the 'Spin <<' button
-        g_angle01Rate -= 25;
-    }
-    
     function runForBone() {
 
 
@@ -1843,14 +1829,6 @@ function drawAll() {
             sit();
         }
     
-    
-        if (g_angle01Rate * g_angle01Rate > 1) {  // if nonzero rate,
-            myTmp = g_angle01Rate;  // store the current rate,
-            g_angle01Rate = 0;      // and set to zero.
-        }
-        else {    // but if rate is zero,
-            g_angle01Rate = myTmp;  // use the stored rate.
-        }
     }
 
     function change() {
@@ -1863,15 +1841,6 @@ function drawAll() {
             runForBone();
         } else if (SW == 0) {                   // sit
             sit();
-        }
-    
-    
-        if (g_angle01Rate * g_angle01Rate > 1) {  // if nonzero rate,
-            myTmp = g_angle01Rate;  // store the current rate,
-            g_angle01Rate = 0;      // and set to zero.
-        }
-        else {    // but if rate is zero,
-            g_angle01Rate = myTmp;  // use the stored rate.
         }
     }
     
