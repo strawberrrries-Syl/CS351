@@ -38,10 +38,9 @@
 					<option selected = "selected", value = "bp_L"> Blinn-Phong</option>
 				</select>
 		
+		<hr><b>Lights:</b>
 
-		<br> <b>Lights:</b>
-
-		<br> Directional Light:
+		<br> <b>Directional Light:</b>
 			<select name = "directL">
 				<option selected = "selected", value = "dx"> OFF</option>
 				<option selected = "selected", value = "do"> ON</option>
@@ -50,9 +49,9 @@
 			Color: 	R<input type = "range" id = "dR" value = "1" min = "0" max = "1" step = "0.05" onchange = "dr.value=this.value"/>
 					<output id = "dr" for="dR"></output>
 					G<input type = "range" id = "dG" value = "1" min = "0" max = "1" step = "0.05" onchange = "dg.value=this.value"/>
-					<output id = "dg" for="dR"></output>
+					<output id = "dg" for="dG"></output>
 					B<input type = "range" id = "dB" value = "1" min = "0" max = "1" step = "0.05" onchange = "db.value=this.value"/>
-					<output id = "db" for="dR"></output>
+					<output id = "db" for="dB"></output>
 
 			Direction(degree): 
 					Up/Down<input type = "range" id = "dup" value = "0" min = "-60" max = "60" step = "10" onchange = "du.value=this.value"/>
@@ -61,26 +60,32 @@
 					<output id = "dd" for="dR"></output>
 
 
-		<br> Point Light
+		<br> <b>Point Light</b>
 			<select name = "directL">
 				<option selected = "selected", value = "px"> OFF</option>
 				<option selected = "selected", value = "po"> ON</option>
-				
 			</select>
-			Color: 	R<input type = "range" id = "pR" value = "1" min = "0" max = "1" step = "0.05" onchange = "pr.value=this.value"/>
+			Color: 	
+			R<input type = "range" id = "pR" value = "1" min = "0" max = "1" step = "0.05" onchange = "pr.value=this.value"/>
 					<output id = "pr" for="pR"></output>
 					G<input type = "range" id = "pG" value = "1" min = "0" max = "1" step = "0.05" onchange = "pg.value=this.value"/>
-					<output id = "pg" for="pR"></output>
+					<output id = "pg" for="pG"></output>
 					B<input type = "range" id = "pB" value = "1" min = "0" max = "1" step = "0.05" onchange = "pb.value=this.value"/>
-					<output id = "pb" for="pR"></output>
-
-			Direction(degree): 
+					<output id = "pb" for="pB"></output>
+			
+			Direct: 
 					Up/Down<input type = "range" id = "pup" value = "0" min = "-60" max = "60" step = "10" onchange = "pu.value=this.value"/>
-					<output id = "pu" for="pR"></output>
+					<output id = "pu" for="pup"></output>
 					Left/Right<input type = "range" id = "pdown" value = "0" min = "-60" max = "60" step = "10" onchange = "pd.value=this.value"/>
-					<output id = "pd" for="pR"></output>
+					<output id = "pd" for="pdown"></output>
+			<br>
+			Pos: 
+					Up/Down<input type = "range" id = "pMup" value = "0" min = "-4" max = "4" step = "0.1" onchange = "pMu.value=this.value"/>
+					<output id = "pMu" for="pMup"></output>
+					Left/Right<input type = "range" id = "pMdown" value = "0" min = "-4" max = "4" step = "0.1" onchange = "pMd.value=this.value"/>
+					<output id = "pMd" for="pMdown"></output>
 
-		<br> Ambient Light
+		<br> <b>Ambient Light</b>>
 			<select name = "directL">
 				<option selected = "selected", value = "ax"> OFF</option>
 				<option selected = "selected", value = "ao"> ON</option>
@@ -89,12 +94,12 @@
 			Color: 	R<input type = "range" id = "aR" value = "1" min = "0" max = "1" step = "0.05" onchange = "ar.value=this.value"/>
 					<output id = "ar" for="aR"></output>
 					G<input type = "range" id = "aG" value = "1" min = "0" max = "1" step = "0.05" onchange = "ag.value=this.value"/>
-					<output id = "ag" for="aR"></output>
+					<output id = "ag" for="aG"></output>
 					B<input type = "range" id = "aB" value = "1" min = "0" max = "1" step = "0.05" onchange = "ab.value=this.value"/>
-					<output id = "ab" for="aR"></output>
+					<output id = "ab" for="aB"></output>
 		
 
-		<br> <b> Material:</b>
+		<hr> <b> Material:</b>
 		<br>
 			Sphere: <select name = "sphereM">
 						<option selected = "selected", value = "1"> Plastic</option>
