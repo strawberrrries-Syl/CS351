@@ -283,16 +283,7 @@ function main() {
 }
 
 function drawResize() {
-    //==============================================================================
-    // Called when user re-sizes their browser window , because our HTML file
-    // contains:  <body onload="main()" onresize="winResize()">
-    
-        //Report our current browser-window contents:
-    
-        // console.log('g_canvasID width,height=', g_canvasID.width, g_canvasID.height);		
-        // console.log('Browser window: innerWidth,innerHeight=', 
-        //                                                             innerWidth, innerHeight);	
-                                                                    // http://www.w3schools.com/jsref/obj_window.asp
+
         //Make canvas fill the top 3/4 of our browser window:
         var xtraMargin = 16;    // keep a margin (otherwise, browser adds scroll-bars)
         g_canvasID.width = innerWidth - xtraMargin;
@@ -300,7 +291,7 @@ function drawResize() {
         //g_canvasID.width = g_canvasID.height;
 
         drawAll();
-    }
+}
 
 function rotateNow(anglenow, anglerate, anglebreak, elapsedtime, min, max) {
     anglenow += anglerate * anglebreak * elapsedtime * 0.001;
@@ -1329,7 +1320,7 @@ function initVertexBuffers() {
         pushMatrix(g_modelMatrix);
 
         g_modelMatrix.rotate(90, 1, 0, 0);
-        g_modelMatrix.rotate(g_angle01, 1, 1, 1);
+        // g_modelMatrix.rotate(g_angle01, 1, 1, 1);
         // Axis
         {
         pushMatrix(g_modelMatrix);
@@ -1524,8 +1515,7 @@ function drawAll() {
 
                             // orth (left, right, bottom, top, near, far). A square
                             // perspective (fov, aspect, near, far)
-    
-    // g_modelMatrix.rotate(g_angle01, 1, 1, 1);
+                            
     // ---------------------------------
     drawThings();
     g_modelMatrix = popMatrix();
@@ -1557,10 +1547,6 @@ function drawAll() {
                             la_x, la_y, la_z,	// look-at point 
                             0.0, 0.0, 1.0);	// View UP vector.
 
-    
-
-
-    //g_modelMatrix.rotate(g_angle01, 1, 1, 1);
     // ---------------------------------
     drawThings();
     
@@ -1848,7 +1834,7 @@ function drawAll() {
         var y = (yp - g_canvasID.height / 2) /		//										 -1 <= y < +1.
             (g_canvasID.height / 2);
         //	console.log('myMouseDown(CVV coords  ):  x, y=\t',x,',\t',y);
-    
+        
         g_isDrag = true;											// set our mouse-dragging flag
         g_xMclik = x;													// record where mouse-dragging began
         g_yMclik = y;

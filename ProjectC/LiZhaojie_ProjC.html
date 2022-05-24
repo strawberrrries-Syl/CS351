@@ -20,24 +20,133 @@
 		<b>“↑” Go forward, “↓” go backward, “←” strafe left, “→” strafe right.</b>
 		<br>
 		<b> Or try to press "C" to play as the CLOUD! </b>
-		<hr> <!--  angle of scene------>
+
+				<!--- camera light --->
+		<hr><b>Lighting/Shading Methods: </b>
+		<br>
+			Shading Method: 
+
+				<select name = "ShadeM">
+					<option selected = "selected", value = "g_S"> Gouraud</option>
+					<option selected = "selected", value = "p_S"> Phong</option>
+				</select>
+
+
+			Lighting Method: 
+				<select name = "LightM">
+					<option selected = "selected", value = "p_L"> Phong</option>
+					<option selected = "selected", value = "bp_L"> Blinn-Phong</option>
+				</select>
+		
+
+		<br> <b>Lights:</b>
+
+		<br> Directional Light:
+			<select name = "directL">
+				<option selected = "selected", value = "dx"> OFF</option>
+				<option selected = "selected", value = "do"> ON</option>
+				
+			</select>
+			Color: 	R<input type = "range" id = "dR" value = "1" min = "0" max = "1" step = "0.05" onchange = "dr.value=this.value"/>
+					<output id = "dr" for="dR"></output>
+					G<input type = "range" id = "dG" value = "1" min = "0" max = "1" step = "0.05" onchange = "dg.value=this.value"/>
+					<output id = "dg" for="dR"></output>
+					B<input type = "range" id = "dB" value = "1" min = "0" max = "1" step = "0.05" onchange = "db.value=this.value"/>
+					<output id = "db" for="dR"></output>
+
+			Direction(degree): 
+					Up/Down<input type = "range" id = "dup" value = "0" min = "-60" max = "60" step = "10" onchange = "du.value=this.value"/>
+					<output id = "du" for="dR"></output>
+					Left/Right<input type = "range" id = "ddown" value = "0" min = "-60" max = "60" step = "10" onchange = "dd.value=this.value"/>
+					<output id = "dd" for="dR"></output>
+
+
+		<br> Point Light
+			<select name = "directL">
+				<option selected = "selected", value = "px"> OFF</option>
+				<option selected = "selected", value = "po"> ON</option>
+				
+			</select>
+			Color: 	R<input type = "range" id = "pR" value = "1" min = "0" max = "1" step = "0.05" onchange = "pr.value=this.value"/>
+					<output id = "pr" for="pR"></output>
+					G<input type = "range" id = "pG" value = "1" min = "0" max = "1" step = "0.05" onchange = "pg.value=this.value"/>
+					<output id = "pg" for="pR"></output>
+					B<input type = "range" id = "pB" value = "1" min = "0" max = "1" step = "0.05" onchange = "pb.value=this.value"/>
+					<output id = "pb" for="pR"></output>
+
+			Direction(degree): 
+					Up/Down<input type = "range" id = "pup" value = "0" min = "-60" max = "60" step = "10" onchange = "pu.value=this.value"/>
+					<output id = "pu" for="pR"></output>
+					Left/Right<input type = "range" id = "pdown" value = "0" min = "-60" max = "60" step = "10" onchange = "pd.value=this.value"/>
+					<output id = "pd" for="pR"></output>
+
+		<br> Ambient Light
+			<select name = "directL">
+				<option selected = "selected", value = "ax"> OFF</option>
+				<option selected = "selected", value = "ao"> ON</option>
+				
+			</select>
+			Color: 	R<input type = "range" id = "aR" value = "1" min = "0" max = "1" step = "0.05" onchange = "ar.value=this.value"/>
+					<output id = "ar" for="aR"></output>
+					G<input type = "range" id = "aG" value = "1" min = "0" max = "1" step = "0.05" onchange = "ag.value=this.value"/>
+					<output id = "ag" for="aR"></output>
+					B<input type = "range" id = "aB" value = "1" min = "0" max = "1" step = "0.05" onchange = "ab.value=this.value"/>
+					<output id = "ab" for="aR"></output>
+		
+
+		<br> <b> Material:</b>
+		<br>
+			Sphere: <select name = "sphereM">
+						<option selected = "selected", value = "1"> Plastic</option>
+						<option selected = "selected", value = "2"> Metal</option>
+						<option selected = "selected", value = "3"> Rough</option>
+						<option selected = "selected", value = "4"> Shiny</option>
+						<option selected = "selected", value = "5"> Default</option>
+					</select>
+		
+			Loop: 	<select name = "loopM">
+						<option selected = "selected", value = "1"> Plastic</option>
+						<option selected = "selected", value = "2"> Metal</option>
+						<option selected = "selected", value = "3"> Rough</option>
+						<option selected = "selected", value = "4"> Shiny</option>
+						<option selected = "selected", value = "5"> Default</option>
+					</select>
+			Bone: 	<select name = "boneM">
+						<option selected = "selected", value = "1"> Plastic</option>
+						<option selected = "selected", value = "2"> Metal</option>
+						<option selected = "selected", value = "3"> Rough</option>
+						<option selected = "selected", value = "4"> Shiny</option>
+						<option selected = "selected", value = "5"> Default</option>
+					</select>
+			Cloud: 	<select name = "cloudM">
+						<option selected = "selected", value = "1"> Plastic</option>
+						<option selected = "selected", value = "2"> Metal</option>
+						<option selected = "selected", value = "3"> Rough</option>
+						<option selected = "selected", value = "4"> Shiny</option>
+						<option selected = "selected", value = "5"> Default</option>
+					</select>
+			Dog: 	<select name = "dogM">
+						<option selected = "selected", value = "1"> Plastic</option>
+						<option selected = "selected", value = "2"> Metal</option>
+						<option selected = "selected", value = "3"> Rough</option>
+						<option selected = "selected", value = "4"> Shiny</option>
+						<option selected = "selected", value = "5"> Default</option>
+					</select>
+
+
+
+<!--  angle of scene------>
+		<hr> 
 		<b>Type in different angle to see the scene! </b> -- 0 for reset
 		<div id= CurAngleDisplay></div> 
 		
-		
-		<!-- Next, make a simple block of text 
-		-->
 		New Current Angle (-180 < x < +180 deg): 
-		<!-- Next, make an HTML 'input' box element, a text-box 10 chars wide where users
-			can type in text.  Give it an ID name so that our JavaScript program
-			(e.g. ControlMulti.js, loaded near the end of this file) can access this
-			HTML element by name in the 'tick' function.
-		--><input id='usrAngle' size=10> 
+		<input id='usrAngle' size=10> 
 			<button type="button" onClick='angleSubmit()'>Submit</button><BR> 
 			<div id= EditBoxOut></div>
 		</p>
 		
-	<hr> <!-- petting --->
+	<hr> <!-- petting -- Interaction with the dog --->
 		<b>Try press "B" to give him a bone!</b> 
 		<br>
 		Current Quaternion: w + xi + yj + zk where (i,j,k) are 3-way imaginary numbers:
@@ -59,25 +168,18 @@
 		Try dragging the screen or press "W", "A", "S", or "D"! 
 		</b>    When the bone is far away above his head, he will get upset and start walking slowly :(
 		
-		<br> Try keyboard & mouse click/drag inside the canvas, and:
+		
 			<br>
 			<span id='KeyDownResult'  > KeyDown:    </span> <!-- myKeyDown() modifies this span object -->		
 			<br>
 			<span id='KeyModResult'   > KeyMod :<br><br>   </span> <!-- myKeyDown() modifies this span object -->
-			<br>
 			<span id='MouseAtResult'  >   Mouse At: </span> <!-- myMouseMove() modifies this span object -->
 			<br>
 			<span id='MouseDragResult'> Mouse Drag: </span> <!-- myMouseUp() modifies this span object -->
 		<br>
-		
-		<!--  Mouse click/drag amounts.  Look in 'console' for event reports;
-				the 'clear' button calls Javascript function 'clearDrag()'
-				whose sole purpose is to set global vars xMdragTot,yMdragTot ==0.0
-			  Note we use these totals to rotate the triangle at upper left.
-		-->
 		<div id='Mouse'> Mouse Drag totals (CVV coords) </div>
 		<button type="button" onClick='clearDrag()'>Clear</button>
-	<br>
+
 
         <!--
         <p> 
@@ -93,8 +195,8 @@
         <script src="lib/cuon-utils.js"></script>
 		<script src="lib/cuon-matrix-quat03.js"></script>
         <script src="LiZhaojie_ProjC.js"></script>
-		<script src="JT_VBObox-Lib.js"></script>
-		<script src="lights-JT.js"></script>
-		<script src="materials_Ayerdi.js"></script>
+		<script src="lib/JT_VBObox-Lib.js"></script>
+		<script src="lib/lights-JT.js"></script>
+		<script src="lib/materials_Ayerdi.js"></script>
     </body>
-</html>>
+</html>
