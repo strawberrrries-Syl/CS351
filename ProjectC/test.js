@@ -87,7 +87,6 @@ var FSHADER_SOURCE2 =
   													// NEVER change per-vertex: I use 'uniform' values
     'varying vec4 v_Color;\n' +
 
-
     'void main() {\n' +
     '  gl_FragColor = v_Color;\n' +
 
@@ -137,7 +136,7 @@ var matlSel= MATL_RED_PLASTIC;				// see keypress(): 'm' key changes matlSel
 var matl0 = new Material(matlSel);	
 
 
-
+var shaderLoc0, shaderLoc1, shaderLoc2, shaderLoc3, shaderLoc4;
 
 // quaternion
 var qNew = new Quaternion(0,0,0,1); // most-recent mouse drag's rotation
@@ -186,13 +185,8 @@ var sphere_theta = 0, sphere_gamma = -37 * Math.PI / 180;
 var near = 1, far = 15;
 var wid;
 var orthox = 0, orthoy = 0, orthoz = 0;
-//90 * Math.PI / 180, sphere_gamma = -53 * Math.PI / 180;
-
-
 var inst_x, inst_y, inst_z;
 var newdirx =1, newdiry = 0, newdirz = -1;
-
-
 //// ------------------------------------
 //         global variable end
 //// ------------------------------------
@@ -210,10 +204,17 @@ function main() {
     var VSHADER_SOURCE = VSHADER_SOURCE2;
     var FSHADER_SOURCE = FSHADER_SOURCE2;
 
-    if (!initShaders(gl, VSHADER_SOURCE, FSHADER_SOURCE)) {
-        console.log('Failed to initialize shaders.');
-        return;
-    }
+    shaderLoc2 = createProgram(gl, VSHADER_SOURCE2, FSHADER_SOURCE2);
+    if (!shaderLoc2) {
+        console.log('Failed to create shaderLoc2');
+        return false;
+      }
+    
+
+    // if (!initShaders(shaderLoc2, VSHADER_SOURCE, FSHADER_SOURCE)) {
+    //     console.log('Failed to initialize shaders.');
+    //     return;
+    // }
 
     // VBO creating
     var myErr = initVertexBuffers();
@@ -258,7 +259,7 @@ function main() {
     lamp0.u_ambi = gl.getUniformLocation(gl.program, 'u_LampSet[0].ambi');
     lamp0.u_diff = gl.getUniformLocation(gl.program, 'u_LampSet[0].diff');
     lamp0.u_spec = gl.getUniformLocation(gl.program, 'u_LampSet[0].spec');
-    if( !lamp0.u_pos || !lamp0.u_ambi	|| !lamp0.u_diff || !lamp0.u_spec	) {
+    if( !lamp0.u_pos || !lamp0.u_ambi || !lamp0.u_diff || !lamp0.u_spec ) {
         console.log('Failed to get GPUs Lamp0 storage locations');
         return;
     }
@@ -268,9 +269,7 @@ function main() {
 	matl0.uLoc_Kd = gl.getUniformLocation(gl.program, 'u_MatlSet[0].diff');
 	matl0.uLoc_Ks = gl.getUniformLocation(gl.program, 'u_MatlSet[0].spec');
 	matl0.uLoc_Kshiny = gl.getUniformLocation(gl.program, 'u_MatlSet[0].shiny');
-	if(!matl0.uLoc_Ke || !matl0.uLoc_Ka || !matl0.uLoc_Kd 
-			  	  		    || !matl0.uLoc_Ks || !matl0.uLoc_Kshiny
-		 ) {
+	if(!matl0.uLoc_Ke || !matl0.uLoc_Ka || !matl0.uLoc_Kd || !matl0.uLoc_Ks || !matl0.uLoc_Kshiny ) {
 		console.log('Failed to get GPUs Reflectance storage locations');
 		return;
 	}
@@ -278,24 +277,25 @@ function main() {
 	eyePosWorld.set([eye_x, eye_y, eye_z]);
 	gl.uniform3fv(uLoc_eyePosWorld, eyePosWorld);// use it to set our uniform
 	// (Note: uniform4fv() expects 4-element float32Array as its 2nd argument)
-  // Init World-coord. position & colors of first light source in global vars;
-  lamp0.I_pos.elements.set( [6.0, 5.0, 5.0]);
-  lamp0.I_ambi.elements.set([0.4, 0.4, 0.4]);
-  lamp0.I_diff.elements.set([1.0, 1.0, 1.0]);
-  lamp0.I_spec.elements.set([1.0, 1.0, 1.0]);
-    {
-    window.addEventListener("keydown", myKeyDown, false);
-    window.addEventListener("keyup", myKeyUp, false);
-    window.addEventListener("mousedown", myMouseDown);
-    window.addEventListener("mousemove", myMouseMove);
-    window.addEventListener("mouseup", myMouseUp);
-    window.addEventListener("click", myMouseClick);
+    // Init World-coord. position & colors of first light source in global vars;
+    lamp0.I_pos.elements.set( [4, -4, 3]);
+    lamp0.I_ambi.elements.set([0.4, 0.4, 0.4]);   // color rgb
+    lamp0.I_diff.elements.set([0.4, 0.4, 0.4]);
+    lamp0.I_spec.elements.set([0.4, 0.4, 0.4]);
 
-    function calcOneThirdDis(asp, near, far) {
-        var long = (far - near) / 6 + near;
-        return 2 * long / (Math.cos(asp * Math.PI / 360)) * Math.sin(asp * 2 * Math.PI / 360);
-    }
-    wid = calcOneThirdDis(30, near, far);
+    {
+        window.addEventListener("keydown", myKeyDown, false);
+        window.addEventListener("keyup", myKeyUp, false);
+        window.addEventListener("mousedown", myMouseDown);
+        window.addEventListener("mousemove", myMouseMove);
+        window.addEventListener("mouseup", myMouseUp);
+        window.addEventListener("click", myMouseClick);
+
+        function calcOneThirdDis(asp, near, far) {
+            var long = (far - near) / 6 + near;
+            return 2 * long / (Math.cos(asp * Math.PI / 360)) * Math.sin(asp * 2 * Math.PI / 360);
+        }
+        wid = calcOneThirdDis(30, near, far);
     }
 
     var tick = function () {
@@ -377,6 +377,9 @@ function initVertexBuffers() {
         console.log('Failed to create the buffer object');
         return -1;
     }
+    gl.useProgram(shaderLoc2);
+    gl.program = shaderLoc2;	
+
     gl.bindBuffer(gl.ARRAY_BUFFER, vertexBufferID);     // bind the buffer with gl
     gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);   // store the vertices' information in buffer from gl
 

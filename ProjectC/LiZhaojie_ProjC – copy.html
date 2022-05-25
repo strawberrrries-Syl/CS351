@@ -40,7 +40,7 @@
 		
 		<hr><b>Lights:</b>
 
-		<br> <b>Directional Light:</b>
+		<br> <b>Light1:</b>
 			<select name = "directL">
 				<option selected = "selected", value = "dx"> OFF</option>
 				<option selected = "selected", value = "do"> ON</option>
@@ -71,14 +71,19 @@
 					B<input type = "range" id = "dB" value = "1" min = "0" max = "1" step = "0.05" onchange = "db.value=this.value"/>
 					<output id = "db" for="dB"></output>
 
-			Direction(degree): 
+			Direct: 
 					Up/Down<input type = "range" id = "dup" value = "0" min = "-60" max = "60" step = "10" onchange = "du.value=this.value"/>
 					<output id = "du" for="dR"></output>
 					Left/Right<input type = "range" id = "ddown" value = "0" min = "-60" max = "60" step = "10" onchange = "dd.value=this.value"/>
 					<output id = "dd" for="dR"></output>
+			Pos: 
+					Up/Down<input type = "range" id = "dMup" value = "0" min = "-4" max = "4" step = "0.1" onchange = "dMu.value=this.value"/>
+					<output id = "dMu" for="dMup"></output>
+					Left/Right<input type = "range" id = "dMdown" value = "0" min = "-4" max = "4" step = "0.1" onchange = "dMd.value=this.value"/>
+					<output id = "dMd" for="dMdown"></output>
 
 
-		<br> <b>Point Light</b>
+		<br> <b>Light2</b>
 			<select name = "pointL">
 				<option selected = "selected", value = "px"> OFF</option>
 				<option selected = "selected", value = "po"> ON</option>
