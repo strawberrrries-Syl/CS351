@@ -2,7 +2,7 @@
 <html lang = "en">
     <head>
         <meta charset = "utf-8" />
-        <title> LiZhaojie_ProjC</title>
+        <title> test</title>
     </head>
 
     <body onload="main()">
@@ -46,6 +46,24 @@
 				<option selected = "selected", value = "do"> ON</option>
 				
 			</select>
+			Ambient:
+			<select name = "directA">
+				<option selected = "selected", value = "dax"> OFF</option>
+				<option selected = "selected", value = "dao"> ON</option>
+			</select>
+
+			Diffuse:
+			<select name = "directD">
+				<option selected = "selected", value = "ddx"> OFF</option>
+				<option selected = "selected", value = "ddo"> ON</option>
+			</select>
+
+			Specular:
+			<select name = "directS">
+				<option selected = "selected", value = "dsx"> OFF</option>
+				<option selected = "selected", value = "dso"> ON</option>
+			</select>
+			<br>
 			Color: 	R<input type = "range" id = "dR" value = "1" min = "0" max = "1" step = "0.05" onchange = "dr.value=this.value"/>
 					<output id = "dr" for="dR"></output>
 					G<input type = "range" id = "dG" value = "1" min = "0" max = "1" step = "0.05" onchange = "dg.value=this.value"/>
@@ -61,10 +79,28 @@
 
 
 		<br> <b>Point Light</b>
-			<select name = "directL">
+			<select name = "pointL">
 				<option selected = "selected", value = "px"> OFF</option>
 				<option selected = "selected", value = "po"> ON</option>
 			</select>
+			Ambient:
+			<select name = "pointA">
+				<option selected = "selected", value = "pax"> OFF</option>
+				<option selected = "selected", value = "pao"> ON</option>
+			</select>
+
+			Diffuse:
+			<select name = "pointD">
+				<option selected = "selected", value = "pdx"> OFF</option>
+				<option selected = "selected", value = "pdo"> ON</option>
+			</select>
+
+			Specular:
+			<select name = "pointS">
+				<option selected = "selected", value = "psx"> OFF</option>
+				<option selected = "selected", value = "pso"> ON</option>
+			</select>
+			<br>
 			Color: 	
 			R<input type = "range" id = "pR" value = "1" min = "0" max = "1" step = "0.05" onchange = "pr.value=this.value"/>
 					<output id = "pr" for="pR"></output>
@@ -78,14 +114,14 @@
 					<output id = "pu" for="pup"></output>
 					Left/Right<input type = "range" id = "pdown" value = "0" min = "-60" max = "60" step = "10" onchange = "pd.value=this.value"/>
 					<output id = "pd" for="pdown"></output>
-			<br>
+			
 			Pos: 
 					Up/Down<input type = "range" id = "pMup" value = "0" min = "-4" max = "4" step = "0.1" onchange = "pMu.value=this.value"/>
 					<output id = "pMu" for="pMup"></output>
 					Left/Right<input type = "range" id = "pMdown" value = "0" min = "-4" max = "4" step = "0.1" onchange = "pMd.value=this.value"/>
 					<output id = "pMd" for="pMdown"></output>
 
-		<br> <b>Ambient Light</b>>
+		<!-- <br> <b>Ambient Light</b>>
 			<select name = "directL">
 				<option selected = "selected", value = "ax"> OFF</option>
 				<option selected = "selected", value = "ao"> ON</option>
@@ -96,7 +132,7 @@
 					G<input type = "range" id = "aG" value = "1" min = "0" max = "1" step = "0.05" onchange = "ag.value=this.value"/>
 					<output id = "ag" for="aG"></output>
 					B<input type = "range" id = "aB" value = "1" min = "0" max = "1" step = "0.05" onchange = "ab.value=this.value"/>
-					<output id = "ab" for="aB"></output>
+					<output id = "ab" for="aB"></output> -->
 		
 
 		<hr> <b> Material:</b>
@@ -139,7 +175,7 @@
 					</select>
 
 
-	<hr> <!-- petting -- Interaction with the dog --->
+		<hr> <!-- petting -- Interaction with the dog --->
 		<b>Try press "B" to give him a bone!</b> 
 		<br>
 		Current Quaternion: w + xi + yj + zk where (i,j,k) are 3-way imaginary numbers:
@@ -156,7 +192,7 @@
 		  
 		  <button type="button" onclick="runStop()">Sit/Run</button>
 		<br>
-	<!-- Draw a horizontal-line separator------------->
+		<!-- Draw a horizontal-line separator------------->
 		<b>
 		Try dragging the screen or press "W", "A", "S", or "D"! 
 		</b>    When the bone is far away above his head, he will get upset and start walking slowly :(
@@ -187,9 +223,10 @@
         <script src="lib/webgl-debug.js"></script>
         <script src="lib/cuon-utils.js"></script>
 		<script src="lib/cuon-matrix-quat03.js"></script>
-        <script src="test.js"></script>
 		<script src="lib/JT_VBObox-Lib.js"></script>
 		<script src="lib/lights-JT.js"></script>
 		<script src="lib/materials_Ayerdi.js"></script>
+		<script src="test.js"></script>
+		<!-- <script src="lib/glmatrix.js"></script> -->
     </body>
 </html>

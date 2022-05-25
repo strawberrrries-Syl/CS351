@@ -1,5 +1,5 @@
-// Vertex shader prog
-var VSHADER_SOURCE =
+// // Regular vertex shader prog
+var VSHADER_SOURCE1 =
     'attribute vec4 a_Position;\n' +
     'attribute vec4 a_Color;\n' +
     'varying vec4 v_Color;\n' +
@@ -9,7 +9,7 @@ var VSHADER_SOURCE =
     '  v_Color = a_Color;\n' +
     '}\n';
 // Fragment shader prog
-var FSHADER_SOURCE =				
+var FSHADER_SOURCE1 =				
     'precision mediump float;\n' +
     'varying vec4 v_Color;\n' +
     'void main() {\n' +
@@ -17,13 +17,127 @@ var FSHADER_SOURCE =
     '}\n';
 
 
+// phong shader + blinn-phong
+var VSHADER_SOURCE2 =
+// materials
+    'struct MatlT {\n' +		// Describes one Phong material by its reflectances:
+	'		vec3 emit;\n' +			// Ke: emissive -- surface 'glow' amount (r,g,b);
+	'		vec3 ambi;\n' +			// Ka: ambient reflectance (r,g,b)
+	'		vec3 diff;\n' +			// Kd: diffuse reflectance (r,g,b)
+	'		vec3 spec;\n' + 		// Ks: specular reflectance (r,g,b)
+	'		int shiny;\n' +			// Kshiny: specular exponent (integer >= 1; typ. <200)
+    '		};\n' +
+
+    // attributes
+    'attribute vec4 a_Position;\n' +
+    'attribute vec4 a_Normal; \n' +     // send from outside
+    'attribute vec4 a_Color;\n' +
+    
+    // uniforms
+    'uniform MatlT u_MatlSet[1];\n' +		// Array of all materials. Now there's only one material
+    'uniform mat4 u_modelMatrix;\n' +
+    'uniform mat4 u_NormalMatrix; \n' +  	// Inverse Transpose of ModelMatrix;
+    'uniform mat4 u_MvpMatrix; \n' +
+
+    // varying - send to fragment shader
+    'varying vec4 v_Color;\n' +
+    'varying vec3 v_Kd; \n' +		// Phong Lighting: diffuse reflectance
+    'varying vec4 v_Position; \n' +
+    'varying vec3 v_Normal; \n' +	
+
+
+    'void main() {\n' +
+    '   gl_Position = u_MvpMatrix * a_Position;\n' +      // shoud be " '  gl_Position = u_MvpMatrix * a_Position;\n' +"
+                                                            // real position on canvas (CVV)
+    '   v_Color = a_Color;\n' +
+    '   v_Position = u_modelMatrix * a_Position; \n' +      // position in world sys (z axis up)
+    '   v_Normal = normalize(vec3(u_NormalMatrix * a_Normal));\n' +
+    '   v_Kd = u_MatlSet[0].diff; \n' +		// find per-pixel diffuse reflectance from per-vertex
+											// (no per-pixel Ke,Ka, or Ks, but you can do it...)
+    '}\n';
+// Fragment shader prog
+var FSHADER_SOURCE2 =				
+    'precision highp float;\n' +
+    'precision highp int;\n' +
+    //--------------- GLSL Struct Definitions:
+	'struct LampT {\n' +		// Describes one point-like Phong light source
+	'vec3 pos;\n' +			// (x,y,z,w); w==1.0 for local light at x,y,z position
+													//		   w==0.0 for distant light from x,y,z direction 
+	'vec3 ambi;\n' +			// Ia ==  ambient light source strength (r,g,b)
+	'vec3 diff;\n' +			// Id ==  diffuse light source strength (r,g,b)
+	'vec3 spec;\n' +			// Is == specular light source strength (r,g,b)
+    '}; \n' +
+    
+    'struct MatlT {\n' +		// Describes one Phong material by its reflectances:
+	'		vec3 emit;\n' +			// Ke: emissive -- surface 'glow' amount (r,g,b);
+	'		vec3 ambi;\n' +			// Ka: ambient reflectance (r,g,b)
+	'		vec3 diff;\n' +			// Kd: diffuse reflectance (r,g,b)
+	'		vec3 spec;\n' + 		// Ks: specular reflectance (r,g,b)
+	'		int shiny;\n' +			// Kshiny: specular exponent (integer >= 1; typ. <200)
+    '		};\n' +
+    // uniforms:
+    'uniform LampT u_LampSet[1];\n' +		// Array of all light sources.
+	'uniform MatlT u_MatlSet[1];\n' +		// Array of all materials.
+    'uniform vec3 u_eyePosWorld; \n' + 	    // Camera/eye location in world coords. Not changing, so, it's uniform
+    // varyings:
+    'varying vec3 v_Normal;\n' +				// Find 3D surface normal at each pix
+    'varying vec4 v_Position;\n' +			// pixel's 3D pos too -- in 'world' coords
+    'varying vec3 v_Kd;	\n' +						// Find diffuse reflectance K_d per pix
+                                                        // Ambient? Emissive? Specular? almost
+  													// NEVER change per-vertex: I use 'uniform' values
+    'varying vec4 v_Color;\n' +
+
+
+    'void main() {\n' +
+    '  gl_FragColor = v_Color;\n' +
+
+    // Normalize! !!IMPORTANT!! TROUBLE if you don't! 
+     	// normals interpolated for each pixel aren't 1.0 in length any more!
+    '   vec3 normal = normalize(v_Normal); \n' +
+    '   vec3 lightDirection = normalize(u_LampSet[0].pos - v_Position.xyz);\n' +
+    '   vec3 eyeDirection = normalize(u_eyePosWorld - v_Position.xyz); \n' +
+    '   float nDotL = max(dot(lightDirection, normal), 0.0); \n' +
+    '   vec3 H = normalize(lightDirection + eyeDirection); \n' +
+    '   float nDotH = max(dot(H, normal), 0.0); \n' +
+    '   float e64 = pow(nDotH, float(u_MatlSet[0].shiny));\n' +
+    '   vec3 emissive = u_MatlSet[0].emit;' +
+    '   vec3 ambient = u_LampSet[0].ambi * u_MatlSet[0].ambi;\n' +
+    '   vec3 diffuse = u_LampSet[0].diff * v_Kd * nDotL;\n' +
+    '	vec3 speculr = u_LampSet[0].spec * u_MatlSet[0].spec * e64;\n' +
+    '   gl_FragColor = vec4(emissive + ambient + diffuse + speculr , v_Color);\n' + // 1.0
+    '}\n';
+
+
 //// ------------------------------------
 //            global variable
 //// ------------------------------------
 
-var gl;
+var gl;     // rendering context for WebGL
 var g_canvasID = document.getElementById('webgl');
-var g_modelMatrix;
+var g_modelMatrix = new Matrix4();
+var	mvpMatrix 	= new Matrix4();	// Model-view-projection matrix
+var	normalMatrix= new Matrix4();	// Transformation matrix for normals
+
+var uLoc_eyePosWorld 	= false;
+var uLoc_ModelMatrix 	= false;
+var uLoc_MvpMatrix 		= false;
+var uLoc_NormalMatrix = false;
+
+// global vars that contain the values we send thru those uniforms,
+//  ... for our camera:
+var	eyePosWorld = new Float32Array(3);	// x,y,z in world coords
+//  ... for our transforms:
+// var modelMatrix = new Matrix4();  // Model matrix
+
+//	... for our first light source:   (stays false if never initialized)
+var lamp0 = new LightsT();
+
+	// ... for our first material:
+var matlSel= MATL_RED_PLASTIC;				// see keypress(): 'm' key changes matlSel
+var matl0 = new Material(matlSel);	
+
+
+
 
 // quaternion
 var qNew = new Quaternion(0,0,0,1); // most-recent mouse drag's rotation
@@ -93,6 +207,9 @@ function main() {
     gl.enable(gl.DEPTH_TEST); 
     //===================================================================== */
     //Initialize shaders
+    var VSHADER_SOURCE = VSHADER_SOURCE2;
+    var FSHADER_SOURCE = FSHADER_SOURCE2;
+
     if (!initShaders(gl, VSHADER_SOURCE, FSHADER_SOURCE)) {
         console.log('Failed to initialize shaders.');
         return;
@@ -108,20 +225,68 @@ function main() {
     // setting background color
     gl.clearColor(0.4, 0.2, 0.8, 0.5);   // stored in gl.COLOR_BUFFER_BIT
 
-    g_modelMatrix = new Matrix4();
 
+    // generate buffers
     uLoc_modelMatrix = gl.getUniformLocation(gl.program, 'u_modelMatrix');  // = u_ModelMatrix in starter code BasicShapesCam
     if (!uLoc_modelMatrix) {
         console.log('Failed to get the storage location of u_modelMatrix');
         return;
     }
 
+    if(VSHADER_SOURCE == VSHADER_SOURCE2)
+    {
+        uLoc_MvpMatrix = gl.getUniformLocation(gl.program, 'u_MvpMatrix');
+        if (!uLoc_MvpMatrix ) {
+            console.log('Failed to get the storage location of u_MvpMatrix');
+            return;
+        }
+        uLoc_NormalMatrix = gl.getUniformLocation(gl.program, 'u_NormalMatrix');
+        if (!uLoc_NormalMatrix ) {
+            console.log('Failed to get the storage location of u_NormalMatrix');
+            return;
+        }
+
+        uLoc_eyePosWorld  = gl.getUniformLocation(gl.program, 'u_eyePosWorld');
+        if (!uLoc_eyePosWorld ) {
+            console.log('Failed to get the storage location of u_eyePosWorld');
+            return;
+        }
+    }
+    //  ... for Phong light source:
+	// NEW!  Note we're getting the location of a GLSL struct array member:
+    lamp0.u_pos  = gl.getUniformLocation(gl.program, 'u_LampSet[0].pos');	
+    lamp0.u_ambi = gl.getUniformLocation(gl.program, 'u_LampSet[0].ambi');
+    lamp0.u_diff = gl.getUniformLocation(gl.program, 'u_LampSet[0].diff');
+    lamp0.u_spec = gl.getUniformLocation(gl.program, 'u_LampSet[0].spec');
+    if( !lamp0.u_pos || !lamp0.u_ambi	|| !lamp0.u_diff || !lamp0.u_spec	) {
+        console.log('Failed to get GPUs Lamp0 storage locations');
+        return;
+    }
+	// ... for Phong material/reflectance:
+	matl0.uLoc_Ke = gl.getUniformLocation(gl.program, 'u_MatlSet[0].emit');
+	matl0.uLoc_Ka = gl.getUniformLocation(gl.program, 'u_MatlSet[0].ambi');
+	matl0.uLoc_Kd = gl.getUniformLocation(gl.program, 'u_MatlSet[0].diff');
+	matl0.uLoc_Ks = gl.getUniformLocation(gl.program, 'u_MatlSet[0].spec');
+	matl0.uLoc_Kshiny = gl.getUniformLocation(gl.program, 'u_MatlSet[0].shiny');
+	if(!matl0.uLoc_Ke || !matl0.uLoc_Ka || !matl0.uLoc_Kd 
+			  	  		    || !matl0.uLoc_Ks || !matl0.uLoc_Kshiny
+		 ) {
+		console.log('Failed to get GPUs Reflectance storage locations');
+		return;
+	}
+	// Position the camera in world coordinates:
+	eyePosWorld.set([eye_x, eye_y, eye_z]);
+	gl.uniform3fv(uLoc_eyePosWorld, eyePosWorld);// use it to set our uniform
+	// (Note: uniform4fv() expects 4-element float32Array as its 2nd argument)
+  // Init World-coord. position & colors of first light source in global vars;
+  lamp0.I_pos.elements.set( [6.0, 5.0, 5.0]);
+  lamp0.I_ambi.elements.set([0.4, 0.4, 0.4]);
+  lamp0.I_diff.elements.set([1.0, 1.0, 1.0]);
+  lamp0.I_spec.elements.set([1.0, 1.0, 1.0]);
+    {
     window.addEventListener("keydown", myKeyDown, false);
-
     window.addEventListener("keyup", myKeyUp, false);
-
     window.addEventListener("mousedown", myMouseDown);
-    // (After each 'mousedown' event, browser calls the myMouseDown() fcn.)
     window.addEventListener("mousemove", myMouseMove);
     window.addEventListener("mouseup", myMouseUp);
     window.addEventListener("click", myMouseClick);
@@ -130,8 +295,8 @@ function main() {
         var long = (far - near) / 6 + near;
         return 2 * long / (Math.cos(asp * Math.PI / 360)) * Math.sin(asp * 2 * Math.PI / 360);
     }
-    wid = calcOneThirdDis(35, near, far);
-    
+    wid = calcOneThirdDis(30, near, far);
+    }
 
     var tick = function () {
         requestAnimationFrame(tick, g_canvasID);
@@ -144,7 +309,7 @@ function main() {
     }
 
     tick();
-    //drawAll();
+    //drawResize()
 }
 
 // seting functions
@@ -184,20 +349,20 @@ function initVertexBuffers() {
     // vertices information
     var v_ans = groundgridV();
     grid_S = 0;
-    grid_C = v_ans.length / 7;
+    grid_C = v_ans.length / 10;
 
     var curr_v = axisV();
     curr_v = axisV();
-    axis_S = v_ans.length / 7;
-    axis_C = curr_v.length / 7;
+    axis_S = v_ans.length / 10;
+    axis_C = curr_v.length / 10;
     v_ans = Array.prototype.concat.call(
         v_ans, curr_v,
     );
     curr_v.clear;
 
     curr_v = sphereV();
-    sphere_S = v_ans.length / 7;
-    sphere_C = curr_v.length / 7;
+    sphere_S = v_ans.length / 10;
+    sphere_C = curr_v.length / 10;
     
     v_ans = Array.prototype.concat.call(
         v_ans, curr_v,
@@ -221,12 +386,24 @@ function initVertexBuffers() {
         console.log('Failed to get the storage location of a_Position');
         return -2;
     }
-    gl.vertexAttribPointer(aLoc_Position, 4, gl.FLOAT, false, FSIZE * 7, 0);
+    gl.vertexAttribPointer(aLoc_Position, 4, gl.FLOAT, false, FSIZE * 10, 0);
     gl.enableVertexAttribArray(aLoc_Position);
 
     var a_Color = gl.getAttribLocation(gl.program, 'a_Color');
-    gl.vertexAttribPointer(a_Color, 3, gl.FLOAT, false, FSIZE * 7, FSIZE * 4);
+    if (a_Color < 0) {
+        console.log('Failed to get the storage location of a_Color');
+        return -2;
+    }
+    gl.vertexAttribPointer(a_Color, 3, gl.FLOAT, false, FSIZE * 10, FSIZE * 4);
     gl.enableVertexAttribArray(a_Color);
+
+    var a_Normal = gl.getAttribLocation(gl.program, 'a_Normal');
+    if (a_Normal < 0) {
+        console.log('Failed to get the storage location of a_Normal');
+        return -2;
+    }
+    gl.vertexAttribPointer(a_Normal, 3, gl.FLOAT, false, FSIZE * 10, FSIZE * 7);
+    gl.enableVertexAttribArray(a_Normal);
 
     return 0;
 }
@@ -250,11 +427,15 @@ function initVertexBuffers() {
                 var p3 = [Math.sin(d1+offset)*Math.cos(d2+offset), Math.cos(d1+offset), Math.sin(d1+offset)*Math.sin(d2+offset), 1.0, 153/255, 153/255, 255/255,];
                 var p4 = [Math.sin(d1)*Math.cos(d2+offset), Math.cos(d1), Math.sin(d1)*Math.sin(d2+offset), 1.0,  204/255, 204/255, 255/255,];
                 
+                var n1 = normCalc(p1[0], p1[1], p1[2], p2[0], p2[1], p2[2], p3[0], p3[1], p3[2]);
+                var n2 = normCalc(p1[0], p1[1], p1[2], p3[0], p3[1], p3[2], p4[0], p4[1], p4[2]);
+     
+                
                 var curr_ver = Array.prototype.concat.call(
-                    p1, p2, p3,
-                    p1, p3, p4,
+                    p1, n1, p2, n1, p3, n1, 
+                    p1, n2, p3, n2, p4, n2,
                 );
-    
+
                 if (ans_ver == null) {
                     ans_ver = curr_ver;
                 }
@@ -272,11 +453,23 @@ function initVertexBuffers() {
 
     function drawSphere() {
         pushMatrix(g_modelMatrix);
+
+        pushMatrix(mvpMatrix);
+
             g_modelMatrix.translate(0, -1, 0);	
             g_modelMatrix.scale(0.4, 0.4, 0.4);	
             g_modelMatrix.rotate(g_angle12now, 0, 1, 0);
+
+            mvpMatrix.multiply(g_modelMatrix);
+            normalMatrix.setInverseOf(g_modelMatrix);
+            normalMatrix.transpose();
+            gl.uniformMatrix4fv(uLoc_MvpMatrix, false, mvpMatrix.elements);
+            gl.uniformMatrix4fv(uLoc_NormalMatrix, false, normalMatrix.elements);
+
             gl.uniformMatrix4fv(uLoc_modelMatrix, false, g_modelMatrix.elements);
             gl.drawArrays(gl.TRIANGLES, sphere_S, sphere_C);	// draw all vertices.
+             
+        mvpMatrix = popMatrix();
         g_modelMatrix = popMatrix();
         return 0;
     }
@@ -290,17 +483,17 @@ function initVertexBuffers() {
 
         while(x_num <= x_max) {
             
-            var p1 = [x_num, -1, -3, 1.0, 204/255, 255/255, 229/255,];
-            var p2 = [x_num, -1, 3, 1.0, 204/255, 255/255, 229/255,];
+            var p1 = [x_num, -1, -3, 1.0, 204/255, 255/255, 229/255, 1.0, 1.0, 1.0,];
+            var p2 = [x_num, -1, 3, 1.0, 204/255, 255/255, 229/255, 1.0, 1.0, 1.0,];
 
-            var p3 = [-3, -1, x_num, 1.0, 255/255, 229/255, 204/255,];
-            var p4 = [3, -1, x_num, 1.0, 255/255, 229/255, 204/255,];
+            var p3 = [-3, -1, x_num, 1.0, 255/255, 229/255, 204/255, 1.0, 1.0, 1.0,];
+            var p4 = [3, -1, x_num, 1.0, 255/255, 229/255, 204/255, 1.0, 1.0, 1.0,];
 
             var curr_ver = Array.prototype.concat.call(
                 p1, p2,
                 p3, p4,
             );
-
+            
             if (ans_ver == null) {
                 ans_ver = curr_ver;
             }
@@ -314,21 +507,30 @@ function initVertexBuffers() {
 
     function drawGrid() {
         pushMatrix(g_modelMatrix);
+
+        pushMatrix(mvpMatrix);
+
+            mvpMatrix.multiply(g_modelMatrix);
+            normalMatrix.setInverseOf(g_modelMatrix);
+            normalMatrix.transpose();
+            gl.uniformMatrix4fv(uLoc_MvpMatrix, false, mvpMatrix.elements);
+            gl.uniformMatrix4fv(uLoc_NormalMatrix, false, normalMatrix.elements);
+
             gl.uniformMatrix4fv(uLoc_modelMatrix, false, g_modelMatrix.elements);
-            //console.log("before draw-----");
             gl.drawArrays(gl.LINES, grid_S, grid_C);	// draw all vertices.
-            //console.log("end draw-----");
+            
+        mvpMatrix = popMatrix();
         g_modelMatrix = popMatrix();
         return 0;
     }
 
     function axisV() {
-        var v1 = [0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0,];
-        var v2 = [0.3, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0,];
-        var v3 = [0.0, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0,];
-        var v4 = [0.0, 0.3, 0.0, 1.0, 0.0, 1.0, 0.0,];
-        var v5 = [0.0, 0.0, 0, 1.0, 0.0, 0.0, 1.0,];
-        var v6 = [0.0, 0.0, 0.3, 1.0, 0.0, 0.0, 1.0,];
+        var v1 = [0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0,];
+        var v2 = [0.3, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0,];
+        var v3 = [0.0, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 1.0, 1.0,];
+        var v4 = [0.0, 0.3, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 1.0, 1.0,];
+        var v5 = [0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0,];
+        var v6 = [0.0, 0.0, 0.3, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0,];
 
         var vertices = Array.prototype.concat.call(
             v1, v2,
@@ -341,21 +543,33 @@ function initVertexBuffers() {
 
     function drawAxis() {
         pushMatrix(g_modelMatrix);
+
+        pushMatrix(mvpMatrix);
+        
             g_modelMatrix.rotate(-90, 1, 0, 0);
+
+            mvpMatrix.multiply(g_modelMatrix);
+            normalMatrix.setInverseOf(g_modelMatrix);
+            normalMatrix.transpose();
+            gl.uniformMatrix4fv(uLoc_MvpMatrix, false, mvpMatrix.elements);
+            gl.uniformMatrix4fv(uLoc_NormalMatrix, false, normalMatrix.elements);
+            
             gl.uniformMatrix4fv(uLoc_modelMatrix, false, g_modelMatrix.elements);
-            //console.log("before draw-----");
+            
             gl.drawArrays(gl.LINES, axis_S, axis_C);	// draw all vertices.
-            //console.log("end draw-----");
+            
+            mvpMatrix = popMatrix();
         g_modelMatrix = popMatrix();
+
         return 0;
     }
 
 }
 
     function drawThings() {
+        mvpMatrix.rotate(90, 1, 0, 0);
         pushMatrix(g_modelMatrix);
 
-        g_modelMatrix.rotate(90, 1, 0, 0);
         // Axis
         {
             pushMatrix(g_modelMatrix);
@@ -363,12 +577,14 @@ function initVertexBuffers() {
                 drawAxis();
             g_modelMatrix = popMatrix();
         }
-        
+
+        {
             pushMatrix(g_modelMatrix);
                 g_modelMatrix.translate(0, 1, 0);
-                drawGrid();
                 drawSphere();
+                drawGrid();
             g_modelMatrix = popMatrix();
+        }
 
         g_modelMatrix = popMatrix();
         return 0;
@@ -387,17 +603,28 @@ function initVertexBuffers() {
 
 
 function drawAll() {
-    initVertexBuffers();
     // clear <canvas>
     gl.clear(gl.CLEAR_COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     // CLEAR BOTH the color AND the depth buffers before you draw stuff!!
     gl.clear(gl.COLOR_BUFFER_BIT);
+    mvpMatrix.setIdentity();
     g_modelMatrix.setIdentity();
     // ---------------------------------
     inst_x = cloud_x;
     inst_y = cloud_z;
     inst_z = cloud_y;
 
+    gl.uniform3fv(lamp0.u_pos,  lamp0.I_pos.elements.slice(0,3));
+    //		 ('slice(0,3) member func returns elements 0,1,2 (x,y,z) ) 
+    gl.uniform3fv(lamp0.u_ambi, lamp0.I_ambi.elements);		// ambient
+    gl.uniform3fv(lamp0.u_diff, lamp0.I_diff.elements);		// diffuse
+    gl.uniform3fv(lamp0.u_spec, lamp0.I_spec.elements);		// Specular
+	//---------------For the Material object(s):
+	gl.uniform3fv(matl0.uLoc_Ke, matl0.K_emit.slice(0,3));				// Ke emissive
+	gl.uniform3fv(matl0.uLoc_Ka, matl0.K_ambi.slice(0,3));				// Ka ambient
+    gl.uniform3fv(matl0.uLoc_Kd, matl0.K_diff.slice(0,3));				// Kd	diffuse
+	gl.uniform3fv(matl0.uLoc_Ks, matl0.K_spec.slice(0,3));				// Ks specular
+	gl.uniform1i(matl0.uLoc_Kshiny, parseInt(matl0.K_shiny, 10));     // Kshiny 
     // set perspective:
     gl.viewport(0,											// Viewport lower-left corner
 				0, 			// location(in pixels)
@@ -406,8 +633,6 @@ function drawAll() {
 
     var vpAspect = g_canvasID.width /			// On-screen aspect ratio for
                     (g_canvasID.height);	// this camera: width/height.
-
-    pushMatrix(g_modelMatrix);
         
     if(keyPressed == "c" && !cloudView)
     {
@@ -421,30 +646,29 @@ function drawAll() {
             
     if(cloudView)
     {
-        g_modelMatrix.perspective(  30.0,
+        mvpMatrix.perspective(  30.0,
             vpAspect,
             0.1,              // near
             far);        // far
 
-        g_modelMatrix.lookAt(   inst_x, inst_y, inst_z + 1  ,	// center of projection
+            mvpMatrix.lookAt(   inst_x, inst_y, inst_z + 1  ,	// center of projection
                                 newdirx, newdiry, newdirz,	// look-at point 
                                 0.0, 0.0, 1.0);	// View UP vector.
     }
     else {
 
-        g_modelMatrix.perspective(  30.0,
+        mvpMatrix.perspective(  30.0,
             vpAspect,
             near,              // near
             far);        // far
-        g_modelMatrix.lookAt(   eye_x, eye_y, eye_z,	// center of projection
-                                la_x, la_y, la_z,	// look-at point 
-                                0.0, 0.0, 1.0);	// View UP vector.
+        mvpMatrix.lookAt(   eye_x, eye_y, eye_z,	// center of projection
+                            la_x, la_y, la_z,	// look-at point 
+                            0.0, 0.0, 1.0);	// View UP vector.
     }
 
-                            
+
     // ---------------------------------
     drawThings();
-    g_modelMatrix = popMatrix();
 
     return 0;
 }
@@ -722,3 +946,11 @@ function drawAll() {
     }
 }
     }
+
+
+function normCalc(x1, y1, z1, x2, y2, z2, x3, y3, z3) {
+    var u = [x2 - x1, y2 - y1, z2 - z1];
+    var v = [x3 - x2, y3 - y2, z3 - z2];
+
+    return [u[1] * v[2] - u[2]*v[1], u[2]* v[0] - u[0] * v[2], u[0]* v[1] - u[1] * v[0]];
+}
