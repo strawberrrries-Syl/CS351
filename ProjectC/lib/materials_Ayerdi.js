@@ -96,11 +96,11 @@ function Material(opt_Matl) {
 	// GPU location values for GLSL struct-member uniforms (LampT struct) needed
 	// to transfer K values above to the GPU. Get these values using the
 	// webGL fcn 'gl.getUniformLocation()'.  False for 'not initialized'.
-	this.uLoc_Ke = false;
-	this.uLoc_Ka = false;
-	this.uLoc_Kd = false;
-	this.uLoc_Ks = false;
-	this.uLoc_Kshiny = false;
+	this.uLoc_Ke = [false, false, false, false, false];
+	this.uLoc_Ka = [false, false, false, false, false];
+	this.uLoc_Kd = [false, false, false, false, false];
+	this.uLoc_Ks = [false, false, false, false, false];
+	this.uLoc_Kshiny = [false, false, false, false, false];
 	// THEN: ?Did the user specified a valid material?
 	if(		opt_Matl && opt_Matl >=0 && opt_Matl < MATL_DEFAULT)	{		
 		this.setMatl(opt_Matl);			// YES! set the reflectance values (K_xx)
