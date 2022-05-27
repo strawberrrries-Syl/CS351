@@ -4,19 +4,18 @@ var VSHADER_SOURCE0 =
 'precision highp int;\n' +
 // materials
 'struct MatlT {\n' +		// Describes one Phong material by its reflectances:
-'		vec3 emit;\n' +			// Ke: emissive -- surface 'glow' amount (r,g,b);
-'		vec3 ambi;\n' +			// Ka: ambient reflectance (r,g,b)
-'		vec3 diff;\n' +			// Kd: diffuse reflectance (r,g,b)
-'		vec3 spec;\n' + 		// Ks: specular reflectance (r,g,b)
-'		int shiny;\n' +			// Kshiny: specular exponent (integer >= 1; typ. <200)
-'		};\n' +
+'	vec3 emit;\n' +			// Ke: emissive -- surface 'glow' amount (r,g,b);
+'	vec3 ambi;\n' +			// Ka: ambient reflectance (r,g,b)
+'	vec3 diff;\n' +			// Kd: diffuse reflectance (r,g,b)
+'	vec3 spec;\n' + 		// Ks: specular reflectance (r,g,b)
+'	int shiny;\n' +			// Kshiny: specular exponent (integer >= 1; typ. <200)
+'};\n' +
 
 'struct LampT {\n' +		// Describes one point-like Phong light source
-'vec3 pos;\n' +			// (x,y,z,w); w==1.0 for local light at x,y,z position
-                                                //		   w==0.0 for distant light from x,y,z direction 
-'vec3 ambi;\n' +			// Ia ==  ambient light source strength (r,g,b)
-'vec3 diff;\n' +			// Id ==  diffuse light source strength (r,g,b)
-'vec3 spec;\n' +			// Is == specular light source strength (r,g,b)
+'   vec3 pos;\n' +			// (x,y,z,w); w==1.0 for local light at x,y,z position
+'   vec3 ambi;\n' +			// Ia ==  ambient light source strength (r,g,b)
+'   vec3 diff;\n' +			// Id ==  diffuse light source strength (r,g,b)
+'   vec3 spec;\n' +			// Is == specular light source strength (r,g,b)
 '}; \n' +
 
 // attributes
@@ -38,20 +37,19 @@ var VSHADER_SOURCE0 =
     'void main() {\n' +
     '  gl_Position = (u_MvpMatrix + u_modelMatrix - u_modelMatrix + u_NormalMatrix - u_NormalMatrix) * a_Position;\n' +
     '  float x = u_eyePosWorld.x - u_eyePosWorld.x + a_Normal.x - a_Normal.x' + 
-    '   + u_LampSet[0].pos.x - u_LampSet[0].pos.x + u_MatlSet[0].emit.x - u_MatlSet[0].emit.x;\n' +
+    '  + u_LampSet[0].pos.x - u_LampSet[0].pos.x + u_MatlSet[0].emit.x - u_MatlSet[0].emit.x;\n' +
     '  v_Color = a_Color  + a_Color * x;\n' +
     '}\n';
 // Fragment shader prog
 var FSHADER_SOURCE0 =				
     'precision highp float;\n' +
     'precision highp int;\n' +
-  													// NEVER change per-vertex: I use 'uniform' values
+  													
     'varying vec4 v_Color;\n' +
+
     'void main() {\n' +
-    '  gl_FragColor = v_Color;\n' +
+    '   gl_FragColor = v_Color;\n' +
     '}\n';
-
-
 
 
 
@@ -59,12 +57,12 @@ var FSHADER_SOURCE0 =
 var VSHADER_SOURCE1 =
 // materials
     'struct MatlT {\n' +		// Describes one Phong material by its reflectances:
-	'		vec3 emit;\n' +			// Ke: emissive -- surface 'glow' amount (r,g,b);
-	'		vec3 ambi;\n' +			// Ka: ambient reflectance (r,g,b)
-	'		vec3 diff;\n' +			// Kd: diffuse reflectance (r,g,b)
-	'		vec3 spec;\n' + 		// Ks: specular reflectance (r,g,b)
-	'		int shiny;\n' +			// Kshiny: specular exponent (integer >= 1; typ. <200)
-    '		};\n' +
+	'	vec3 emit;\n' +			// Ke: emissive -- surface 'glow' amount (r,g,b);
+	'	vec3 ambi;\n' +			// Ka: ambient reflectance (r,g,b)
+	'	vec3 diff;\n' +			// Kd: diffuse reflectance (r,g,b)
+	'	vec3 spec;\n' + 		// Ks: specular reflectance (r,g,b)
+	'	int shiny;\n' +			// Kshiny: specular exponent (integer >= 1; typ. <200)
+    '};\n' +
 
     // attributes
     'attribute vec4 a_Position;\n' +
@@ -86,7 +84,6 @@ var VSHADER_SOURCE1 =
 
     'void main() {\n' +
     '   gl_Position = u_MvpMatrix * a_Position;\n' +      // shoud be " '  gl_Position = u_MvpMatrix * a_Position;\n' +"
-                                                            // real position on canvas (CVV)
     '   v_Color = a_Color;\n' +
     '   v_Position = u_modelMatrix * a_Position; \n' +      // position in world sys (z axis up)
     '   v_Normal = normalize(vec3(u_NormalMatrix * a_Normal));\n' +
@@ -102,7 +99,7 @@ var FSHADER_SOURCE1 =
     //--------------- GLSL Struct Definitions:
 	'struct LampT {\n' +		// Describes one point-like Phong light source
 	'   vec3 pos;\n' +			// (x,y,z,w); w==1.0 for local light at x,y,z position
-													//		   w==0.0 for distant light from x,y,z direction 
+								// w==0.0 for distant light from x,y,z direction 
 	'   vec3 ambi;\n' +			// Ia ==  ambient light source strength (r,g,b)
 	'   vec3 diff;\n' +			// Id ==  diffuse light source strength (r,g,b)
 	'   vec3 spec;\n' +			// Is == specular light source strength (r,g,b)
@@ -129,8 +126,6 @@ var FSHADER_SOURCE1 =
      'varying vec4 v_Color;\n' +
 
     'void main() {\n' +
-    // '  gl_FragColor = v_Color;\n' +
-
     // Normalize! !!IMPORTANT!! TROUBLE if you don't! 
      	// normals interpolated for each pixel aren't 1.0 in length any more!
     '   vec3 normal = normalize(v_Normal); \n' +
@@ -155,20 +150,20 @@ var VSHADER_SOURCE2 =
     'precision highp int;\n' +
 // lilght
     'struct LampT {\n' +		// Describes one point-like Phong light source
-	'vec3 pos;\n' +			// (x,y,z,w); w==1.0 for local light at x,y,z position
-													//		   w==0.0 for distant light from x,y,z direction 
+	'vec3 pos;\n' +			    // (x,y,z,w); w==1.0 for local light at x,y,z position
+								// w==0.0 for distant light from x,y,z direction 
 	'vec3 ambi;\n' +			// Ia ==  ambient light source strength (r,g,b)
 	'vec3 diff;\n' +			// Id ==  diffuse light source strength (r,g,b)
 	'vec3 spec;\n' +			// Is == specular light source strength (r,g,b)
     '}; \n' +
 // materials
     'struct MatlT {\n' +		// Describes one Phong material by its reflectances:
-	'		vec3 emit;\n' +			// Ke: emissive -- surface 'glow' amount (r,g,b);
-	'		vec3 ambi;\n' +			// Ka: ambient reflectance (r,g,b)
-	'		vec3 diff;\n' +			// Kd: diffuse reflectance (r,g,b)
-	'		vec3 spec;\n' + 		// Ks: specular reflectance (r,g,b)
-	'		int shiny;\n' +			// Kshiny: specular exponent (integer >= 1; typ. <200)
-    '		};\n' +
+	'	vec3 emit;\n' +			// Ke: emissive -- surface 'glow' amount (r,g,b);
+	'	vec3 ambi;\n' +			// Ka: ambient reflectance (r,g,b)
+	'	vec3 diff;\n' +			// Kd: diffuse reflectance (r,g,b)
+	'	vec3 spec;\n' + 		// Ks: specular reflectance (r,g,b)
+	'	int shiny;\n' +			// Kshiny: specular exponent (integer >= 1; typ. <200)
+    '};\n' +
 
     // attributes
     'attribute vec4 a_Position;\n' +
@@ -191,8 +186,6 @@ var VSHADER_SOURCE2 =
                                                             // real position on canvas (CVV)
     '   vec3 normal = normalize(vec3(u_NormalMatrix * a_Normal));\n' +
     '   vec4 v_Position_none = u_modelMatrix * a_Position; \n' +      // position in world sys (z axis up)
-                                            
-
     '   vec3 lightDirection = normalize(u_LampSet[0].pos - v_Position_none.xyz);\n' +
     '   vec3 eyeDirection = normalize(u_eyePosWorld - v_Position_none.xyz); \n' +
     '   float nDotL = max(dot(lightDirection, normal), 0.0); \n' +
@@ -216,22 +209,16 @@ var FSHADER_SOURCE2 =
     '  gl_FragColor = v_Color;\n' +
     '}\n';
 
-
-
-
-
-
-
 // phong shader + phong lighting
 var VSHADER_SOURCE3 =
 // materials
     'struct MatlT {\n' +		// Describes one Phong material by its reflectances:
-	'		vec3 emit;\n' +			// Ke: emissive -- surface 'glow' amount (r,g,b);
-	'		vec3 ambi;\n' +			// Ka: ambient reflectance (r,g,b)
-	'		vec3 diff;\n' +			// Kd: diffuse reflectance (r,g,b)
-	'		vec3 spec;\n' + 		// Ks: specular reflectance (r,g,b)
-	'		int shiny;\n' +			// Kshiny: specular exponent (integer >= 1; typ. <200)
-    '		};\n' +
+	'	vec3 emit;\n' +			// Ke: emissive -- surface 'glow' amount (r,g,b);
+	'	vec3 ambi;\n' +			// Ka: ambient reflectance (r,g,b)
+	'	vec3 diff;\n' +			// Kd: diffuse reflectance (r,g,b)
+	'	vec3 spec;\n' + 		// Ks: specular reflectance (r,g,b)
+	'	int shiny;\n' +			// Kshiny: specular exponent (integer >= 1; typ. <200)
+    '};\n' +
 
     // attributes
     'attribute vec4 a_Position;\n' +
@@ -268,20 +255,20 @@ var FSHADER_SOURCE3 =
     'precision highp int;\n' +
     //--------------- GLSL Struct Definitions:
 	'struct LampT {\n' +		// Describes one point-like Phong light source
-	'vec3 pos;\n' +			// (x,y,z,w); w==1.0 for local light at x,y,z position
-													//		   w==0.0 for distant light from x,y,z direction 
-	'vec3 ambi;\n' +			// Ia ==  ambient light source strength (r,g,b)
-	'vec3 diff;\n' +			// Id ==  diffuse light source strength (r,g,b)
-	'vec3 spec;\n' +			// Is == specular light source strength (r,g,b)
+	'   vec3 pos;\n' +			// (x,y,z,w); w==1.0 for local light at x,y,z position
+								// w==0.0 for distant light from x,y,z direction 
+	'   vec3 ambi;\n' +			// Ia ==  ambient light source strength (r,g,b)
+	'   vec3 diff;\n' +			// Id ==  diffuse light source strength (r,g,b)
+	'   vec3 spec;\n' +			// Is == specular light source strength (r,g,b)
     '}; \n' +
     
     'struct MatlT {\n' +		// Describes one Phong material by its reflectances:
-	'		vec3 emit;\n' +			// Ke: emissive -- surface 'glow' amount (r,g,b);
-	'		vec3 ambi;\n' +			// Ka: ambient reflectance (r,g,b)
-	'		vec3 diff;\n' +			// Kd: diffuse reflectance (r,g,b)
-	'		vec3 spec;\n' + 		// Ks: specular reflectance (r,g,b)
-	'		int shiny;\n' +			// Kshiny: specular exponent (integer >= 1; typ. <200)
-    '		};\n' +
+	'	vec3 emit;\n' +			// Ke: emissive -- surface 'glow' amount (r,g,b);
+	'	vec3 ambi;\n' +			// Ka: ambient reflectance (r,g,b)
+	'	vec3 diff;\n' +			// Kd: diffuse reflectance (r,g,b)
+	'	vec3 spec;\n' + 		// Ks: specular reflectance (r,g,b)
+	'	int shiny;\n' +			// Kshiny: specular exponent (integer >= 1; typ. <200)
+    '};\n' +
     // uniforms:
     'uniform LampT u_LampSet[1];\n' +		// Array of all light sources.
 	'uniform MatlT u_MatlSet[1];\n' +		// Array of all materials.
@@ -296,7 +283,6 @@ var FSHADER_SOURCE3 =
 
     'void main() {\n' +
     '  gl_FragColor = v_Color;\n' +
-
     // Normalize! !!IMPORTANT!! TROUBLE if you don't! 
      	// normals interpolated for each pixel aren't 1.0 in length any more!
     '   vec3 normal = normalize(v_Normal); \n' +
@@ -322,20 +308,20 @@ var VSHADER_SOURCE4 =
     'precision highp int;\n' +
 // lilght
     'struct LampT {\n' +		// Describes one point-like Phong light source
-	'vec3 pos;\n' +			// (x,y,z,w); w==1.0 for local light at x,y,z position
-													//		   w==0.0 for distant light from x,y,z direction 
-	'vec3 ambi;\n' +			// Ia ==  ambient light source strength (r,g,b)
-	'vec3 diff;\n' +			// Id ==  diffuse light source strength (r,g,b)
-	'vec3 spec;\n' +			// Is == specular light source strength (r,g,b)
+	'   vec3 pos;\n' +			// (x,y,z,w); w==1.0 for local light at x,y,z position
+								// w==0.0 for distant light from x,y,z direction 
+	'   vec3 ambi;\n' +			// Ia ==  ambient light source strength (r,g,b)
+	'   vec3 diff;\n' +			// Id ==  diffuse light source strength (r,g,b)
+	'   vec3 spec;\n' +			// Is == specular light source strength (r,g,b)
     '}; \n' +
 // materials
     'struct MatlT {\n' +		// Describes one Phong material by its reflectances:
-	'		vec3 emit;\n' +			// Ke: emissive -- surface 'glow' amount (r,g,b);
-	'		vec3 ambi;\n' +			// Ka: ambient reflectance (r,g,b)
-	'		vec3 diff;\n' +			// Kd: diffuse reflectance (r,g,b)
-	'		vec3 spec;\n' + 		// Ks: specular reflectance (r,g,b)
-	'		int shiny;\n' +			// Kshiny: specular exponent (integer >= 1; typ. <200)
-    '		};\n' +
+	'	vec3 emit;\n' +			// Ke: emissive -- surface 'glow' amount (r,g,b);
+	'	vec3 ambi;\n' +			// Ka: ambient reflectance (r,g,b)
+	'	vec3 diff;\n' +			// Kd: diffuse reflectance (r,g,b)
+	'	vec3 spec;\n' + 		// Ks: specular reflectance (r,g,b)
+	'	int shiny;\n' +			// Kshiny: specular exponent (integer >= 1; typ. <200)
+    '};\n' +
 
     // attributes
     'attribute vec4 a_Position;\n' +
@@ -355,11 +341,8 @@ var VSHADER_SOURCE4 =
 
     'void main() {\n' +
     '   gl_Position = u_MvpMatrix * a_Position;\n' +      // shoud be " '  gl_Position = u_MvpMatrix * a_Position;\n' +"
-                                                            // real position on canvas (CVV)
     '   vec3 normal = normalize(vec3(u_NormalMatrix * a_Normal));\n' +
-    '   vec4 v_Position_none = u_modelMatrix * a_Position; \n' +      // position in world sys (z axis up)
-                                            
-
+    '   vec4 v_Position_none = u_modelMatrix * a_Position; \n' +      // position in world sys (z axis up)                                         
     '   vec3 lightDirection = normalize(u_LampSet[0].pos - v_Position_none.xyz);\n' +
     '   vec3 eyeDirection = normalize(u_eyePosWorld - v_Position_none.xyz); \n' +
     '   float nDotL = max(dot(lightDirection, normal), 0.0); \n' +
@@ -375,8 +358,8 @@ var VSHADER_SOURCE4 =
 // Fragment shader prog
 var FSHADER_SOURCE4 =				
     'precision highp float;\n' +
-    'precision highp int;\n' +
-   							// NEVER change per-vertex: I use 'uniform' values
+    'precision highp int;\n' + 
+   							
     'varying vec4 v_Color;\n' +
 
     'void main() {\n' +
@@ -583,48 +566,9 @@ function initVertexBuffers() {
     );
     curr_v.clear;
 
-
     var vertices = new Float32Array(v_ans);
-    // // create a buffer in GPU, its ID is vertexBufferID
-    // var vertexBufferID = gl.createBuffer();
-    // if (!vertexBufferID) {
-    //     console.log('Failed to create the buffer object');
-    //     return -1;
-    // }
-
-    // gl.bindBuffer(gl.ARRAY_BUFFER, vertexBufferID);     // bind the buffer with gl
-    // gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);   // store the vertices' information in buffer from gl
-
-    // var FSIZE = vertices.BYTES_PER_ELEMENT;
-    // var aLoc_Position = gl.getAttribLocation(gl.program, 'a_Position');
-    // if (aLoc_Position < 0) {
-    //     console.log('Failed to get the storage location of a_Position');
-    //     return -2;
-    // }
-    // gl.vertexAttribPointer(aLoc_Position, 4, gl.FLOAT, false, FSIZE * 10, 0);
-    // gl.enableVertexAttribArray(aLoc_Position);
-
-    // var a_Color = gl.getAttribLocation(gl.program, 'a_Color');
-    // if (a_Color < 0) {
-    //     console.log('Failed to get the storage location of a_Color');
-    //     return -2;
-    // }
-    // gl.vertexAttribPointer(a_Color, 3, gl.FLOAT, false, FSIZE * 10, FSIZE * 4);
-    // gl.enableVertexAttribArray(a_Color);
-
-    // var a_Normal = gl.getAttribLocation(gl.program, 'a_Normal');
-    // if (a_Normal < 0) {
-    //     console.log('Failed to get the storage location of a_Normal');
-    //     return -2;
-    // }
-    // gl.vertexAttribPointer(a_Normal, 3, gl.FLOAT, false, FSIZE * 10, FSIZE * 7);
-    // gl.enableVertexAttribArray(a_Normal);
-    
-    
-
     return vertices;
 }
-
 
 function bindVertBuff (vertices_array) {
     // create a buffer in GPU, its ID is vertexBufferID
@@ -665,9 +609,6 @@ function bindVertBuff (vertices_array) {
     return 0;
 }
 
-
-
-
 // vertices & draw function
 {
     function sphereV() {
@@ -683,9 +624,9 @@ function bindVertBuff (vertices_array) {
             {
                 //console.log(d1, d2);
                 var p1 = [Math.sin(d1)*Math.cos(d2), Math.cos(d1), Math.sin(d1)*Math.sin(d2), 1.0, 153/255, 153/255, 255/255,];
-                var p2 = [Math.sin(d1+offset)*Math.cos(d2), Math.cos(d1+offset), Math.sin(d1+offset)*Math.sin(d2), 1.0,  153/255, 153/255, 255/255,];
-                var p3 = [Math.sin(d1+offset)*Math.cos(d2+offset), Math.cos(d1+offset), Math.sin(d1+offset)*Math.sin(d2+offset), 1.0, 153/255, 153/255, 255/255,];
-                var p4 = [Math.sin(d1)*Math.cos(d2+offset), Math.cos(d1), Math.sin(d1)*Math.sin(d2+offset), 1.0,  153/255, 153/255, 255/255,];
+                var p2 = [Math.sin(d1+offset)*Math.cos(d2), Math.cos(d1+offset), Math.sin(d1+offset)*Math.sin(d2), 1.0,  255/255, 153/255, 255/255,];
+                var p3 = [Math.sin(d1+offset)*Math.cos(d2+offset), Math.cos(d1+offset), Math.sin(d1+offset)*Math.sin(d2+offset), 1.0, 255/255, 153/255, 255/255,];
+                var p4 = [Math.sin(d1)*Math.cos(d2+offset), Math.cos(d1), Math.sin(d1)*Math.sin(d2+offset), 1.0,  255/255, 153/255, 255/255,];
                 
                 var n1 = [Math.sin(d1)*Math.cos(d2), Math.cos(d1), Math.sin(d1)*Math.sin(d2),];
                 var n2 = [Math.sin(d1+offset)*Math.cos(d2), Math.cos(d1+offset), Math.sin(d1+offset)*Math.sin(d2),];
@@ -717,7 +658,7 @@ function bindVertBuff (vertices_array) {
         pushMatrix(g_modelMatrix);
 
         pushMatrix(mvpMatrix);
-
+            
             g_modelMatrix.translate(0, -1, 0);	
             g_modelMatrix.scale(0.4, 0.4, 0.4);	
             g_modelMatrix.rotate(g_angle12now, 0, 1, 0);
@@ -730,6 +671,7 @@ function bindVertBuff (vertices_array) {
 
             gl.uniformMatrix4fv(uLoc_modelMatrix[shaderIdx], false, g_modelMatrix.elements);
             gl.drawArrays(gl.TRIANGLES, sphere_S, sphere_C);	// draw all vertices.
+            
              
         mvpMatrix = popMatrix();
         g_modelMatrix = popMatrix();
@@ -848,7 +790,10 @@ function drawThings() {
             g_modelMatrix.translate(0, 1, 0);
             drawSphere();
             drawGrid();
-            
+            g_modelMatrix.translate(2, -0.5, 0);
+            g_modelMatrix.scale(0.5, 0.5, 0.5);
+            drawSphere();
+
         g_modelMatrix = popMatrix();
     }
 
