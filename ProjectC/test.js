@@ -25,7 +25,7 @@ var VSHADER_SOURCE0 =
 
 // uniforms
 'uniform MatlT u_MatlSet[1];\n' +		// Array of all materials. Now there's only one material
-'uniform LampT u_LampSet[1];\n' +		// Array of all light sources.
+'uniform LampT u_LampSet[2];\n' +		// Array of all light sources.
 'uniform mat4 u_modelMatrix;\n' +
 'uniform mat4 u_NormalMatrix; \n' +  	// Inverse Transpose of ModelMatrix;
 'uniform mat4 u_MvpMatrix; \n' +
@@ -37,7 +37,7 @@ var VSHADER_SOURCE0 =
     'void main() {\n' +
     '  gl_Position = (u_MvpMatrix + u_modelMatrix - u_modelMatrix + u_NormalMatrix - u_NormalMatrix) * a_Position;\n' +
     '  float x = u_eyePosWorld.x - u_eyePosWorld.x + a_Normal.x - a_Normal.x' + 
-    '  + u_LampSet[0].pos.x - u_LampSet[0].pos.x + u_MatlSet[0].emit.x - u_MatlSet[0].emit.x;\n' +
+    '   + u_LampSet[0].pos.x - u_LampSet[0].pos.x + u_MatlSet[0].emit.x - u_MatlSet[0].emit.x + u_LampSet[1].pos.x - u_LampSet[1].pos.x;\n' +
     '  v_Color = a_Color  + a_Color * x;\n' +
     '}\n';
 // Fragment shader prog
@@ -68,6 +68,7 @@ var VSHADER_SOURCE1 =
     'attribute vec4 a_Position;\n' +
     'attribute vec4 a_Normal; \n' +     // send from outside
     'attribute vec4 a_Color;\n' +
+
     
     // uniforms
     'uniform MatlT u_MatlSet[1];\n' +		// Array of all materials. Now there's only one material
@@ -88,7 +89,8 @@ var VSHADER_SOURCE1 =
     '   v_Position = u_modelMatrix * a_Position; \n' +      // position in world sys (z axis up)
     '   v_Normal = normalize(vec3(u_NormalMatrix * a_Normal));\n' +
     '   v_Kd = u_MatlSet[0].diff; \n' +		// find per-pixel diffuse reflectance from per-vertex
-											// (no per-pixel Ke,Ka, or Ks, but you can do it...)
+                                            // (no per-pixel Ke,Ka, or Ks, but you can do it...)
+        
     '}\n';
 
     
@@ -114,31 +116,43 @@ var FSHADER_SOURCE1 =
     '};\n' +
 
     // uniforms:
-    'uniform LampT u_LampSet[1];\n' +		// Array of all light sources.
+    'uniform LampT u_LampSet[2];\n' +		// Array of all light sources.
 	'uniform MatlT u_MatlSet[1];\n' +		// Array of all materials.
     'uniform vec3 u_eyePosWorld; \n' + 	    // Camera/eye location in world coords. Not changing, so, it's uniform
+    'uniform int u_Matindex;\n' +  // materials index
+
+
     // varyings:
     'varying vec3 v_Normal;\n' +				// Find 3D surface normal at each pix
     'varying vec4 v_Position;\n' +			// pixel's 3D pos too -- in 'world' coords
     'varying vec3 v_Kd;	\n' +						// Find diffuse reflectance K_d per pix
                                                         // Ambient? Emissive? Specular? almost
   													// NEVER change per-vertex: I use 'uniform' values
-     'varying vec4 v_Color;\n' +
+    'varying vec4 v_Color;\n' +
 
     'void main() {\n' +
     // Normalize! !!IMPORTANT!! TROUBLE if you don't! 
      	// normals interpolated for each pixel aren't 1.0 in length any more!
     '   vec3 normal = normalize(v_Normal); \n' +
     '   vec3 lightDirection = normalize(u_LampSet[0].pos - v_Position.xyz);\n' +
+
+    '   vec3 lightDirection1 = normalize(u_LampSet[1].pos - v_Position.xyz);\n' +
+
     '   vec3 eyeDirection = normalize(u_eyePosWorld - v_Position.xyz); \n' +
     '   float nDotL = max(dot(lightDirection, normal), 0.0); \n' +
     '   vec3 H = normalize(lightDirection + eyeDirection); \n' +
     '   float nDotH = max(dot(H, normal), 0.0); \n' +
     '   float e64 = pow(nDotH, float(u_MatlSet[0].shiny));\n' +
+
+    '   float nDotL1 = max(dot(lightDirection1, normal), 0.0); \n' +
+    '   vec3 H1 = normalize(lightDirection1 + eyeDirection); \n' +
+    '   float nDotH1 = max(dot(H1, normal), 0.0); \n' +
+    '   float e641 = pow(nDotH1, float(u_MatlSet[0].shiny));\n' +
+
     '   vec3 emissive = u_MatlSet[0].emit;' +
-    '   vec3 ambient = u_LampSet[0].ambi * u_MatlSet[0].ambi;\n' +
-    '   vec3 diffuse = u_LampSet[0].diff * v_Kd * nDotL;\n' +
-    '	vec3 speculr = u_LampSet[0].spec * u_MatlSet[0].spec * e64;\n' +
+    '   vec3 ambient = u_LampSet[0].ambi * u_MatlSet[0].ambi + u_LampSet[1].ambi * u_MatlSet[0].ambi;\n' +
+    '   vec3 diffuse = u_LampSet[0].diff * v_Kd * nDotL + u_LampSet[1].diff * v_Kd * nDotL1;\n' +
+    '	vec3 speculr = u_LampSet[0].spec * u_MatlSet[0].spec * e64 + u_LampSet[1].spec * u_MatlSet[0].spec * e641;\n' +
     '   gl_FragColor = vec4(emissive + ambient + diffuse + speculr , v_Color );\n' + // 1.0
     '}\n';
 
@@ -175,7 +189,7 @@ var VSHADER_SOURCE2 =
     'uniform mat4 u_modelMatrix;\n' +
     'uniform mat4 u_NormalMatrix; \n' +  	// Inverse Transpose of ModelMatrix;
     'uniform mat4 u_MvpMatrix; \n' +
-    'uniform LampT u_LampSet[1];\n' +		// Array of all light sources.
+    'uniform LampT u_LampSet[2];\n' +		// Array of all light sources.
     'uniform vec3 u_eyePosWorld; \n' + 	    // Camera/eye location in world coords. Not changing, so, it's uniform
 
     // varying - send to fragment shader
@@ -270,7 +284,7 @@ var FSHADER_SOURCE3 =
 	'	int shiny;\n' +			// Kshiny: specular exponent (integer >= 1; typ. <200)
     '};\n' +
     // uniforms:
-    'uniform LampT u_LampSet[1];\n' +		// Array of all light sources.
+    'uniform LampT u_LampSet[2];\n' +		// Array of all light sources.
 	'uniform MatlT u_MatlSet[1];\n' +		// Array of all materials.
     'uniform vec3 u_eyePosWorld; \n' + 	    // Camera/eye location in world coords. Not changing, so, it's uniform
     // varyings:
@@ -333,7 +347,7 @@ var VSHADER_SOURCE4 =
     'uniform mat4 u_modelMatrix;\n' +
     'uniform mat4 u_NormalMatrix; \n' +  	// Inverse Transpose of ModelMatrix;
     'uniform mat4 u_MvpMatrix; \n' +
-    'uniform LampT u_LampSet[1];\n' +		// Array of all light sources.
+    'uniform LampT u_LampSet[2];\n' +		// Array of all light sources.
     'uniform vec3 u_eyePosWorld; \n' + 	    // Camera/eye location in world coords. Not changing, so, it's uniform
 
     // varying - send to fragment shader
@@ -389,15 +403,31 @@ var	eyePosWorld = new Float32Array(3);	// x,y,z in world coords
 
 //	... for our first light source:   (stays false if never initialized)
 var lamp0 = new LightsT();
+var lamp1 = new LightsT();
+var lamp0Set = new Array(0,0,6,0.4,0.4,0.4,0.4,0.4,0.4,0.8,0.8,0.8);
+var lamp1Set = new Array(0,-3,6,0.4,0.4,0.4,0.4,0.4,0.4,0.8,0.8,0.8);
 
 	// ... for our first material:
 var matlSel= MATL_COPPER_SHINY;				// see keypress(): 'm' key changes matlSel
 var matl0 = new Material(matlSel);	
+var matl1 = new Material(matlSel);	
+var matl2 = new Material(matlSel);	
+var matl3 = new Material(matlSel);	
+var matl4 = new Material(matlSel);	
 
 
 var shaderLoc, shaderLoc0, shaderLoc1, shaderLoc2, shaderLoc3, shaderLoc4;
 var vert;
 var shaderIdx;
+// shader switching
+var cartoonish = false;
+var shadeM = document.getElementById('shadeM');
+var LightM = document.getElementById('LightM');
+
+var PhongShader = true;
+var BlinnLighting = true;
+
+
 
 // quaternion
 var qNew = new Quaternion(0,0,0,1); // most-recent mouse drag's rotation
@@ -453,6 +483,7 @@ var newdirx =1, newdiry = 0, newdirz = -1;
 //// ------------------------------------
 
 function main() {
+    
     // VBO creating
     vert = initVertexBuffers();
     if (vert.length < 0) {
@@ -474,11 +505,14 @@ function main() {
     //Initialize shaders
     shaderLoc0 = myInitShaders(VSHADER_SOURCE0, FSHADER_SOURCE0, "BASIC", 0);
     shaderLoc1 = myInitShaders(VSHADER_SOURCE1, FSHADER_SOURCE1, "PHONG + BLINN-PHONG", 1);
-    shaderLoc2 = myInitShaders(VSHADER_SOURCE2, FSHADER_SOURCE2, "GOURAUD + BLINN-PHONG", 2);
-    shaderLoc3 = myInitShaders(VSHADER_SOURCE3, FSHADER_SOURCE3, "PHONG + PHONG", 3);
-    shaderLoc4 = myInitShaders(VSHADER_SOURCE4, FSHADER_SOURCE4, "GOURAUD + PHONG", 4);
+    // shaderLoc2 = myInitShaders(VSHADER_SOURCE2, FSHADER_SOURCE2, "GOURAUD + BLINN-PHONG", 2);
+    // shaderLoc3 = myInitShaders(VSHADER_SOURCE3, FSHADER_SOURCE3, "PHONG + PHONG", 3);
+    // shaderLoc4 = myInitShaders(VSHADER_SOURCE4, FSHADER_SOURCE4, "GOURAUD + PHONG", 4);
 
     switchShader(shaderLoc1, 1);
+
+    setLights();
+    setMatrials();
 
     {
         window.addEventListener("keydown", myKeyDown, false);
@@ -624,9 +658,9 @@ function bindVertBuff (vertices_array) {
             {
                 //console.log(d1, d2);
                 var p1 = [Math.sin(d1)*Math.cos(d2), Math.cos(d1), Math.sin(d1)*Math.sin(d2), 1.0, 153/255, 153/255, 255/255,];
-                var p2 = [Math.sin(d1+offset)*Math.cos(d2), Math.cos(d1+offset), Math.sin(d1+offset)*Math.sin(d2), 1.0,  255/255, 153/255, 255/255,];
-                var p3 = [Math.sin(d1+offset)*Math.cos(d2+offset), Math.cos(d1+offset), Math.sin(d1+offset)*Math.sin(d2+offset), 1.0, 255/255, 153/255, 255/255,];
-                var p4 = [Math.sin(d1)*Math.cos(d2+offset), Math.cos(d1), Math.sin(d1)*Math.sin(d2+offset), 1.0,  255/255, 153/255, 255/255,];
+                var p2 = [Math.sin(d1+offset)*Math.cos(d2), Math.cos(d1+offset), Math.sin(d1+offset)*Math.sin(d2), 1.0,  153/255, 153/255, 255/255,];
+                var p3 = [Math.sin(d1+offset)*Math.cos(d2+offset), Math.cos(d1+offset), Math.sin(d1+offset)*Math.sin(d2+offset), 1.0, 153/255, 153/255, 255/255,];
+                var p4 = [Math.sin(d1)*Math.cos(d2+offset), Math.cos(d1), Math.sin(d1)*Math.sin(d2+offset), 1.0,  153/255, 153/255, 255/255,];
                 
                 var n1 = [Math.sin(d1)*Math.cos(d2), Math.cos(d1), Math.sin(d1)*Math.sin(d2),];
                 var n2 = [Math.sin(d1+offset)*Math.cos(d2), Math.cos(d1+offset), Math.sin(d1+offset)*Math.sin(d2),];
@@ -790,7 +824,7 @@ function drawThings() {
             g_modelMatrix.translate(0, 1, 0);
             drawSphere();
             drawGrid();
-            g_modelMatrix.translate(2, -0.5, 0);
+            g_modelMatrix.translate(0.8, -0.5, 0);
             g_modelMatrix.scale(0.5, 0.5, 0.5);
             drawSphere();
 
@@ -826,8 +860,7 @@ function drawAll() {
     inst_z = cloud_y;
 
     setCamera();
-    setLights();
-    setMatrials();
+    testShader();
     
     // set perspective:
     gl.viewport(0,											// Viewport lower-left corner
@@ -1197,27 +1230,43 @@ function myInitShaders(VSHADER, FSHADER, name, idx) {
         return;
     }
 
-    //  ... for Phong light source:
-	// NEW!  Note we're getting the location of a GLSL struct array member:
-    lamp0.u_pos[idx]  = gl.getUniformLocation(gl.program, 'u_LampSet[0].pos');	
-    lamp0.u_ambi[idx] = gl.getUniformLocation(gl.program, 'u_LampSet[0].ambi');
-    lamp0.u_diff[idx] = gl.getUniformLocation(gl.program, 'u_LampSet[0].diff');
-    lamp0.u_spec[idx] = gl.getUniformLocation(gl.program, 'u_LampSet[0].spec');
-    if( !lamp0.u_pos[idx] || !lamp0.u_ambi[idx] || !lamp0.u_diff[idx] || !lamp0.u_spec[idx] ) {
-        console.log('Failed to get GPUs Lamp0 storage locations for ', name);
-        return;
+    {
+        //  ... for Phong light source:
+        // NEW!  Note we're getting the location of a GLSL struct array member:
+        lamp0.u_pos[idx]  = gl.getUniformLocation(gl.program, 'u_LampSet[0].pos');	
+        lamp0.u_ambi[idx] = gl.getUniformLocation(gl.program, 'u_LampSet[0].ambi');
+        lamp0.u_diff[idx] = gl.getUniformLocation(gl.program, 'u_LampSet[0].diff');
+        lamp0.u_spec[idx] = gl.getUniformLocation(gl.program, 'u_LampSet[0].spec');
+        if( !lamp0.u_pos[idx] || !lamp0.u_ambi[idx] || !lamp0.u_diff[idx] || !lamp0.u_spec[idx] ) {
+            console.log('Failed to get GPUs Lamp0 storage locations for ', name);
+            return;
+        }
+
+        lamp1.u_pos[idx]  = gl.getUniformLocation(gl.program, 'u_LampSet[1].pos');	
+        lamp1.u_ambi[idx] = gl.getUniformLocation(gl.program, 'u_LampSet[1].ambi');
+        lamp1.u_diff[idx] = gl.getUniformLocation(gl.program, 'u_LampSet[1].diff');
+        lamp1.u_spec[idx] = gl.getUniformLocation(gl.program, 'u_LampSet[1].spec');
+        if( !lamp1.u_pos[idx] || !lamp1.u_ambi[idx] || !lamp1.u_diff[idx] || !lamp1.u_spec[idx] ) {
+            console.log('Failed to get GPUs Lamp1 storage locations for ', name);
+            return;
+        }
     }
-	// ... for Phong material/reflectance:
-	matl0.uLoc_Ke[idx] = gl.getUniformLocation(gl.program, 'u_MatlSet[0].emit');
-	matl0.uLoc_Ka[idx] = gl.getUniformLocation(gl.program, 'u_MatlSet[0].ambi');
-	matl0.uLoc_Kd[idx] = gl.getUniformLocation(gl.program, 'u_MatlSet[0].diff');
-	matl0.uLoc_Ks[idx] = gl.getUniformLocation(gl.program, 'u_MatlSet[0].spec');
-	matl0.uLoc_Kshiny[idx] = gl.getUniformLocation(gl.program, 'u_MatlSet[0].shiny');
-	if(!matl0.uLoc_Ke[idx] || !matl0.uLoc_Ka[idx] || !matl0.uLoc_Kd[idx] || !matl0.uLoc_Ks[idx] || !matl0.uLoc_Kshiny[idx] ) {
-		console.log('Failed to get GPUs Reflectance storage locationsfor ', name);
-		return;
-	}
-    
+
+    // For Materials: 
+    {
+        // ... for Phong material/reflectance:
+        matl0.uLoc_Ke[idx] = gl.getUniformLocation(gl.program, 'u_MatlSet[0].emit');
+        matl0.uLoc_Ka[idx] = gl.getUniformLocation(gl.program, 'u_MatlSet[0].ambi');
+        matl0.uLoc_Kd[idx] = gl.getUniformLocation(gl.program, 'u_MatlSet[0].diff');
+        matl0.uLoc_Ks[idx] = gl.getUniformLocation(gl.program, 'u_MatlSet[0].spec');
+        matl0.uLoc_Kshiny[idx] = gl.getUniformLocation(gl.program, 'u_MatlSet[0].shiny');
+        if(!matl0.uLoc_Ke[idx] || !matl0.uLoc_Ka[idx] || !matl0.uLoc_Kd[idx] || !matl0.uLoc_Ks[idx] || !matl0.uLoc_Kshiny[idx] ) {
+            console.log('Failed to get GPUs Reflectance matl0 storage locationsfor ', name);
+            return;
+        }
+        
+    }
+
     eyePosWorld.set([eye_x, eye_y, eye_z]);
 	gl.uniform3fv(uLoc_eyePosWorld[idx], eyePosWorld);// use it to set our uniform
 
@@ -1226,18 +1275,25 @@ function myInitShaders(VSHADER, FSHADER, name, idx) {
 
 function setLights() {
 
-	// (Note: uniform4fv() expects 4-element float32Array as its 2nd argument)
-    // Init World-coord. position & colors of first light source in global vars;
-    lamp0.I_pos.elements.set([0, 0, 6]);
-    lamp0.I_ambi.elements.set([0.4, 0.4, 0.4]);   // color rgb
-    lamp0.I_diff.elements.set([0.4, 0.4, 0.4]);
-    lamp0.I_spec.elements.set([0.8, 0.8, 0.8]);
+    lamp0.I_pos.elements.set(lamp0Set.slice(0,3));
+    lamp0.I_ambi.elements.set(lamp0Set.slice(3,6));   // color rgb
+    lamp0.I_diff.elements.set(lamp0Set.slice(6,9));
+    lamp0.I_spec.elements.set(lamp0Set.slice(9,12));
 
     gl.uniform3fv(lamp0.u_pos[shaderIdx],  lamp0.I_pos.elements.slice(0,3));
-    //		 ('slice(0,3) member func returns elements 0,1,2 (x,y,z) ) 
     gl.uniform3fv(lamp0.u_ambi[shaderIdx], lamp0.I_ambi.elements);		// ambient
     gl.uniform3fv(lamp0.u_diff[shaderIdx], lamp0.I_diff.elements);		// diffuse
     gl.uniform3fv(lamp0.u_spec[shaderIdx], lamp0.I_spec.elements);		// Specular
+
+    lamp1.I_pos.elements.set(lamp1Set.slice(0,3));
+    lamp1.I_ambi.elements.set(lamp1Set.slice(3,6));   // color rgb
+    lamp1.I_diff.elements.set(lamp1Set.slice(6,9));
+    lamp1.I_spec.elements.set(lamp1Set.slice(9,12));
+
+    gl.uniform3fv(lamp1.u_pos[shaderIdx],  lamp1.I_pos.elements.slice(0,3));
+    gl.uniform3fv(lamp1.u_ambi[shaderIdx], lamp1.I_ambi.elements);		// ambient
+    gl.uniform3fv(lamp1.u_diff[shaderIdx], lamp1.I_diff.elements);		// diffuse
+    gl.uniform3fv(lamp1.u_spec[shaderIdx], lamp1.I_spec.elements);		// Specular
 }
 
 function setMatrials() {
@@ -1249,6 +1305,11 @@ function setMatrials() {
 	gl.uniform1i(matl0.uLoc_Kshiny[shaderIdx], parseInt(matl0.K_shiny, 10));     // Kshiny 
 }
 
+function changeMatels(matlSel) {
+	matl0.setMatl(matlSel);								// set new material reflectances,
+}
+
+// used in every loop of drawAll() since camera is always moving
 function setCamera() {
     gl.uniform3fv(uLoc_eyePosWorld[shaderIdx], [eye_x, eye_y, eye_z]);// use it to set our uniform
 }
@@ -1258,10 +1319,77 @@ function switchShader(shadername, i) {
     shaderLoc = shadername;
     gl.useProgram(shaderLoc);
     gl.program = shaderLoc;	
-    console.log("Switch shader successfully!");
+    console.log("Switch shader to ", i," successfully!");
 
     bindVertBuff(vert);
     console.log("Vertecies binded successfully!");
 
     shaderIdx = i;
+}
+
+
+/// shader swithcing functions:
+{
+    function resetDefaultShader() {
+        if(!cartoonish)
+        {
+            cartoonish = true;
+            switchShader(shaderLoc0, 0);
+            console.log("switch to shader 0 --> Cartoonish shader");
+        } 
+        else if(cartoonish) {
+            cartoonish = false;
+            switchShader(shaderLoc1, 1);
+        }
+    }
+
+    function testShader() {
+        if(cartoonish)
+        {
+            return 0;
+        }
+        
+        var vals = shadeM.value;
+        var vall = LightM.value;
+
+        var phong, blinn;
+        var shadernumber, shidx;
+
+        if(vals == "p_S" && vall == "bp_L")
+        {
+            phong = true;
+            blinn = true;
+            shadernumber = shaderLoc1;
+            shidx = 1;
+        } 
+        else if (vals == "p_S" && vall == "p_L") 
+        {
+            phong = true;
+            blinn = false;
+            shadernumber = shaderLoc3;
+            shidx = 3;
+        } 
+        else if (vals == "g_S" && vall == "bp_L") 
+        {
+            phong = false;
+            blinn = true;
+            shadernumber = shaderLoc2;
+            shidx = 2;
+        } 
+        else if (vals == "g_S" && vall == "p_L") 
+        {
+            phong = false;
+            blinn = false;
+            shadernumber = shaderLoc4;
+            shidx = 4;
+        }
+
+        // switched the shader
+        if(PhongShader != phong || BlinnLighting != blinn) {
+            PhongShader = phong;
+            BlinnLighting = blinn;
+
+            switchShader(shadernumber, shidx);
+        }
+    }
 }

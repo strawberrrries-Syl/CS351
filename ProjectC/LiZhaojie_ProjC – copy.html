@@ -28,16 +28,16 @@
 
 			Shading Method: 
 
-				<select name = "ShadeM">
-					<option selected = "selected", value = "g_S"> Gouraud</option>
-					<option selected = "selected", value = "p_S"> Phong</option>
+				<select id = 'shadeM' name = 'shadeM'>
+					<option  value = "g_S"> Gouraud</option>
+					<option selected = "selected" value = "p_S"> Phong</option>
 				</select>
 
 
 			Lighting Method: 
-				<select name = "LightM">
-					<option selected = "selected", value = "p_L"> Phong</option>
-					<option selected = "selected", value = "bp_L"> Blinn-Phong</option>
+				<select id = 'LightM' name = 'LightM'>
+					<option value = "p_L"> Phong</option>
+					<option selected = "selected" value = "bp_L"> Blinn-Phong</option>
 				</select>
 
 			
@@ -74,17 +74,14 @@
 					<output id = "dg" for="dG"></output>
 					B<input type = "range" id = "dB" value = "1" min = "0" max = "1" step = "0.05" onchange = "db.value=this.value"/>
 					<output id = "db" for="dB"></output>
-
-			Direct: 
-					Up/Down<input type = "range" id = "dup" value = "0" min = "-60" max = "60" step = "10" onchange = "du.value=this.value"/>
-					<output id = "du" for="dR"></output>
-					Left/Right<input type = "range" id = "ddown" value = "0" min = "-60" max = "60" step = "10" onchange = "dd.value=this.value"/>
-					<output id = "dd" for="dR"></output>
+			<br>
 			Pos: 
 					Up/Down<input type = "range" id = "dMup" value = "0" min = "-4" max = "4" step = "0.1" onchange = "dMu.value=this.value"/>
 					<output id = "dMu" for="dMup"></output>
-					Left/Right<input type = "range" id = "dMdown" value = "0" min = "-4" max = "4" step = "0.1" onchange = "dMd.value=this.value"/>
-					<output id = "dMd" for="dMdown"></output>
+					Left/Right<input type = "range" id = "dMleft" value = "0" min = "-4" max = "4" step = "0.1" onchange = "dMl.value=this.value"/>
+					<output id = "dMl" for="dMleft"></output>
+					Fwd/Bwd<input type = "range" id = "dMfwd" value = "0" min = "-4" max = "4" step = "0.1" onchange = "dMf.value=this.value"/>
+					<output id = "dMf" for="dMfwd"></output>
 
 
 		<br> <b>Light2</b>
@@ -117,32 +114,15 @@
 					<output id = "pg" for="pG"></output>
 					B<input type = "range" id = "pB" value = "1" min = "0" max = "1" step = "0.05" onchange = "pb.value=this.value"/>
 					<output id = "pb" for="pB"></output>
-			
-			Direct: 
-					Up/Down<input type = "range" id = "pup" value = "0" min = "-60" max = "60" step = "10" onchange = "pu.value=this.value"/>
-					<output id = "pu" for="pup"></output>
-					Left/Right<input type = "range" id = "pdown" value = "0" min = "-60" max = "60" step = "10" onchange = "pd.value=this.value"/>
-					<output id = "pd" for="pdown"></output>
-			
+			<br>
 			Pos: 
 					Up/Down<input type = "range" id = "pMup" value = "0" min = "-4" max = "4" step = "0.1" onchange = "pMu.value=this.value"/>
 					<output id = "pMu" for="pMup"></output>
 					Left/Right<input type = "range" id = "pMdown" value = "0" min = "-4" max = "4" step = "0.1" onchange = "pMd.value=this.value"/>
 					<output id = "pMd" for="pMdown"></output>
+					Fwd/Bwd<input type = "range" id = "pMfwd" value = "0" min = "-4" max = "4" step = "0.1" onchange = "pMf.value=this.value"/>
+					<output id = "pMf" for="pMfwd"></output>
 
-		<!-- <br> <b>Ambient Light</b>>
-			<select name = "directL">
-				<option selected = "selected", value = "ax"> OFF</option>
-				<option selected = "selected", value = "ao"> ON</option>
-				
-			</select>
-			Color: 	R<input type = "range" id = "aR" value = "1" min = "0" max = "1" step = "0.05" onchange = "ar.value=this.value"/>
-					<output id = "ar" for="aR"></output>
-					G<input type = "range" id = "aG" value = "1" min = "0" max = "1" step = "0.05" onchange = "ag.value=this.value"/>
-					<output id = "ag" for="aG"></output>
-					B<input type = "range" id = "aB" value = "1" min = "0" max = "1" step = "0.05" onchange = "ab.value=this.value"/>
-					<output id = "ab" for="aB"></output> -->
-		
 
 		<hr> <b> Material:</b>
 		<br>
