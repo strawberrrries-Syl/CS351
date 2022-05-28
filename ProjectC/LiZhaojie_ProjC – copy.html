@@ -38,89 +38,123 @@
 				<select id = 'LightM' name = 'LightM'>
 					<option value = "p_L"> Phong</option>
 					<option selected = "selected" value = "bp_L"> Blinn-Phong</option>
-				</select>
+				</select> 
 
 			
 		
 		<hr><b>Lights:</b>
 
-		<br> <b>Light1:</b>
-			<select name = "directL">
-				<option selected = "selected", value = "dx"> OFF</option>
-				<option selected = "selected", value = "do"> ON</option>
+		<hr> <b>Light1:</b>
+			<select id = 'directL' name = 'directL'>
+				<option value = "dx"> OFF</option>
+				<option selected = "selected" value = "do"> ON</option>
 				
 			</select>
+			
 			Ambient:
-			<select name = "directA">
-				<option selected = "selected", value = "dax"> OFF</option>
-				<option selected = "selected", value = "dao"> ON</option>
+			<select id = 'directA' name = "directA">
+				<option value = "dax"> OFF</option>
+				<option selected = "selected" value = "dao"> ON</option>
 			</select>
 
 			Diffuse:
-			<select name = "directD">
-				<option selected = "selected", value = "ddx"> OFF</option>
-				<option selected = "selected", value = "ddo"> ON</option>
+			<select id = 'directD' name = "directD">
+				<option value = "ddx"> OFF</option>
+				<option selected = "selected" value = "ddo"> ON</option>
 			</select>
 
 			Specular:
-			<select name = "directS">
+			<select id = 'directS' name = "directS">
 				<option selected = "selected", value = "dsx"> OFF</option>
 				<option selected = "selected", value = "dso"> ON</option>
 			</select>
 			<br>
-			Color: 	R<input type = "range" id = "dR" value = "1" min = "0" max = "1" step = "0.05" onchange = "dr.value=this.value"/>
-					<output id = "dr" for="dR"></output>
-					G<input type = "range" id = "dG" value = "1" min = "0" max = "1" step = "0.05" onchange = "dg.value=this.value"/>
-					<output id = "dg" for="dG"></output>
-					B<input type = "range" id = "dB" value = "1" min = "0" max = "1" step = "0.05" onchange = "db.value=this.value"/>
-					<output id = "db" for="dB"></output>
+			Color: 	
+			<br> Ambi:
+					R<input type = "range" id = "dRa" value = "0.4" min = "0" max = "1" step = "0.05" onchange = "dra.value=this.value"/>
+					<output id = "dra" for="dRa"></output>
+					G<input type = "range" id = "dGa" value = "0.4" min = "0" max = "1" step = "0.05" onchange = "dga.value=this.value"/>
+					<output id = "dga" for="dGa"></output>
+					B<input type = "range" id = "dBa" value = "0.4" min = "0" max = "1" step = "0.05" onchange = "dba.value=this.value"/>
+					<output id = "dba" for="dBa"></output>
+			<br> Diff:
+					R<input type = "range" id = "dRd" value = "0.4" min = "0" max = "1" step = "0.05" onchange = "drd.value=this.value"/>
+					<output id = "drd" for="dRd"></output>
+					G<input type = "range" id = "dGd" value = "0.4" min = "0" max = "1" step = "0.05" onchange = "dgd.value=this.value"/>
+					<output id = "dgd" for="dGd"></output>
+					B<input type = "range" id = "dBd" value = "0.4" min = "0" max = "1" step = "0.05" onchange = "dbd.value=this.value"/>
+					<output id = "dbd" for="dBd"></output>
+			<br> Spec:
+					R<input type = "range" id = "dRs" value = "0.8" min = "0" max = "1" step = "0.05" onchange = "drs.value=this.value"/>
+					<output id = "drs" for="dRs"></output>
+					G<input type = "range" id = "dGs" value = "0.8" min = "0" max = "1" step = "0.05" onchange = "dgs.value=this.value"/>
+					<output id = "dgs" for="dGs"></output>
+					B<input type = "range" id = "dBs" value = "0.8" min = "0" max = "1" step = "0.05" onchange = "dbs.value=this.value"/>
+					<output id = "dbs" for="dBs"></output>
 			<br>
 			Pos: 
-					Up/Down<input type = "range" id = "dMup" value = "0" min = "-4" max = "4" step = "0.1" onchange = "dMu.value=this.value"/>
+					Up/Down<input type = "range" id = "dMup" value = "6" min = "-12" max = "12" step = "0.5" onchange = "dMu.value=this.value"/>
 					<output id = "dMu" for="dMup"></output>
-					Left/Right<input type = "range" id = "dMleft" value = "0" min = "-4" max = "4" step = "0.1" onchange = "dMl.value=this.value"/>
+					Left/Right<input type = "range" id = "dMleft" value = "0" min = "-12" max = "12" step = "0.5" onchange = "dMl.value=this.value"/>
 					<output id = "dMl" for="dMleft"></output>
-					Fwd/Bwd<input type = "range" id = "dMfwd" value = "0" min = "-4" max = "4" step = "0.1" onchange = "dMf.value=this.value"/>
+					Fwd/Bwd<input type = "range" id = "dMfwd" value = "0" min = "-12" max = "12" step = "0.5" onchange = "dMf.value=this.value"/>
 					<output id = "dMf" for="dMfwd"></output>
+			
 
 
-		<br> <b>Light2</b>
-			<select name = "pointL">
-				<option selected = "selected", value = "px"> OFF</option>
-				<option selected = "selected", value = "po"> ON</option>
+		<hr> <b>Light2</b>
+			<select id = 'pointL' name = "pointL">
+				<option value = "px"> OFF</option>
+				<option selected = "selected" value = "po"> ON</option>
 			</select>
+			
 			Ambient:
-			<select name = "pointA">
-				<option selected = "selected", value = "pax"> OFF</option>
-				<option selected = "selected", value = "pao"> ON</option>
+			<select id = 'pointA' name = "pointA">
+				<option value = "pax"> OFF</option>
+				<option selected = "selected" value = "pao"> ON</option>
 			</select>
 
 			Diffuse:
-			<select name = "pointD">
-				<option selected = "selected", value = "pdx"> OFF</option>
-				<option selected = "selected", value = "pdo"> ON</option>
+			<select id = 'pointD' name = "pointD">
+				<option value = "pdx"> OFF</option>
+				<option selected = "selected" value = "pdo"> ON</option>
 			</select>
 
 			Specular:
-			<select name = "pointS">
+			<select id = 'pointS' name = "pointS">
 				<option selected = "selected", value = "psx"> OFF</option>
 				<option selected = "selected", value = "pso"> ON</option>
 			</select>
 			<br>
 			Color: 	
-			R<input type = "range" id = "pR" value = "1" min = "0" max = "1" step = "0.05" onchange = "pr.value=this.value"/>
-					<output id = "pr" for="pR"></output>
-					G<input type = "range" id = "pG" value = "1" min = "0" max = "1" step = "0.05" onchange = "pg.value=this.value"/>
-					<output id = "pg" for="pG"></output>
-					B<input type = "range" id = "pB" value = "1" min = "0" max = "1" step = "0.05" onchange = "pb.value=this.value"/>
-					<output id = "pb" for="pB"></output>
+			<br> Ambi:
+					R<input type = "range" id = "pRa" value = "0.4" min = "0" max = "1" step = "0.05" onchange = "pra.value=this.value"/>
+					<output id = "pra" for="pRa"></output>
+					G<input type = "range" id = "pGa" value = "0.4" min = "0" max = "1" step = "0.05" onchange = "pga.value=this.value"/>
+					<output id = "pga" for="pGa"></output>
+					B<input type = "range" id = "pBa" value = "0.4" min = "0" max = "1" step = "0.05" onchange = "pba.value=this.value"/>
+					<output id = "pba" for="pBa"></output>
+			<br> Diff:
+					R<input type = "range" id = "pRd" value = "0.4" min = "0" max = "1" step = "0.05" onchange = "prd.value=this.value"/>
+					<output id = "prd" for="pRd"></output>
+					G<input type = "range" id = "pGd" value = "0.4" min = "0" max = "1" step = "0.05" onchange = "pgd.value=this.value"/>
+					<output id = "pgd" for="pGd"></output>
+					B<input type = "range" id = "pBd" value = "0.4" min = "0" max = "1" step = "0.05" onchange = "pbd.value=this.value"/>
+					<output id = "pbd" for="pBd"></output>
+			<br> Spec:
+					R<input type = "range" id = "pRs" value = "0.8" min = "0" max = "1" step = "0.05" onchange = "prs.value=this.value"/>
+					<output id = "prs" for="pRs"></output>
+					G<input type = "range" id = "pGs" value = "0.8" min = "0" max = "1" step = "0.05" onchange = "pgs.value=this.value"/>
+					<output id = "pgs" for="pGs"></output>
+					B<input type = "range" id = "pBs" value = "0.8" min = "0" max = "1" step = "0.05" onchange = "pbs.value=this.value"/>
+					<output id = "pbs" for="pBs"></output>
 			<br>
 			Pos: 
-					Up/Down<input type = "range" id = "pMup" value = "0" min = "-4" max = "4" step = "0.1" onchange = "pMu.value=this.value"/>
+					Up/Down<input type = "range" id = "pMup" value = "6" min = "-12" max = "12" step = "0.5" onchange = "pMu.value=this.value"/>
 					<output id = "pMu" for="pMup"></output>
-					Left/Right<input type = "range" id = "pMdown" value = "0" min = "-4" max = "4" step = "0.1" onchange = "pMd.value=this.value"/>
+					Left/Right<input type = "range" id = "pMdown" value = "0" min = "-12" max = "12" step = "0.5" onchange = "pMd.value=this.value"/>
 					<output id = "pMd" for="pMdown"></output>
-					Fwd/Bwd<input type = "range" id = "pMfwd" value = "0" min = "-4" max = "4" step = "0.1" onchange = "pMf.value=this.value"/>
+					Fwd/Bwd<input type = "range" id = "pMfwd" value = "-3" min = "-12" max = "12" step = "0.5" onchange = "pMf.value=this.value"/>
 					<output id = "pMf" for="pMfwd"></output>
 
 

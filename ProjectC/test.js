@@ -201,15 +201,24 @@ var VSHADER_SOURCE2 =
     '   vec3 normal = normalize(vec3(u_NormalMatrix * a_Normal));\n' +
     '   vec4 v_Position_none = u_modelMatrix * a_Position; \n' +      // position in world sys (z axis up)
     '   vec3 lightDirection = normalize(u_LampSet[0].pos - v_Position_none.xyz);\n' +
+
+    '   vec3 lightDirection1 = normalize(u_LampSet[1].pos - v_Position_none.xyz);\n' +
+
     '   vec3 eyeDirection = normalize(u_eyePosWorld - v_Position_none.xyz); \n' +
     '   float nDotL = max(dot(lightDirection, normal), 0.0); \n' +
     '   vec3 H = normalize(lightDirection + eyeDirection); \n' +
     '   float nDotH = max(dot(H, normal), 0.0); \n' +
     '   float e64 = pow(nDotH, float(u_MatlSet[0].shiny));\n' +
+
+    '   float nDotL1 = max(dot(lightDirection1, normal), 0.0); \n' +
+    '   vec3 H1 = normalize(lightDirection1 + eyeDirection); \n' +
+    '   float nDotH1 = max(dot(H1, normal), 0.0); \n' +
+    '   float e641 = pow(nDotH1, float(u_MatlSet[0].shiny));\n' +
+
     '   vec3 emissive = u_MatlSet[0].emit;' +
-    '   vec3 ambient = u_LampSet[0].ambi * u_MatlSet[0].ambi;\n' +
-    '   vec3 diffuse = u_LampSet[0].diff * u_MatlSet[0].diff * nDotL;\n' +
-    '	vec3 speculr = u_LampSet[0].spec * u_MatlSet[0].spec * e64;\n' +
+    '   vec3 ambient = u_LampSet[0].ambi * u_MatlSet[0].ambi + u_LampSet[1].ambi * u_MatlSet[0].ambi;\n' +
+    '   vec3 diffuse = u_LampSet[0].diff * u_MatlSet[0].diff * nDotL + u_LampSet[1].diff * u_MatlSet[0].diff * nDotL;\n' +
+    '	vec3 speculr = u_LampSet[0].spec * u_MatlSet[0].spec * e64 + u_LampSet[1].spec * u_MatlSet[0].spec * e641;\n' +
     '   v_Color = vec4(emissive + ambient + diffuse + speculr , a_Color);\n' + // 1.0
     '}\n';
 // Fragment shader prog
@@ -302,15 +311,23 @@ var FSHADER_SOURCE3 =
     '   vec3 normal = normalize(v_Normal); \n' +
     '   vec3 lightDirection = normalize(u_LampSet[0].pos - v_Position.xyz);\n' +
     '   vec3 R = normalize(reflect(-lightDirection, normal))	 ;\n'+
+
+    '   vec3 lightDirection1 = normalize(u_LampSet[1].pos - v_Position.xyz);\n' +
+    '   vec3 R1 = normalize(reflect(-lightDirection1, normal))	 ;\n'+
+    
     '   vec3 eyeDirection = normalize(u_eyePosWorld - v_Position.xyz); \n' +
     '   float nDotL = max(dot(lightDirection, normal), 0.0); \n' +
     '   float VDotR = max(dot(R, eyeDirection), 0.0); \n' +
-
     '   float e64 = pow(VDotR, float(u_MatlSet[0].shiny));\n' +
+
+    '   float nDotL1 = max(dot(lightDirection1, normal), 0.0); \n' +
+    '   float VDotR1 = max(dot(R1, eyeDirection), 0.0); \n' +
+    '   float e641 = pow(VDotR1, float(u_MatlSet[0].shiny));\n' +
+
     '   vec3 emissive = u_MatlSet[0].emit;' +
-    '   vec3 ambient = u_LampSet[0].ambi * u_MatlSet[0].ambi;\n' +
-    '   vec3 diffuse = u_LampSet[0].diff * v_Kd * nDotL;\n' +
-    '	vec3 speculr = u_LampSet[0].spec * u_MatlSet[0].spec * e64;\n' +
+    '   vec3 ambient = u_LampSet[0].ambi * u_MatlSet[0].ambi + u_LampSet[1].ambi * u_MatlSet[0].ambi;\n' +
+    '   vec3 diffuse = u_LampSet[0].diff * v_Kd * nDotL + u_LampSet[1].diff * v_Kd * nDotL1;\n' +
+    '	vec3 speculr = u_LampSet[0].spec * u_MatlSet[0].spec * e64 + u_LampSet[1].spec * u_MatlSet[0].spec * e641;\n' +
     '   gl_FragColor = vec4(emissive + ambient + diffuse + speculr , v_Color);\n' + // 1.0
     '}\n';
 
@@ -358,15 +375,24 @@ var VSHADER_SOURCE4 =
     '   vec3 normal = normalize(vec3(u_NormalMatrix * a_Normal));\n' +
     '   vec4 v_Position_none = u_modelMatrix * a_Position; \n' +      // position in world sys (z axis up)                                         
     '   vec3 lightDirection = normalize(u_LampSet[0].pos - v_Position_none.xyz);\n' +
+
+    '   vec3 lightDirection1 = normalize(u_LampSet[1].pos - v_Position_none.xyz);\n' +
+
     '   vec3 eyeDirection = normalize(u_eyePosWorld - v_Position_none.xyz); \n' +
     '   float nDotL = max(dot(lightDirection, normal), 0.0); \n' +
     '   vec3 R = normalize(reflect(-lightDirection, normal))	 ;\n'+
     '   float VDotR = max(dot(R, eyeDirection), 0.0); \n' +
     '   float e64 = pow(VDotR, float(u_MatlSet[0].shiny));\n' +
+
+    '   float nDotL1 = max(dot(lightDirection1, normal), 0.0); \n' +
+    '   vec3 R1 = normalize(reflect(-lightDirection1, normal))	 ;\n'+
+    '   float VDotR1 = max(dot(R1, eyeDirection), 0.0); \n' +
+    '   float e641 = pow(VDotR1, float(u_MatlSet[0].shiny));\n' +
+
     '   vec3 emissive = u_MatlSet[0].emit;' +
-    '   vec3 ambient = u_LampSet[0].ambi * u_MatlSet[0].ambi;\n' +
-    '   vec3 diffuse = u_LampSet[0].diff * u_MatlSet[0].diff * nDotL;\n' +
-    '	vec3 speculr = u_LampSet[0].spec * u_MatlSet[0].spec * e64;\n' +
+    '   vec3 ambient = u_LampSet[0].ambi * u_MatlSet[0].ambi + u_LampSet[1].ambi * u_MatlSet[0].ambi;\n' +
+    '   vec3 diffuse = u_LampSet[0].diff * u_MatlSet[0].diff * nDotL + u_LampSet[1].diff * u_MatlSet[0].diff * nDotL1;\n' +
+    '	vec3 speculr = u_LampSet[0].spec * u_MatlSet[0].spec * e64 + u_LampSet[1].spec * u_MatlSet[0].spec * e641;\n' +
     '   v_Color = vec4(emissive + ambient + diffuse + speculr , a_Color);\n' + // 1.0
     '}\n';
 // Fragment shader prog
@@ -404,11 +430,34 @@ var	eyePosWorld = new Float32Array(3);	// x,y,z in world coords
 //	... for our first light source:   (stays false if never initialized)
 var lamp0 = new LightsT();
 var lamp1 = new LightsT();
-var lamp0Set = new Array(0,0,6,0.4,0.4,0.4,0.4,0.4,0.4,0.8,0.8,0.8);
-var lamp1Set = new Array(0,-3,6,0.4,0.4,0.4,0.4,0.4,0.4,0.8,0.8,0.8);
+
+
+// pos, ambi, diff, spect
+var lamp0pos = new Array( 0, 0, 6);
+var lamp0ambi = new Array(0.4, 0.4,0.4);
+var lamp0diff = new Array(0.4, 0.4,0.4);
+var lamp0spec = new Array(0.8, 0.8,0.8);
+var lamp0L = document.getElementById('directL');
+var lamp0A = document.getElementById('directA');
+var lamp0D = document.getElementById('directD');
+var lamp0S = document.getElementById('directS');
+
+
+
+var lamp1pos = new Array( 0, -3, 6);
+var lamp1ambi = new Array(0.4, 0.4,0.4);
+var lamp1diff = new Array(0.4, 0.4,0.4);
+var lamp1spec = new Array(0.8, 0.8,0.8);
+
+var lamp1L = document.getElementById('pointL');
+var lamp1A = document.getElementById('pointA');
+var lamp1D = document.getElementById('pointD');
+var lamp1S = document.getElementById('pointS');
+
+var resetl0 = false; resetl1 = false;
 
 	// ... for our first material:
-var matlSel= MATL_COPPER_SHINY;				// see keypress(): 'm' key changes matlSel
+var matlSel= MATL_PEARL;				// see keypress(): 'm' key changes matlSel
 var matl0 = new Material(matlSel);	
 var matl1 = new Material(matlSel);	
 var matl2 = new Material(matlSel);	
@@ -416,9 +465,9 @@ var matl3 = new Material(matlSel);
 var matl4 = new Material(matlSel);	
 
 
-var shaderLoc, shaderLoc0, shaderLoc1, shaderLoc2, shaderLoc3, shaderLoc4;
+var shaderLoc = [5];
 var vert;
-var shaderIdx;
+var shaderIdx = 3;
 // shader switching
 var cartoonish = false;
 var shadeM = document.getElementById('shadeM');
@@ -501,17 +550,16 @@ function main() {
     // setting background color
     gl.clearColor(0.4, 0.2, 0.8, 0.5);   // stored in gl.COLOR_BUFFER_BIT
     
-    //===================================================================== */
+    // ===================================================================== */
     //Initialize shaders
-    shaderLoc0 = myInitShaders(VSHADER_SOURCE0, FSHADER_SOURCE0, "BASIC", 0);
-    shaderLoc1 = myInitShaders(VSHADER_SOURCE1, FSHADER_SOURCE1, "PHONG + BLINN-PHONG", 1);
-    // shaderLoc2 = myInitShaders(VSHADER_SOURCE2, FSHADER_SOURCE2, "GOURAUD + BLINN-PHONG", 2);
-    // shaderLoc3 = myInitShaders(VSHADER_SOURCE3, FSHADER_SOURCE3, "PHONG + PHONG", 3);
-    // shaderLoc4 = myInitShaders(VSHADER_SOURCE4, FSHADER_SOURCE4, "GOURAUD + PHONG", 4);
+    myInitShaders(VSHADER_SOURCE0, FSHADER_SOURCE0, "BASIC", 0);
+    myInitShaders(VSHADER_SOURCE1, FSHADER_SOURCE1, "PHONG + BLINN-PHONG", 1);
+    myInitShaders(VSHADER_SOURCE2, FSHADER_SOURCE2, "GOURAUD + BLINN-PHONG", 2);
+    myInitShaders(VSHADER_SOURCE3, FSHADER_SOURCE3, "PHONG + PHONG", 3);
+    myInitShaders(VSHADER_SOURCE4, FSHADER_SOURCE4, "GOURAUD + PHONG", 4);
 
-    switchShader(shaderLoc1, 1);
+    switchShader();
 
-    setLights();
     setMatrials();
 
     {
@@ -576,6 +624,9 @@ function timerAll() {
 }
 }
 
+
+// vertices & draw function
+{
 function initVertexBuffers() {
     // vertices information
     var v_ans = groundgridV();
@@ -643,24 +694,22 @@ function bindVertBuff (vertices_array) {
     return 0;
 }
 
-// vertices & draw function
-{
+
     function sphereV() {
         var ans_ver;
         var d1 = 0, d2 = 0; // d1-degree to y, d2-degree to x
-        var step = 36;
+        var step = 24;
         var offset = Math.PI * 2 / step;
-        //console.log("new");
         while(d1 <= Math.PI)
         {
             
             while(d2 <= Math.PI * 2)
             {
                 //console.log(d1, d2);
-                var p1 = [Math.sin(d1)*Math.cos(d2), Math.cos(d1), Math.sin(d1)*Math.sin(d2), 1.0, 153/255, 153/255, 255/255,];
-                var p2 = [Math.sin(d1+offset)*Math.cos(d2), Math.cos(d1+offset), Math.sin(d1+offset)*Math.sin(d2), 1.0,  153/255, 153/255, 255/255,];
-                var p3 = [Math.sin(d1+offset)*Math.cos(d2+offset), Math.cos(d1+offset), Math.sin(d1+offset)*Math.sin(d2+offset), 1.0, 153/255, 153/255, 255/255,];
-                var p4 = [Math.sin(d1)*Math.cos(d2+offset), Math.cos(d1), Math.sin(d1)*Math.sin(d2+offset), 1.0,  153/255, 153/255, 255/255,];
+                var p1 = [Math.sin(d1)*Math.cos(d2), Math.cos(d1), Math.sin(d1)*Math.sin(d2), 1.0, 220/255, 255/255, 255/255,];
+                var p2 = [Math.sin(d1+offset)*Math.cos(d2), Math.cos(d1+offset), Math.sin(d1+offset)*Math.sin(d2), 1.0,  255/255, 255/255, 255/255,];
+                var p3 = [Math.sin(d1+offset)*Math.cos(d2+offset), Math.cos(d1+offset), Math.sin(d1+offset)*Math.sin(d2+offset), 1.0, 255/255, 255/255, 255/255,];
+                var p4 = [Math.sin(d1)*Math.cos(d2+offset), Math.cos(d1), Math.sin(d1)*Math.sin(d2+offset), 1.0,  255/255, 255/255, 255/255,];
                 
                 var n1 = [Math.sin(d1)*Math.cos(d2), Math.cos(d1), Math.sin(d1)*Math.sin(d2),];
                 var n2 = [Math.sin(d1+offset)*Math.cos(d2), Math.cos(d1+offset), Math.sin(d1+offset)*Math.sin(d2),];
@@ -721,11 +770,11 @@ function bindVertBuff (vertices_array) {
 
         while(x_num <= x_max) {
             
-            var p1 = [x_num, -1, -3, 1.0, 204/255, 255/255, 229/255, 1.0, 1.0, 1.0,];
-            var p2 = [x_num, -1, 3, 1.0, 204/255, 255/255, 229/255, 1.0, 1.0, 1.0,];
+            var p1 = [x_num, -1, -3, 1.0, 204/255, 255/255, 229/255, 0.0, 1.0, 0.0,];
+            var p2 = [x_num, -1, 3, 1.0, 204/255, 255/255, 229/255, 0.0, 1.0, 0.0,];
 
-            var p3 = [-3, -1, x_num, 1.0, 255/255, 229/255, 204/255, 1.0, 1.0, 1.0,];
-            var p4 = [3, -1, x_num, 1.0, 255/255, 229/255, 204/255, 1.0, 1.0, 1.0,];
+            var p3 = [-3, -1, x_num, 1.0, 255/255, 229/255, 204/255, 0.0, 1.0, 0.0,];
+            var p4 = [3, -1, x_num, 1.0, 255/255, 229/255, 204/255, 0.0, 1.0, 0.0,];
 
             var curr_ver = Array.prototype.concat.call(
                 p1, p2,
@@ -845,8 +894,6 @@ function drawThings() {
     }
 }
 
-
-
 function drawAll() {
     // clear <canvas>
     gl.clear(gl.CLEAR_COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
@@ -859,8 +906,34 @@ function drawAll() {
     inst_y = cloud_z;
     inst_z = cloud_y;
 
+    if(!cartoonish)
+    {
+        var curri = shaderIdx;
+        testShader();
+        if(curri != shaderIdx)
+        {
+            switchShader(shaderIdx);
+        }
+        
+    }
+    
+    controlLamps();
     setCamera();
-    testShader();
+    
+    lightsPosCrl(); // update the light's position adjusted by user
+
+    if(lamp0.isLit)
+    {
+        lightsColorCrl0();
+    }
+    if(lamp1.isLit)
+    {
+        lightsColorCrl1();
+    }
+
+    
+    setLights();
+    setMatrials();
     
     // set perspective:
     gl.viewport(0,											// Viewport lower-left corner
@@ -1039,7 +1112,6 @@ function drawAll() {
         console.log("--kev.code:", kev.code, "\t\t--kev.key:", kev.key,
             "\n--kev.ctrlKey:", kev.ctrlKey, "\t--kev.shiftKey:", kev.shiftKey,
             "\n--kev.altKey:", kev.altKey, "\t--kev.metaKey:", kev.metaKey);
-        console.log("Bone is at: ", g_xKmove + ", " + g_yKmove)
     
         keyPressed = kev.key;
     
@@ -1168,14 +1240,9 @@ function drawAll() {
         }
 
         [direc_x, direc_y, direc_z] = calcLPoint(sphere_theta, sphere_gamma);
-        console.log("direction: ", direc_x, direc_y, direc_z);
         la_x = eye_x + direc_x;
         la_y = eye_y + direc_y;
         la_z = eye_z + direc_z;
-        console.log(" theta: ", sphere_theta, " gamma: ", sphere_gamma);
-        //onsole.log("Eye point: ", eye_x, eye_y, eye_z, " Look at point: ", la_x, la_y, la_z, " theta: ", sphere_theta, " gamma: ", sphere_gamma);
-
-
     }
     
     function myKeyUp(kev) {
@@ -1197,14 +1264,14 @@ function normCalc(x1, y1, z1, x2, y2, z2, x3, y3, z3) {
 }
 
 function myInitShaders(VSHADER, FSHADER, name, idx) {
-    shaderLoc = createProgram(gl, VSHADER, FSHADER);
-    if (!shaderLoc) {
+    shaderLoc[idx] = createProgram(gl, VSHADER, FSHADER);
+    if (!shaderLoc[idx]) {
         console.log('Failed to create ', name);
         return false;
     }
 
-    gl.useProgram(shaderLoc);
-    gl.program = shaderLoc;	
+    gl.useProgram(shaderLoc[idx]);
+    gl.program = shaderLoc[idx];	
 
     // generate buffers in new shader
     uLoc_modelMatrix[idx] = gl.getUniformLocation(gl.program, 'u_modelMatrix');  // = u_ModelMatrix in starter code BasicShapesCam
@@ -1270,25 +1337,27 @@ function myInitShaders(VSHADER, FSHADER, name, idx) {
     eyePosWorld.set([eye_x, eye_y, eye_z]);
 	gl.uniform3fv(uLoc_eyePosWorld[idx], eyePosWorld);// use it to set our uniform
 
-    return shaderLoc;
+    console.log("Init shader ", name, " Successfully");
 }
 
 function setLights() {
 
-    lamp0.I_pos.elements.set(lamp0Set.slice(0,3));
-    lamp0.I_ambi.elements.set(lamp0Set.slice(3,6));   // color rgb
-    lamp0.I_diff.elements.set(lamp0Set.slice(6,9));
-    lamp0.I_spec.elements.set(lamp0Set.slice(9,12));
+    lamp0.I_pos.elements.set(lamp0pos);
+    lamp0.I_ambi.elements.set(lamp0ambi);   // color rgb
+    lamp0.I_diff.elements.set(lamp0diff);
+    lamp0.I_spec.elements.set(lamp0spec);
+
+    console.log(shaderIdx, lamp0ambi);
 
     gl.uniform3fv(lamp0.u_pos[shaderIdx],  lamp0.I_pos.elements.slice(0,3));
     gl.uniform3fv(lamp0.u_ambi[shaderIdx], lamp0.I_ambi.elements);		// ambient
     gl.uniform3fv(lamp0.u_diff[shaderIdx], lamp0.I_diff.elements);		// diffuse
     gl.uniform3fv(lamp0.u_spec[shaderIdx], lamp0.I_spec.elements);		// Specular
 
-    lamp1.I_pos.elements.set(lamp1Set.slice(0,3));
-    lamp1.I_ambi.elements.set(lamp1Set.slice(3,6));   // color rgb
-    lamp1.I_diff.elements.set(lamp1Set.slice(6,9));
-    lamp1.I_spec.elements.set(lamp1Set.slice(9,12));
+    lamp1.I_pos.elements.set(lamp1pos);
+    lamp1.I_ambi.elements.set(lamp1ambi);   // color rgb
+    lamp1.I_diff.elements.set(lamp1diff);
+    lamp1.I_spec.elements.set(lamp1spec);
 
     gl.uniform3fv(lamp1.u_pos[shaderIdx],  lamp1.I_pos.elements.slice(0,3));
     gl.uniform3fv(lamp1.u_ambi[shaderIdx], lamp1.I_ambi.elements);		// ambient
@@ -1315,81 +1384,203 @@ function setCamera() {
 }
 
 // change shader + init vertexbuffer
-function switchShader(shadername, i) {
-    shaderLoc = shadername;
-    gl.useProgram(shaderLoc);
-    gl.program = shaderLoc;	
-    console.log("Switch shader to ", i," successfully!");
+function switchShader() {
+    gl.useProgram(shaderLoc[shaderIdx]);
+    gl.program = shaderLoc[shaderIdx];	
+    console.log("Switch shader to ", shaderIdx," successfully!");
 
     bindVertBuff(vert);
     console.log("Vertecies binded successfully!");
 
-    shaderIdx = i;
+    // shaderIdx = i;
 }
 
 
 /// shader swithcing functions:
 {
+    // html button function
     function resetDefaultShader() {
         if(!cartoonish)
         {
-            cartoonish = true;
-            switchShader(shaderLoc0, 0);
+            shaderIdxBF = shaderIdx;
+            shaderIdx = 0;
+            switchShader();
             console.log("switch to shader 0 --> Cartoonish shader");
+            cartoonish = true;
         } 
         else if(cartoonish) {
+            console.log("before", shaderIdx);
+            testShader();
+            console.log("before", shaderIdx);
+            console.log("switch to shader", shaderIdx);
+            switchShader();
+
             cartoonish = false;
-            switchShader(shaderLoc1, 1);
         }
     }
 
     function testShader() {
-        if(cartoonish)
-        {
-            return 0;
-        }
         
         var vals = shadeM.value;
         var vall = LightM.value;
 
-        var phong, blinn;
-        var shadernumber, shidx;
-
         if(vals == "p_S" && vall == "bp_L")
         {
-            phong = true;
-            blinn = true;
-            shadernumber = shaderLoc1;
-            shidx = 1;
+            shaderIdx = 1;
         } 
         else if (vals == "p_S" && vall == "p_L") 
         {
-            phong = true;
-            blinn = false;
-            shadernumber = shaderLoc3;
-            shidx = 3;
+            shaderIdx = 3;
         } 
         else if (vals == "g_S" && vall == "bp_L") 
         {
-            phong = false;
-            blinn = true;
-            shadernumber = shaderLoc2;
-            shidx = 2;
+            shaderIdx = 2;
         } 
         else if (vals == "g_S" && vall == "p_L") 
         {
-            phong = false;
-            blinn = false;
-            shadernumber = shaderLoc4;
-            shidx = 4;
-        }
-
-        // switched the shader
-        if(PhongShader != phong || BlinnLighting != blinn) {
-            PhongShader = phong;
-            BlinnLighting = blinn;
-
-            switchShader(shadernumber, shidx);
+            shaderIdx = 4;
         }
     }
+}
+// Light setting functions:
+{
+    function lightsPosCrl() {
+
+        var pos0x = document.getElementById('dMleft').value;
+        var pos0y = document.getElementById('dMfwd').value;
+        var pos0z = document.getElementById('dMup').value;
+        lamp0pos = [pos0x, pos0y, pos0z];
+
+        var pos1x = document.getElementById('pMdown').value;
+        var pos1y = document.getElementById('pMfwd').value;
+        var pos1z = document.getElementById('pMup').value;
+        lamp1pos = [pos1x, pos1y, pos1z];
+
+    }
+
+    function lightsColorCrl0() {
+
+        var a0r = document.getElementById('dRa').value;
+        var a0g = document.getElementById('dGa').value;
+        var a0b = document.getElementById('dBa').value;
+
+        var d0r = document.getElementById('dRd').value;
+        var d0g = document.getElementById('dGd').value;
+        var d0b = document.getElementById('dBd').value;
+
+        var s0r = document.getElementById('dRs').value;
+        var s0g = document.getElementById('dGs').value;
+        var s0b = document.getElementById('dBs').value;
+
+        var a0 = document.getElementById('directA').value;
+        var d0 = document.getElementById('directD').value;
+        var r0 = document.getElementById('directS').value;
+
+        if( a0 == "dao" )
+        {
+            lamp0ambi = [ a0r, a0g, a0b];
+        } else {
+            lamp0ambi = [ 0, 0, 0];
+        }
+
+        if( d0 == "ddo" )
+        {
+            lamp0diff = [ d0r, d0g, d0b];
+        } else {
+            lamp0diff = [ 0, 0, 0];
+        }
+        if( r0 == "dso" )
+        {
+            lamp0spec = [ s0r, s0g, s0b];
+        } else {
+            lamp0spec = [ 0, 0, 0];
+        }
+    }
+
+    function lightsColorCrl1() {
+
+  
+        var a1r = document.getElementById('pRa').value;
+        var a1g = document.getElementById('pGa').value;
+        var a1b = document.getElementById('pBa').value;
+
+        var d1r = document.getElementById('pRd').value;
+        var d1g = document.getElementById('pGd').value;
+        var d1b = document.getElementById('pBd').value;
+
+        var s1r = document.getElementById('pRs').value;
+        var s1g = document.getElementById('pGs').value;
+        var s1b = document.getElementById('pBs').value;
+
+        var a1 = document.getElementById('pointA').value;
+        var d1 = document.getElementById('pointD').value;
+        var r1 = document.getElementById('pointS').value;
+
+        if( a1 == "pao" )
+        {
+            lamp1ambi = [ a1r, a1g, a1b];
+        } else {
+            lamp1ambi = [ 0, 0, 0];
+        }
+
+        if( d1 == "pdo" )
+        {
+            lamp1diff = [ d1r, d1g, d1b];
+        } else {
+            lamp1diff = [ 0, 0, 0];
+        }
+        if( r1 == "pso" )
+        {
+            lamp1spec = [ s1r, s1g, s1b];
+        } else {
+            lamp1spec = [ 0, 0, 0];
+        }
+
+    }
+
+    //control on and off
+    function controlLamps() {
+        var l0on = lamp0L.value;
+        var l1on = lamp1L.value;
+
+        if(l0on == "do" && !lamp0.isLit)
+        {
+            lamp0.isLit = true;
+            resetl0 = true;
+        } else if(l0on == "dx" && lamp0.isLit) {
+            // turn off
+            lamp0.isLit = false;
+            resetl0 = true;
+
+            lamp0ambi = [ 0, 0, 0];
+            lamp0diff = [ 0, 0, 0];
+            lamp0spec = [ 0, 0, 0];
+
+            // lamp0.I_ambi.elements.set(lamp0ambi);   // color rgb
+            // lamp0.I_diff.elements.set(lamp0diff);
+            // lamp0.I_spec.elements.set(lamp0spec);
+
+            // gl.uniform3fv(lamp0.u_ambi[shaderIdx], lamp0.I_ambi.elements);		// ambient
+            // gl.uniform3fv(lamp0.u_diff[shaderIdx], lamp0.I_diff.elements);		// diffuse
+            // gl.uniform3fv(lamp0.u_spec[shaderIdx], lamp0.I_spec.elements);		// Specular
+
+            console.log(shaderIdx);
+        }
+
+        if(l1on == "po" && !lamp1.isLit)
+        {
+            lamp1.isLit = true;
+            resetl1 = true;
+        } else if(l1on == "px" && lamp1.isLit) {
+            lamp1.isLit = false;
+            resetl1 = true;
+
+            lamp1ambi = [ 0, 0, 0];
+            lamp1diff = [ 0, 0, 0];
+            lamp1spec = [ 0, 0, 0];
+        }
+
+    }
+
+
 }
