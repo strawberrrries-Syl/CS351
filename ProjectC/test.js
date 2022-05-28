@@ -475,13 +475,11 @@ var lamp1S = document.getElementById('pointS');
 var resetl0 = false; resetl1 = false;
 
 	// ... for our first material:
-var matlSel= MATL_ORIGIN;				// see keypress(): 'm' key changes matlSel
-var matl0 = new Material(matlSel);	
-var matl1 = new Material(matlSel);	
-var matl2 = new Material(matlSel);	
-var matl3 = new Material(matlSel);	
-var matl4 = new Material(matlSel);	
 
+var matlSel= [MATL_ORIGIN, MATL_SILVER_SHINY, MATL_TURQUOISE, MATL_JADE, MATL_RED_PLASTIC];				// see keypress(): 'm' key changes matlSel
+var matidx = 1;
+var matl0 = new Material(matlSel[matidx]);	
+var matSphere, matLoop, matBone, matCloud, matDog;
 
 var shaderLoc = [5];
 var vert;
@@ -756,6 +754,9 @@ function bindVertBuff (vertices_array) {
     }
 
     function drawSphere() {
+        matidx = matSphere;
+        setMatrials();
+
         pushMatrix(g_modelMatrix);
 
         pushMatrix(mvpMatrix);
@@ -935,6 +936,7 @@ function drawAll() {
         
     }
     
+    matCtl();
     controlLamps();
     setCamera();
     
@@ -951,7 +953,7 @@ function drawAll() {
 
     
     setLights();
-    setMatrials();
+    //setMatrials();
     
     // set perspective:
     gl.viewport(0,											// Viewport lower-left corner
@@ -1385,6 +1387,7 @@ function setLights() {
 }
 
 function setMatrials() {
+    matl0.setMatl(matlSel[matidx]);	
     //---------------For the Material object(s):
 	gl.uniform3fv(matl0.uLoc_Ke[shaderIdx], matl0.K_emit.slice(0,3));				// Ke emissive
 	gl.uniform3fv(matl0.uLoc_Ka[shaderIdx], matl0.K_ambi.slice(0,3));				// Ka ambient
@@ -1395,8 +1398,8 @@ function setMatrials() {
     gl.uniform1f(matl0.uLoc_Kori[shaderIdx], matl0.K_ori);     // Kshiny 
 }
 
-function changeMatels(matlSel) {
-	matl0.setMatl(matlSel);								// set new material reflectances,
+function changeMatels() {
+	matl0.setMatl(matlSel[matidx]);								// set new material reflectances,
 }
 
 // used in every loop of drawAll() since camera is always moving
@@ -1415,6 +1418,8 @@ function switchShader() {
 
     // shaderIdx = i;
 }
+
+
 
 
 /// shader swithcing functions:
@@ -1604,4 +1609,81 @@ function switchShader() {
     }
 
 
+}
+// material setting functions:
+{
+    function matCtl() {
+        var sM = document.getElementById('sphereM').value;
+        var lM = document.getElementById('loopM').value;
+        var bM = document.getElementById('boneM').value;
+        var cM = document.getElementById('cloudM').value;
+        var dM = document.getElementById('dogM').value;
+
+        if(sM == "1")
+        {
+            matSphere = 4;
+        } else if(sM == "2") {
+            matSphere = 3;
+        } else if(sM == "3") {
+            matSphere = 2;
+        } else if(sM == "4") {
+            matSphere = 1;
+        } else if(sM == "5") {
+            matSphere = 0;
+        }
+
+
+        if(lM == "1")
+        {
+            matLoop = 4;
+        } else if(lM == "2") {
+            matLoop = 3;
+        } else if(lM == "3") {
+            matLoop = 2;
+        } else if(lM == "4") {
+            matLoop = 1;
+        } else if(lM == "5") {
+            matLoop = 0;
+        }
+
+        if(bM == "1")
+        {
+            matBone = 4;
+        } else if(bM == "2") {
+            matBone = 3;
+        } else if(bM == "3") {
+            matBone = 2;
+        } else if(bM == "4") {
+            matBone = 1;
+        } else if(bM == "5") {
+            matBone = 0;
+        }
+
+        if(cM == "1")
+        {
+            matCloud = 4;
+        } else if(cM == "2") {
+            matCloud = 3;
+        } else if(cM == "3") {
+            matCloud = 2;
+        } else if(cM == "4") {
+            matCloud = 1;
+        } else if(cM == "5") {
+            matCloud = 0;
+        }
+
+        if(dM == "1")
+        {
+            matDog = 4;
+        } else if(dM == "2") {
+            matDog = 3;
+        } else if(dM == "3") {
+            matDog = 2;
+        } else if(dM == "4") {
+            matDog = 1;
+        } else if(dM == "5") {
+            matDog = 0;
+        }
+
+    }
 }
