@@ -503,8 +503,13 @@ var g_vertCount;
 
 
 // For animation:---------------------
+var g_isRun = true;     
 var g_lastMS = Date.now();    			// Timestamp for most-recently-drawn image; 
-
+// in milliseconds; used by 'animate()' fcn 
+// (now called 'timerAll()' ) to find time
+// elapsed since last on-screen image.
+// used for turning whole scene.
+var g_angle01 = 0;                  // initial rotation angle
 //------------For mouse click-and-drag: -------------------------------
 var g_isDrag = false;		// mouse-drag: true when user holds down mouse button
 var g_xMclik = 0.0;			// last mouse button-down position (in CVV coords)
@@ -514,13 +519,92 @@ var g_yMdragTot = 0.0;
 var g_digits = 5;			// DIAGNOSTICS: # of digits to print in console.log (
 
 var cloud_x = 0, cloud_y = 0, cloud_z = 0; 
+var a_x = 0, a_y = 0, a_z = 0;
+var target_x, target_y, target_z;
+var bf_target_x, bf_target_y;
 
 var g_xKmove = 0.0;	// total (accumulated) keyboard-drag amounts (in CVV coords).
 var g_yKmove = 0.0;
 
 // flags of movement
+var SW = 0;                     // flag of switching dog to sit or walk
+var Run = false;                // flag of switchinf dog to walk or run
+var boneExist = false;          // flag of whether bone is showing
 var cloudView = false;
 var keyPressed;                 // 
+
+// ============================
+// self-rotating varialbles:
+// ============================
+// left front leg                                //---------------
+var g_angle0now = 0.0;       // init Current rotation angle, in degrees
+var g_angle0rate = 0.0;       // init Rotation angle rate, in degrees/second.
+var g_angle0min = 0.0;       // init min, max allowed angle, in degrees.
+var g_angle0max = 0.0;
+// right front leg                                //---------------
+var g_angle1now = 0.0; 			// init Current rotation angle, in degrees > 0
+var g_angle1rate = 0.0;				// init Rotation angle rate, in degrees/second.
+var g_angle1min = 0.0;       // init min, max allowed angle, in degrees
+var g_angle1max = 0.0;
+// left back leg                                 //---------------
+var g_angle2now = -60; 			// init Current rotation angle, in degrees.
+var g_angle2rate = 0.0;				// init Rotation angle rate, in degrees/second.
+var g_angle2min = 0.0;       // init min, max allowed angle, in degrees
+var g_angle2max = 0.0;
+// right back leg
+var g_angle3now = -60; 			// init Current rotation angle, in degrees.
+var g_angle3rate = 0.0;				// init Rotation angle rate, in degrees/second.
+var g_angle3min = 0.0;       // init min, max allowed angle, in degrees
+var g_angle3max = 0.0;
+
+// loop                                 //---------------
+var g_angle4now = 0.0;       // init Current rotation angle, in degrees
+var g_angle4rate = 0.0;       // init Rotation angle rate, in degrees/second.
+var g_angle4min = -360.0;       // init min, max allowed angle, in degrees.
+var g_angle4max = 360.0;
+// YOU can add more time-varying params of your own here -- try it!
+// For example, could you add angle3, have it run without limits, and
+// use sin(angle3) to slowly translate the robot-arm base horizontally,
+// moving back-and-forth smoothly and sinusoidally?
+
+// calves:
+// left front calf
+var g_angle5now = 0.0; 			// init Current rotation angle, in degrees.
+var g_angle5rate = 0.0;				// init Rotation angle rate, in degrees/second.
+var g_angle5min = 0.0;       // init min, max allowed angle, in degrees
+var g_angle5max = 0.0;
+// right front calf
+var g_angle6now = 0.0; 			// init Current rotation angle, in degrees.
+var g_angle6rate = 0.0;				// init Rotation angle rate, in degrees/second.
+var g_angle6min = 0.0;       // init min, max allowed angle, in degrees
+var g_angle6max = 0.0;
+// left back calf
+var g_angle7now = -10; 			// init Current rotation angle, in degrees.
+var g_angle7rate = 0.0;				// init Rotation angle rate, in degrees/second.
+var g_angle7min = 0.0;       // init min, max allowed angle, in degrees
+var g_angle7max = 0.0;
+// right back calf
+var g_angle8now = -10; 			// init Current rotation angle, in degrees.
+var g_angle8rate = 0.0;				// init Rotation angle rate, in degrees/second.
+var g_angle8min = 0.0;       // init min, max allowed angle, in degrees
+var g_angle8max = 0.0;
+
+// front paws
+var g_angle9now = 0; 			// init Current rotation angle, in degrees.
+var g_angle9rate = 0.0;				// init Rotation angle rate, in degrees/second.
+var g_angle9min = 0.0;       // init min, max allowed angle, in degrees
+var g_angle9max = 0.0;
+// back paws
+var g_angle10now = 30; 			// init Current rotation angle, in degrees.
+var g_angle10rate = 0.0;				// init Rotation angle rate, in degrees/second.
+var g_angle10min = 0.0;       // init min, max allowed angle, in degrees
+var g_angle10max = 0.0;
+
+// cloud
+var g_angle11now = 0; 			// init Current rotation angle, in degrees.
+var g_angle11rate = 10;				// init Rotation angle rate, in degrees/second.
+var g_angle11min = -40;       // init min, max allowed angle, in degrees
+var g_angle11max = 40;
 
 // sphere
 var g_angle12now = 0; 			// init Current rotation angle, in degrees.
@@ -528,9 +612,22 @@ var g_angle12rate = 20;				// init Rotation angle rate, in degrees/second.
 var g_angle12min = -180;       // init min, max allowed angle, in degrees
 var g_angle12max = 180;
 
+
+// body position --> for reseting sit/walk dog's gesture
+var g_anglebody = -50; 			// init Current rotation angle, in degrees.
+var g_transheadx = 0.15;
+var g_transheady = 0.25;
+var g_frontlegs = 0.1;
+var g_tail = -0.2;
+
 // rigid objects' starting position and length.
-var axis_S, axis_C, grid_S, grid_C;
-var sphere_C, sphere_S;
+var loop_S, loop_C, grid_S, grid_C;
+var cube_S, cube_C, axis_S, axis_C;
+var head_S, head_C, body_S, body_C;
+var fthigh_S, fthigh_C, bthigh_S, bthigh_C;
+var fcalf_S, fcalf_C, bcalf_S, bcalf_C;
+var paw_S, paw_C, tail_S, tail_C;
+var cloud_C, cloud_S, sphere_C, sphere_S;
 
 // Cameras:
 var eye_x = 0, eye_y = -4, eye_z = 3;
@@ -548,6 +645,8 @@ var newdirx =1, newdiry = 0, newdirz = -1;
 //// ------------------------------------
 
 function main() {
+    // set sitting parameters (global variables)
+    sit();
     
     // VBO creating
     vert = initVertexBuffers();
@@ -604,7 +703,7 @@ function main() {
     }
 
     tick();
-    //drawResize()
+    //drawResize();
 }
 
 // seting functions
@@ -635,7 +734,22 @@ function timerAll() {
     if (elapsedMS > 1000.0) {
         elapsedMS = 1000.0 / 30.0;
     }
-
+    // thighs
+    [g_angle0now, g_angle0rate] = rotateNow(g_angle0now, g_angle0rate, 1, elapsedMS, g_angle0min, g_angle0max);
+    [g_angle1now, g_angle1rate] = rotateNow(g_angle1now, g_angle1rate, 1, elapsedMS, g_angle1min, g_angle1max);
+    [g_angle2now, g_angle2rate] = rotateNow(g_angle2now, g_angle2rate, 1, elapsedMS, g_angle2min, g_angle2max);
+    [g_angle3now, g_angle3rate] = rotateNow(g_angle3now, g_angle3rate, 1, elapsedMS, g_angle3min, g_angle3max);
+    // loop
+    g_angle4now += g_angle4rate * elapsedMS * 0.001;
+    // calves
+    [g_angle5now, g_angle5rate] = rotateNow(g_angle5now, g_angle5rate, 1, elapsedMS, g_angle5min, g_angle5max);
+    [g_angle6now, g_angle6rate] = rotateNow(g_angle6now, g_angle6rate, 1, elapsedMS, g_angle6min, g_angle6max);
+    [g_angle7now, g_angle7rate] = rotateNow(g_angle7now, g_angle7rate, 1, elapsedMS, g_angle7min, g_angle7max);
+    [g_angle8now, g_angle8rate] = rotateNow(g_angle8now, g_angle8rate, 1, elapsedMS, g_angle8min, g_angle8max);
+    // paws
+    [g_angle9now, g_angle9rate] = rotateNow(g_angle9now, g_angle9rate, 1, elapsedMS, g_angle9min, g_angle9max);
+    [g_angle10now, g_angle10rate] = rotateNow(g_angle10now, g_angle10rate, 1, elapsedMS, g_angle10min, g_angle10max);
+    [g_angle11now, g_angle11rate] = rotateNow(g_angle11now, g_angle11rate, 1, elapsedMS, g_angle11min, g_angle11max);
     [g_angle12now, g_angle12rate] = rotateNow(g_angle12now, g_angle12rate, 1, elapsedMS, g_angle12min, g_angle12max);
 }
 }
@@ -645,11 +759,98 @@ function timerAll() {
 {
 function initVertexBuffers() {
     // vertices information
-    var v_ans = groundgridV();
-    grid_S = 0;
-    grid_C = v_ans.length / 10;
+    var v_ans = loopV();
+    loop_S = 0;
+    loop_C = v_ans.length / 10;
 
-    var curr_v = axisV();
+    var curr_v = cubeV();
+    v_ans = Array.prototype.concat.call(
+        v_ans, curr_v,
+    );
+    cube_S = loop_C;
+    cube_C = curr_v.length / 10;
+    curr_v.clear;
+
+    curr_v = bodyV();
+    body_S = v_ans.length/10;
+    body_C = curr_v.length/10;
+    v_ans = Array.prototype.concat.call(
+        v_ans, curr_v,
+    );
+    curr_v.clear;
+
+    curr_v = headV();
+    head_S = v_ans.length / 10;
+    head_C = curr_v.length / 10;
+    v_ans = Array.prototype.concat.call(
+        v_ans, curr_v,
+    );
+    curr_v.clear;
+
+    curr_v = fthighV();
+    fthigh_S = v_ans.length / 10;
+    fthigh_C = curr_v.length / 10;
+    v_ans = Array.prototype.concat.call(
+        v_ans, curr_v,
+    );
+    curr_v.clear;
+
+    curr_v = bthighV();
+    bthigh_S = v_ans.length / 10;
+    bthigh_C = curr_v.length / 10;
+    v_ans = Array.prototype.concat.call(
+        v_ans, curr_v,
+    );
+    curr_v.clear;
+
+    curr_v = fcalfV();
+    fcalf_S = v_ans.length / 10;
+    fcalf_C = curr_v.length / 10;
+    v_ans = Array.prototype.concat.call(
+        v_ans, curr_v,
+    );
+    curr_v.clear;
+
+    curr_v = bcalfV();
+    bcalf_S = v_ans.length / 10;
+    bcalf_C = curr_v.length / 10;
+    v_ans = Array.prototype.concat.call(
+        v_ans, curr_v,
+    );
+    curr_v.clear;
+    
+    curr_v = pawV();
+    paw_S = v_ans.length / 10;
+    paw_C = curr_v.length / 10;
+    v_ans = Array.prototype.concat.call(
+        v_ans, curr_v,
+    );
+    curr_v.clear;
+
+    curr_v = tailV();
+    tail_S = v_ans.length / 10;
+    tail_C = curr_v.length / 10;
+    v_ans = Array.prototype.concat.call(
+        v_ans, curr_v,
+    );
+    curr_v.clear;
+
+    curr_v = cloudV();
+    cloud_S = v_ans.length / 10;
+    cloud_C = curr_v.length / 10;
+    v_ans = Array.prototype.concat.call(
+        v_ans, curr_v,
+    );
+    curr_v.clear;
+
+    curr_v = groundgridV();
+    grid_S = v_ans.length / 10;
+    grid_C = curr_v.length / 10;
+    v_ans = Array.prototype.concat.call(
+        v_ans, curr_v,
+    );
+    curr_v.clear;
+
     curr_v = axisV();
     axis_S = v_ans.length / 10;
     axis_C = curr_v.length / 10;
@@ -722,8 +923,8 @@ function bindVertBuff (vertices_array) {
             while(d2 <= Math.PI * 2)
             {
                 //console.log(d1, d2);
-                var p1 = [Math.sin(d1)*Math.cos(d2), Math.cos(d1), Math.sin(d1)*Math.sin(d2), 1.0, 220/255, 255/255, 255/255,];
-                var p2 = [Math.sin(d1+offset)*Math.cos(d2), Math.cos(d1+offset), Math.sin(d1+offset)*Math.sin(d2), 1.0,  255/255, 255/255, 255/255,];
+                var p1 = [Math.sin(d1)*Math.cos(d2), Math.cos(d1), Math.sin(d1)*Math.sin(d2), 1.0, 255/255, 255/255, 255/255,];
+                var p2 = [Math.sin(d1+offset)*Math.cos(d2), Math.cos(d1+offset), Math.sin(d1+offset)*Math.sin(d2), 1.0,  134/255, 67/255, 222/255,];
                 var p3 = [Math.sin(d1+offset)*Math.cos(d2+offset), Math.cos(d1+offset), Math.sin(d1+offset)*Math.sin(d2+offset), 1.0, 255/255, 255/255, 255/255,];
                 var p4 = [Math.sin(d1)*Math.cos(d2+offset), Math.cos(d1), Math.sin(d1)*Math.sin(d2+offset), 1.0,  255/255, 255/255, 255/255,];
                 
@@ -758,13 +959,13 @@ function bindVertBuff (vertices_array) {
         setMatrials();
 
         pushMatrix(g_modelMatrix);
-
-        pushMatrix(mvpMatrix);
-            
+        {
+            pushMatrix(mvpMatrix);
+            {
             g_modelMatrix.translate(0, -1, 0);	
             g_modelMatrix.scale(0.4, 0.4, 0.4);	
             g_modelMatrix.rotate(g_angle12now, 0, 1, 0);
-
+            
             mvpMatrix.multiply(g_modelMatrix);
             normalMatrix.setInverseOf(g_modelMatrix);
             normalMatrix.transpose();
@@ -773,12 +974,1208 @@ function bindVertBuff (vertices_array) {
 
             gl.uniformMatrix4fv(uLoc_modelMatrix[shaderIdx], false, g_modelMatrix.elements);
             gl.drawArrays(gl.TRIANGLES, sphere_S, sphere_C);	// draw all vertices.
-            
-             
-        mvpMatrix = popMatrix();
+  
+            mvpMatrix = popMatrix();
+            }
         g_modelMatrix = popMatrix();
+        }
+
         return 0;
     }
+
+    // loop's vertices
+    function loopV() {
+        var ans_ver;
+        var i = 0;
+        var step = 12;
+        var dim = 0.9;
+        while (i < 360) {
+            var p1 = [Math.cos((i + step) * 0.0175), Math.sin((i + step) * 0.0175), 0.2, 1.0, 1.0, 0.7, 1.0,];
+            var p2 = [Math.cos(i * 0.0175), Math.sin(i * 0.0175), 0.2, 1.0, 0.7, 0.2, 0.7,];
+            var p3 = [dim * Math.cos((i + step) * 0.0175), dim * Math.sin((i + step) * 0.0175), 0.2, 1.0, 0.8, 0.3, 0.8,];
+            var p4 = [dim * Math.cos(i * 0.0175), dim * Math.sin(i * 0.0175), 0.2, 1.0, 0.6, 0.4, 1.0,];
+
+            var p1_b = [Math.cos((i + step) * 0.0175), Math.sin((i + step) * 0.0175), -0.2, 1.0, 0.0, 1.0, 1.0,];
+            var p2_b = [Math.cos(i * 0.0175), Math.sin(i * 0.0175), -0.2, 1.0, 1.0, 1.0, 1.0,];
+            var p3_b = [dim * Math.cos((i + step) * 0.0175), dim * Math.sin((i + step) * 0.0175), -0.2, 1.0, 1.0, 0.0, 1.0,];
+            var p4_b = [dim * Math.cos(i * 0.0175), dim * Math.sin(i * 0.0175), -0.2, 1.0, 0.0, 1.0, 1.0,];
+
+            var n1 = [0,0,1];
+            var n2 = [0,0,-1]; 
+            var np1 = [p1[0], p1[1], p1[2],];
+            var np2 = [p2[0], p2[1], p2[2],];
+            var np3 = [-p1[0], -p1[1], -p1[2],];
+            var np4 = [-p2[0], -p2[1], -p2[2],];
+
+            var curr_ver = Array.prototype.concat.call(
+
+                p1, n1, p3, n1, p2, n1,
+                p3, n1, p4, n1, p2, n1,
+
+                p1, np1, p2, np2, p2_b, np2,
+                p1, np1, p2_b, np2, p1_b, np1,
+
+                p1_b, n2, p2_b, n2, p4_b, n2,
+                p3_b, n2, p2_b, n2, p4_b, n2,
+
+                p3, np3, p3_b, np3, p4_b, np4,
+                p3, np3, p4_b, np4, p4, np4,
+
+                // p1, p1_b, p3_b,
+                // p1, p3_b, p3,
+
+                // p4, p4_b, p2_b,
+                // p4, p2_b, p2,
+            );
+
+            if (ans_ver == null) {
+                ans_ver = curr_ver;
+            }
+            else {
+                ans_ver = Array.prototype.concat.call(ans_ver, curr_ver);
+            }
+            i = i + step;
+        }
+        return ans_ver;
+    }
+
+    function drawLoop() {
+        matidx = matLoop;
+        setMatrials();
+
+        pushMatrix(g_modelMatrix);
+        {
+            pushMatrix(mvpMatrix);
+            {
+            mvpMatrix.multiply(g_modelMatrix);
+            normalMatrix.setInverseOf(g_modelMatrix);
+            normalMatrix.transpose();
+            gl.uniformMatrix4fv(uLoc_MvpMatrix[shaderIdx], false, mvpMatrix.elements);
+            gl.uniformMatrix4fv(uLoc_NormalMatrix[shaderIdx], false, normalMatrix.elements);
+
+            gl.uniformMatrix4fv(uLoc_modelMatrix[shaderIdx], false, g_modelMatrix.elements);
+            gl.drawArrays(gl.TRIANGLES, loop_S, loop_C);	// draw all vertices.
+            
+            mvpMatrix = popMatrix();
+            }
+
+        g_modelMatrix = popMatrix();
+        }
+        return 0;
+    }
+
+    function cubeV() {
+
+        var v1 = [0.0, 0.0, 0.5, 1.0, 1.0, 1.0, 1.0,];
+        var v2 = [0.0, -0.5, 0.5, 1.0, 0.0, 0.0, 0.0,];
+        var v3 = [0.5, -0.5, 0.5, 1.0, 1.0, 1.0, 1.0,];
+        var v4 = [0.5, 0.0, 0.5, 1.0, 1.0, 1.0, 1.0,];
+        var v5 = [0.5, -0.5, 0.0, 1.0, 1.0, 1.0, 1.0,];
+        var v6 = [0.5, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0,];
+        var v7 = [0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0,];
+        var v8 = [0.0, -0.5, 0.0, 1.0, 0.0, 0.0, 0.0,];
+
+        var n1 = [-1, 0, 0,];
+        var n2 = [1, 0, 0,];
+        var n3 = [0, 0, 1];
+        var n4 = [0, 0, -1];
+        var n5 = [0, 1, 0];
+        var n6 = [0, -1, 0];
+
+        var vertices = Array.prototype.concat.call(
+            v1, n1, v2, n1, v8, n1,
+            v1, n1, v8, n1, v7, n1,
+
+            v1, n3, v2, n3, v3, n3,
+            v1, n3, v3, n3, v4, n3,
+
+            v3, n2, v4, n2, v5, n2,
+            v4, n2, v5, n2, v6, n2,
+
+            v7, n4, v5, n4, v8, n4,
+            v7, n4, v6, n4, v5, n4,
+
+            v7, n5, v1, n5, v4, n5,
+            v7, n5, v4, n5, v6, n5,
+
+            v2, n6, v8, n6, v3, n6,
+            v8, n6, v5, n6, v3, n6,
+        );
+        
+        return vertices;
+    }
+
+    function drawBone() {
+
+        matidx = matBone;
+        setMatrials();
+
+        pushMatrix(g_modelMatrix);
+        {
+            drawAxis();
+            g_modelMatrix.translate(-0.05, 0.15, 0.0);
+
+            pushMatrix(g_modelMatrix);
+            {
+
+                pushMatrix(mvpMatrix);
+                {
+                g_modelMatrix.scale(0.1, 0.1, 0.1);				// Make new drawing axes that
+
+                mvpMatrix.multiply(g_modelMatrix);
+                normalMatrix.setInverseOf(g_modelMatrix);
+                normalMatrix.transpose();
+                gl.uniformMatrix4fv(uLoc_MvpMatrix[shaderIdx], false, mvpMatrix.elements);
+                gl.uniformMatrix4fv(uLoc_NormalMatrix[shaderIdx], false, normalMatrix.elements);
+
+                gl.uniformMatrix4fv(uLoc_modelMatrix[shaderIdx], false, g_modelMatrix.elements);
+                gl.drawArrays(gl.TRIANGLES, cube_S, cube_C);	// draw all vertices.
+
+                mvpMatrix = popMatrix();
+                }
+
+                pushMatrix(mvpMatrix);
+                {
+                g_modelMatrix.translate(0.8, 0.0, 0.0);
+                
+                mvpMatrix.multiply(g_modelMatrix);
+                normalMatrix.setInverseOf(g_modelMatrix);
+                normalMatrix.transpose();
+                gl.uniformMatrix4fv(uLoc_MvpMatrix[shaderIdx], false, mvpMatrix.elements);
+                gl.uniformMatrix4fv(uLoc_NormalMatrix[shaderIdx], false, normalMatrix.elements);
+
+                gl.uniformMatrix4fv(uLoc_modelMatrix[shaderIdx], false, g_modelMatrix.elements);
+
+                gl.drawArrays(gl.TRIANGLES, cube_S, cube_C);	// draw all vertices.
+
+                mvpMatrix = popMatrix();
+                }
+
+                pushMatrix(mvpMatrix);
+                {
+                g_modelMatrix.translate(0.0, -2, 0.0);
+                
+                mvpMatrix.multiply(g_modelMatrix);
+                normalMatrix.setInverseOf(g_modelMatrix);
+                normalMatrix.transpose();
+                gl.uniformMatrix4fv(uLoc_MvpMatrix[shaderIdx], false, mvpMatrix.elements);
+                gl.uniformMatrix4fv(uLoc_NormalMatrix[shaderIdx], false, normalMatrix.elements);
+
+                gl.uniformMatrix4fv(uLoc_modelMatrix[shaderIdx], false, g_modelMatrix.elements);
+
+                gl.drawArrays(gl.TRIANGLES, cube_S, cube_C);	// draw all vertices.
+
+                mvpMatrix = popMatrix();
+                }
+
+                pushMatrix(mvpMatrix);
+                {
+                g_modelMatrix.translate(-0.8, 0.0, 0.0);
+                
+                mvpMatrix.multiply(g_modelMatrix);
+                normalMatrix.setInverseOf(g_modelMatrix);
+                normalMatrix.transpose();
+                gl.uniformMatrix4fv(uLoc_MvpMatrix[shaderIdx], false, mvpMatrix.elements);
+                gl.uniformMatrix4fv(uLoc_NormalMatrix[shaderIdx], false, normalMatrix.elements);
+
+                gl.uniformMatrix4fv(uLoc_modelMatrix[shaderIdx], false, g_modelMatrix.elements);
+
+                gl.drawArrays(gl.TRIANGLES, cube_S, cube_C);	// draw all vertices.
+                
+                mvpMatrix = popMatrix();
+                }
+
+            g_modelMatrix = popMatrix();
+            }
+
+            g_modelMatrix.translate(0.05, -0.03, 0.0);
+            g_modelMatrix.scale(0.07, 0.38, 0.08);				// Make new drawing axes that
+            
+
+            pushMatrix(mvpMatrix);
+            {
+                mvpMatrix.multiply(g_modelMatrix);
+                normalMatrix.setInverseOf(g_modelMatrix);
+                normalMatrix.transpose();
+                gl.uniformMatrix4fv(uLoc_MvpMatrix[shaderIdx], false, mvpMatrix.elements);
+                gl.uniformMatrix4fv(uLoc_NormalMatrix[shaderIdx], false, normalMatrix.elements);
+
+                gl.uniformMatrix4fv(uLoc_modelMatrix[shaderIdx], false, g_modelMatrix.elements);
+
+                gl.drawArrays(gl.TRIANGLES, cube_S, cube_C);	// draw all vertices.
+
+            mvpMatrix = popMatrix();
+            }
+
+        g_modelMatrix = popMatrix();
+        }
+    }
+
+    // dog's part
+    {
+        function bodyV () {
+            // vertices information
+            var v1 = [-0.3, 0.15, 0.05, 1.0, 183/255, 99/255, 24/255,];
+            var v2 = [-0.3, 0.0, 0.05, 1.0, 255/255, 239/255, 192/255,];
+            var v3 = [-0.2, 0.1, 0.1, 1.0, 183/255, 99/255, 24/255,];
+            var v4 = [-0.2, -0.1, 0.1, 1.0, 255/255, 239/255, 192/255,];
+            var v5 = [0.3, 0.1, 0.1, 1.0,  183/255, 99/255, 24/255,];
+            var v6 = [0.3, -0.1, 0.1, 1.0, 255/255, 239/255, 192/255,];
+            var v7 = [0.3, 0.1, -0.1, 1.0, 183/255, 99/255, 24/255,];
+            var v8 = [0.3, -0.1, -0.1, 1.0, 255/255, 239/255, 192/255,];
+            var v9 = [-0.2, 0.1, -0.1, 1.0, 183/255, 99/255, 24/255,];
+            var v10 = [-0.2, -0.1, -0.1, 1.0, 255/255, 239/255, 192/255,];
+            var v11 = [-0.3, 0.15, -0.05, 1.0, 183/255, 99/255, 24/255,];
+            var v12 = [-0.3, 0.0, -0.05, 1.0, 255/255, 239/255, 192/255,];
+
+            var n1 = normByP(v1, v2, v4);
+            var n2 = normByP(v3, v4, v6);
+            var n3 = normByP(v5, v6, v8);
+            var n4 = normByP(v7, v8, v9);
+            var n5 = normByP(v9, v10, v11);
+            var n6 = normByP(v11, v12, v1);
+            var n7 = normByP(v11, v1, v3);
+            var n8 = normByP(v9, v3, v5);
+            var n9 = normByP(v12, v2, v4);
+            var n10 = normByP(v10, v4, v6);
+            
+
+
+            var vertices = Array.prototype.concat.call(
+                // 1
+                v1, n1, v2, n1, v4, n1,
+                v3, n1, v1, n1, v4, n1,
+                //2
+                v3, n2, v4, n2, v6, n2,
+                v5, n2, v3, n2, v6, n2,
+                //3
+                v5, n3, v6, n3, v8, n3,
+                v5, n3, v8, n3, v7, n3,
+                //4
+                v7, n4, v8, n4, v9, n4,
+                v9, n4, v8, n4, v10, n4,
+                //5
+                v9, n5, v10, n5, v11, n5,
+                v11, n5, v10, n5, v12, n5,
+                //6
+                v11, n6, v12, n6, v1, n6,
+                v1, n6, v12, n6, v2, n6,
+                //7
+                v11, n7, v1, n7, v3, n7,
+                v11, n7, v3, n7, v9, n7,
+                //8 
+                v9, n8, v3, n8, v5, n8,
+                v9, n8, v5, n8, v7, n8,
+                //9
+                v12, n9, v2, n9, v4, n9,
+                v12, n9, v4, n9, v10, n9,
+                //10
+                v10, n10, v4, n10, v6, n10,
+                v10, n10, v6, n10, v8, n10,
+            );
+            return vertices;
+        }
+
+        function headV () {
+            // vertices information
+            var v1 = [-0.6, 0.05, 0.05, 1.0, 141/255, 62/255, 23/255,];
+            var v2 = [-0.6, 0.05, -0.05, 1.0, 141/255, 62/255, 23/255,];
+            var v3 = [-0.6, -0.03, 0.05, 1.0,  141/255, 62/255, 23/255,];
+            var v4 = [-0.6, -0.03, -0.05, 1.0, 141/255, 62/255, 23/255,];
+
+            var v5 = [-0.5, 0.05, 0.05, 1.0, 255/255, 245/255, 200/255,];
+            var v6 = [-0.5, 0.05, -0.05, 1.0, 255/255, 245/255, 200/255,];
+
+            var v7 = [-0.45, 0.2, 0.15, 1.0, 255/255, 239/255, 192/255,];
+            var v8 = [-0.45, -0.05, 0.15, 1.0, 255/255, 239/255, 192/255,];
+            var v9 = [-0.3, -0.05, 0.15, 1.0, 183/255, 99/255, 24/255,];
+            var v10 = [-0.3, 0.2, 0.15, 1.0, 183/255, 99/255, 24/255,];
+
+            var v11 = [-0.3, -0.05, -0.15, 1.0,  122/255, 73/255, 9/255,];
+            var v12 = [-0.3, 0.2, -0.15, 1.0, 122/255, 73/255, 9/255,];
+            var v13 = [-0.45, 0.2, -0.15, 1.0, 255/255, 239/255, 192/255,];
+            var v14 = [-0.45, -0.05, -0.15, 1.0, 255/255, 239/255, 192/255,];
+
+            var v15 = [-0.4, 0.3, 0.1, 1.0, 209/255, 135/255, 24/255,];
+            var v16 = [-0.4, 0.3, -0.1, 1.0, 209/255, 135/255, 24/255,];
+
+            var v17 = [-0.4, 0.2, 0.05, 1.0, 124/255, 75/255, 12/255,];
+            var v18 = [-0.4, 0.2, -0.05, 1.0, 124/255, 75/255, 12/255,];
+
+            var vertices = Array.prototype.concat.call(
+                //face
+                v1, normCalc(v1, v3, v5), v3, normCalc(v1, v3, v5), v5, normCalc(v1, v3, v5),
+                v5, normCalc(v5, v3, v8), v3, normCalc(v5, v3, v8), v8, normCalc(v5, v3, v8),
+                v7, normCalc(v7, v5, v8), v5, normCalc(v7, v5, v8), v8, normCalc(v7, v5, v8),
+                v5, normCalc(v5, v7, v6), v7, normCalc(v5, v7, v6), v6, normCalc(v5, v7, v6),
+                v6, normCalc(v5, v7, v6), v7, normCalc(v5, v7, v6), v13, normCalc(v5, v7, v6),
+                v6, normCalc(v6, v13, v14), v13, normCalc(v6, v13, v14), v14, normCalc(v6, v13, v14),
+                v4, normCalc(v4, v6, v14), v6, normCalc(v4, v6, v14), v14, normCalc(v4, v6, v14),
+                v2, normCalc(v2, v4, v6), v4, normCalc(v2, v4, v6), v6, normCalc(v2, v4, v6),
+                v1, [-1, 0, 0,], v3, [-1, 0, 0,], v4, [-1, 0, 0,],
+                v1, [-1, 0, 0,], v2, [-1, 0, 0,], v4, [-1, 0, 0,],
+                v1, [0, 1, 0,], v5, [0, 1, 0,], v2, [0, 1, 0,],
+                v6, [0, 1, 0,], v2, [0, 1, 0,], v5, [0, 1, 0,],
+                //head
+                v7, [0, 0, 1,], v8, [0, 0, 1,], v10, [0, 0, 1,],
+                v8, [0, 0, 1,], v9, [0, 0, 1,], v10, [0, 0, 1,],
+                v10, [1, 0, 0,], v9, [1, 0, 0,], v11, [1, 0, 0,],
+                v10, [1, 0, 0,], v11, [1, 0, 0,], v12, [1, 0, 0,],
+                v13, [0, 0, -1,], v12, [0, 0, -1,], v14, [0, 0, -1,],
+                v12, [0, 0, -1,], v11, [0, 0, -1,], v14, [0, 0, -1,],
+                v14, [0, -1, 0,], v9, [0, -1, 0,], v11, [0, -1, 0,],
+                v8, [0, -1, 0,], v9, [0, -1, 0,], v14, [0, -1, 0,],
+                v7, [0, 1, 0,], v10, [0, 1, 0,], v12, [0, 1, 0,],
+                v7, [0, 1, 0,], v12, [0, 1, 0,], v13, [0, 1, 0,],
+                // ears
+                v7, normCalc(v7, v15, v17), v15, normCalc(v7, v15, v17), v17, normCalc(v7, v15, v17),
+                v15, normCalc(v15, v10, v17), v10, normCalc(v15, v10, v17), v17, normCalc(v15, v10, v17),
+
+                v16, normCalc(v16, v13, v18), v13, normCalc(v16, v13, v18), v18, normCalc(v16, v13, v18),
+                v12, normCalc(v12, v16, v18), v16, normCalc(v12, v16, v18), v18, normCalc(v12, v16, v18),
+            );
+            return vertices;
+        }
+
+        function fthighV () {
+            // vertices information
+            var v1 = [0.0, 0.02, 0.05, 1.0, 183/255, 99/255, 24/255,];
+            var v2 = [0.0, -0.18, 0.05, 1.0, 183/255, 99/255, 24/255,];
+            var v3 = [0.05, -0.18, 0.05, 1.0, 255/255, 239/255, 192/255,];
+            var v4 = [0.1, 0.02, 0.05, 1.0, 255/255, 239/255, 192/255,];
+            var v5 = [0.05, -0.18, 0.0, 1.0, 255/255, 239/255, 192/255,];
+            var v6 = [0.1, 0.02, 0.0, 1.0, 255/255, 239/255, 192/255,];
+            var v7 = [0.0, 0.02, 0.0, 1.0, 183/255, 99/255, 24/255,];
+            var v8 = [0.0, -0.18, 0.0, 1.0, 183/255, 99/255, 24/255,];
+
+           
+
+            var vertices = Array.prototype.concat.call(
+                v1, normCalc(v1, v2, v8), v2, normCalc(v1, v2, v8), v8, normCalc(v1, v2, v8),
+                v1, normCalc(v1, v2, v8), v8, normCalc(v1, v2, v8), v7, normCalc(v1, v2, v8),
+
+                v1, normCalc(v1, v2, v3), v2, normCalc(v1, v2, v3), v3, normCalc(v1, v2, v3),
+                v1, normCalc(v1, v2, v3), v3, normCalc(v1, v2, v3), v4, normCalc(v1, v2, v3),
+
+                v3, normCalc(v3, v4, v5), v4, normCalc(v3, v4, v5), v5, normCalc(v3, v4, v5),
+                v4, normCalc(v3, v4, v5), v5, normCalc(v3, v4, v5), v6, normCalc(v3, v4, v5),
+
+                v7, normCalc(v7, v5, v8), v5, normCalc(v7, v5, v8), v8, normCalc(v7, v5, v8),
+                v7, normCalc(v7, v5, v8), v6, normCalc(v7, v5, v8), v5, normCalc(v7, v5, v8),
+
+                v7, normCalc(v7, v1, v4), v1, normCalc(v7, v1, v4), v4, normCalc(v7, v1, v4),
+                v7, normCalc(v7, v1, v4), v4, normCalc(v7, v1, v4), v6, normCalc(v7, v1, v4),
+
+                v2, normCalc(v2, v8, v3), v8, normCalc(v2, v8, v3), v3, normCalc(v2, v8, v3),
+                v8, normCalc(v2, v8, v3), v5, normCalc(v2, v8, v3), v3, normCalc(v2, v8, v3),
+            );
+            return vertices;
+        }
+
+        function bthighV () {
+            // vertices information
+            var v1 = [0.0, 0.0, 0.1, 1.0,183/255, 99/255, 24/255,];
+            var v2 = [0.2, -0.15, 0.1, 1.0,183/255, 99/255, 24/255,];
+            var v3 = [0.25, -0.15, 0.1, 1.0, 255/255, 239/255, 192/255,];
+            var v4 = [0.22, 0.0, 0.1, 1.0, 255/255, 239/255, 192/255,];
+            var v5 = [0.25, -0.15, 0.0, 1.0, 255/255, 239/255, 192/255,];
+            var v6 = [0.22, 0.0, 0.0, 1.0, 255/255, 239/255, 192/255,];
+            var v7 = [0.0, 0.0, 0.0, 1.0, 183/255, 99/255, 24/255,];
+            var v8 = [0.2, -0.15, 0.0, 1.0, 183/255, 99/255, 24/255,];
+
+            var vertices = Array.prototype.concat.call(
+                v1, normCalc(v1, v2, v8), v2, normCalc(v1, v2, v8), v8, normCalc(v1, v2, v8),
+                v1, normCalc(v1, v2, v8), v8, normCalc(v1, v2, v8), v7, normCalc(v1, v2, v8),
+
+                v1, normCalc(v1, v2, v3), v2, normCalc(v1, v2, v3), v3, normCalc(v1, v2, v3),
+                v1, normCalc(v1, v2, v3), v3, normCalc(v1, v2, v3), v4, normCalc(v1, v2, v3),
+
+                v3, normCalc(v3, v4, v5), v4, normCalc(v3, v4, v5), v5, normCalc(v3, v4, v5),
+                v4, normCalc(v3, v4, v5), v5, normCalc(v3, v4, v5), v6, normCalc(v3, v4, v5),
+
+                v7, normCalc(v7, v5, v8), v5, normCalc(v7, v5, v8), v8, normCalc(v7, v5, v8),
+                v7, normCalc(v7, v5, v8), v6, normCalc(v7, v5, v8), v5, normCalc(v7, v5, v8),
+
+                v7, normCalc(v7, v1, v4), v1, normCalc(v7, v1, v4), v4, normCalc(v7, v1, v4),
+                v7, normCalc(v7, v1, v4), v4, normCalc(v7, v1, v4), v6, normCalc(v7, v1, v4),
+
+                v2, normCalc(v2, v8, v3), v8, normCalc(v2, v8, v3), v3, normCalc(v2, v8, v3),
+                v8, normCalc(v2, v8, v3), v5, normCalc(v2, v8, v3), v3, normCalc(v2, v8, v3),
+            );
+            return vertices;
+        }
+
+        function fcalfV () {
+            // vertices information
+            var v1 = [0.0, 0.0, 0.05, 1.0, 183/255, 99/255, 24/255,];
+            var v2 = [0.0, -0.15, 0.05, 1.0, 183/255, 99/255, 24/255,];
+            var v3 = [0.025, -0.15, 0.05, 1.0, 255/255, 239/255, 192/255,];
+            var v4 = [0.05, 0.0, 0.05, 1.0, 255/255, 239/255, 192/255,];
+            var v5 = [0.025, -0.15, 0.0, 1.0, 255/255, 239/255, 192/255,];
+            var v6 = [0.05, 0.0, 0.0, 1.0, 255/255, 239/255, 192/255,];
+            var v7 = [0.0, 0.0, 0.0, 1.0, 183/255, 99/255, 24/255,];
+            var v8 = [0.0, -0.15, 0.0, 1.0, 183/255, 99/255, 24/255,];
+
+            
+
+            var vertices = Array.prototype.concat.call(
+                v1, normCalc(v1, v2, v8), v2, normCalc(v1, v2, v8), v8, normCalc(v1, v2, v8),
+                v1, normCalc(v1, v2, v8), v8, normCalc(v1, v2, v8), v7, normCalc(v1, v2, v8),
+
+                v1, normCalc(v1, v2, v3), v2, normCalc(v1, v2, v3), v3, normCalc(v1, v2, v3),
+                v1, normCalc(v1, v2, v3), v3, normCalc(v1, v2, v3), v4, normCalc(v1, v2, v3),
+
+                v3, normCalc(v3, v4, v5), v4, normCalc(v3, v4, v5), v5, normCalc(v3, v4, v5),
+                v4, normCalc(v3, v4, v5), v5, normCalc(v3, v4, v5), v6, normCalc(v3, v4, v5),
+
+                v7, normCalc(v7, v5, v8), v5, normCalc(v7, v5, v8), v8, normCalc(v7, v5, v8),
+                v7, normCalc(v7, v5, v8), v6, normCalc(v7, v5, v8), v5, normCalc(v7, v5, v8),
+
+                v7, normCalc(v7, v1, v4), v1, normCalc(v7, v1, v4), v4, normCalc(v7, v1, v4),
+                v7, normCalc(v7, v1, v4), v4, normCalc(v7, v1, v4), v6, normCalc(v7, v1, v4),
+
+                v2, normCalc(v2, v8, v3), v8, normCalc(v2, v8, v3), v3, normCalc(v2, v8, v3),
+                v8, normCalc(v2, v8, v3), v5, normCalc(v2, v8, v3), v3, normCalc(v2, v8, v3),
+            );
+            return vertices;
+        }
+
+        function bcalfV () {
+            // vertices information
+            var v1 = [0.02, 0.05, 0.1, 1.0, 183/255, 99/255, 24/255,];
+            var v2 = [0.0, -0.15, 0.05, 1.0, 183/255, 99/255, 24/255,];
+            var v3 = [0.05, -0.15, 0.05, 1.0, 255/255, 239/255, 192/255,];
+            var v4 = [0.11, 0.05, 0.1, 1.0, 255/255, 239/255, 192/255,];
+            var v5 = [0.05, -0.15, 0.0, 1.0, 255/255, 239/255, 192/255,];
+            var v6 = [0.11, 0.05, 0.0, 1.0, 255/255, 239/255, 192/255,];
+            var v7 = [0.02, 0.05, 0.0, 1.0, 183/255, 99/255, 24/255,];
+            var v8 = [0.05, -0.15, 0.0, 1.0, 183/255, 99/255, 24/255,];
+    
+            var vertices = Array.prototype.concat.call(
+                v1, normCalc(v1, v2, v8), v2, normCalc(v1, v2, v8), v8, normCalc(v1, v2, v8),
+                v1, normCalc(v1, v2, v8), v8, normCalc(v1, v2, v8), v7, normCalc(v1, v2, v8),
+
+                v1, normCalc(v1, v2, v3), v2, normCalc(v1, v2, v3), v3, normCalc(v1, v2, v3),
+                v1, normCalc(v1, v2, v3), v3, normCalc(v1, v2, v3), v4, normCalc(v1, v2, v3),
+
+                v3, normCalc(v3, v4, v5), v4, normCalc(v3, v4, v5), v5, normCalc(v3, v4, v5),
+                v4, normCalc(v3, v4, v5), v5, normCalc(v3, v4, v5), v6, normCalc(v3, v4, v5),
+
+                v7, normCalc(v7, v5, v8), v5, normCalc(v7, v5, v8), v8, normCalc(v7, v5, v8),
+                v7, normCalc(v7, v5, v8), v6, normCalc(v7, v5, v8), v5, normCalc(v7, v5, v8),
+
+                v7, normCalc(v7, v1, v4), v1, normCalc(v7, v1, v4), v4, normCalc(v7, v1, v4),
+                v7, normCalc(v7, v1, v4), v4, normCalc(v7, v1, v4), v6, normCalc(v7, v1, v4),
+
+                v2, normCalc(v2, v8, v3), v8, normCalc(v2, v8, v3), v3, normCalc(v2, v8, v3),
+                v8, normCalc(v2, v8, v3), v5, normCalc(v2, v8, v3), v3, normCalc(v2, v8, v3),
+            );
+            return vertices;
+        }
+
+        function pawV () {
+            // vertices information
+            var v1 = [0.0, 0.0, 0.05, 1.0, 183/255, 99/255, 24/255,];
+            var v2 = [0.0, -0.05, 0.05, 1.0, 183/255, 99/255, 24/255,];
+            var v3 = [0.1, -0.05, 0.05, 1.0, 183/255, 99/255, 24/255,];
+            var v4 = [0.1, 0.0, 0.05, 1.0, 183/255, 99/255, 24/255,];
+            var v5 = [0.1, -0.05, 0.0, 1.0, 183/255, 99/255, 24/255,];
+            var v6 = [0.1, 0.0, 0.0, 1.0, 183/255, 99/255, 24/255,];
+            var v7 = [0.0, 0.0, 0.0, 1.0, 183/255, 99/255, 24/255,];
+            var v8 = [0.0, -0.05, 0.0, 1.0, 183/255, 99/255, 24/255,];
+
+            
+            var vertices = Array.prototype.concat.call(
+                v1, normCalc(v1, v2, v8), v2, normCalc(v1, v2, v8), v8, normCalc(v1, v2, v8),
+                v1, normCalc(v1, v2, v8), v8, normCalc(v1, v2, v8), v7, normCalc(v1, v2, v8),
+
+                v1, normCalc(v1, v2, v3), v2, normCalc(v1, v2, v3), v3, normCalc(v1, v2, v3),
+                v1, normCalc(v1, v2, v3), v3, normCalc(v1, v2, v3), v4, normCalc(v1, v2, v3),
+
+                v3, normCalc(v3, v4, v5), v4, normCalc(v3, v4, v5), v5, normCalc(v3, v4, v5),
+                v4, normCalc(v3, v4, v5), v5, normCalc(v3, v4, v5), v6, normCalc(v3, v4, v5),
+
+                v7, normCalc(v7, v5, v8), v5, normCalc(v7, v5, v8), v8, normCalc(v7, v5, v8),
+                v7, normCalc(v7, v5, v8), v6, normCalc(v7, v5, v8), v5, normCalc(v7, v5, v8),
+
+                v7, normCalc(v7, v1, v4), v1, normCalc(v7, v1, v4), v4, normCalc(v7, v1, v4),
+                v7, normCalc(v7, v1, v4), v4, normCalc(v7, v1, v4), v6, normCalc(v7, v1, v4),
+
+                v2, normCalc(v2, v8, v3), v8, normCalc(v2, v8, v3), v3, normCalc(v2, v8, v3),
+                v8, normCalc(v2, v8, v3), v5, normCalc(v2, v8, v3), v3, normCalc(v2, v8, v3),
+            );
+            return vertices;
+        }
+
+        function tailV () {
+            // vertices information
+            var v1 = [0.0, 0.0, 0.05, 1.0, 183/255, 99/255, 24/255,];
+            var v2 = [0.0, -0.05, 0.05, 1.0, 183/255, 99/255, 24/255,];
+            var v3 = [0.25, -0.05, 0.05, 1.0, 255/255, 239/255, 192/255,];
+            var v4 = [0.25, 0.0, 0.05, 1.0, 255/255, 239/255, 192/255,];
+            var v5 = [0.25, -0.05, 0.0, 1.0, 255/255, 239/255, 192/255,];
+            var v6 = [0.25, 0.0, 0.0, 1.0, 255/255, 239/255, 192/255,];
+            var v7 = [0.0, 0.0, 0.0, 1.0, 255/255, 239/255, 192/255,];
+            var v8 = [0.0, -0.05, 0.0, 1.0, 255/255, 239/255, 192/255,];
+
+         
+
+            var vertices = Array.prototype.concat.call(
+                v1, normCalc(v1, v2, v8), v2, normCalc(v1, v2, v8), v8, normCalc(v1, v2, v8),
+                v1, normCalc(v1, v2, v8), v8, normCalc(v1, v2, v8), v7, normCalc(v1, v2, v8),
+
+                v1, normCalc(v1, v2, v3), v2, normCalc(v1, v2, v3), v3, normCalc(v1, v2, v3),
+                v1, normCalc(v1, v2, v3), v3, normCalc(v1, v2, v3), v4, normCalc(v1, v2, v3),
+
+                v3, normCalc(v3, v4, v5), v4, normCalc(v3, v4, v5), v5, normCalc(v3, v4, v5),
+                v4, normCalc(v3, v4, v5), v5, normCalc(v3, v4, v5), v6, normCalc(v3, v4, v5),
+
+                v7, normCalc(v7, v5, v8), v5, normCalc(v7, v5, v8), v8, normCalc(v7, v5, v8),
+                v7, normCalc(v7, v5, v8), v6, normCalc(v7, v5, v8), v5, normCalc(v7, v5, v8),
+
+                v7, normCalc(v7, v1, v4), v1, normCalc(v7, v1, v4), v4, normCalc(v7, v1, v4),
+                v7, normCalc(v7, v1, v4), v4, normCalc(v7, v1, v4), v6, normCalc(v7, v1, v4),
+
+                v2, normCalc(v2, v8, v3), v8, normCalc(v2, v8, v3), v3, normCalc(v2, v8, v3),
+                v8, normCalc(v2, v8, v3), v5, normCalc(v2, v8, v3), v3, normCalc(v2, v8, v3),
+            );
+
+            return vertices;
+        }
+
+        function drawDog() {
+
+            matidx = matDog;
+            setMatrials();
+
+            pushMatrix(g_modelMatrix);
+            {
+                // body
+                pushMatrix(g_modelMatrix);
+                {
+                    pushMatrix(mvpMatrix);
+                    {
+                    g_modelMatrix.rotate(g_anglebody, 0, 0, 1);
+
+                    mvpMatrix.multiply(g_modelMatrix);
+                    normalMatrix.setInverseOf(g_modelMatrix);
+                    normalMatrix.transpose();
+                    gl.uniformMatrix4fv(uLoc_MvpMatrix[shaderIdx], false, mvpMatrix.elements);
+                    gl.uniformMatrix4fv(uLoc_NormalMatrix[shaderIdx], false, normalMatrix.elements);
+        
+                    gl.uniformMatrix4fv(uLoc_modelMatrix[shaderIdx], false, g_modelMatrix.elements);
+                    gl.drawArrays(gl.TRIANGLES, body_S, body_C);	// draw all vertices.
+
+                    mvpMatrix = popMatrix();
+                    }
+
+                g_modelMatrix = popMatrix();
+                }
+                // head
+                pushMatrix(g_modelMatrix);
+                {
+                    pushMatrix(mvpMatrix);
+                    {
+                    g_modelMatrix.translate(g_transheadx, g_transheady, 0);
+
+                    mvpMatrix.multiply(g_modelMatrix);
+                    normalMatrix.setInverseOf(g_modelMatrix);
+                    normalMatrix.transpose();
+                    gl.uniformMatrix4fv(uLoc_MvpMatrix[shaderIdx], false, mvpMatrix.elements);
+                    gl.uniformMatrix4fv(uLoc_NormalMatrix[shaderIdx], false, normalMatrix.elements);
+        
+                    gl.uniformMatrix4fv(uLoc_modelMatrix[shaderIdx], false, g_modelMatrix.elements);
+                    gl.drawArrays(gl.TRIANGLES, head_S, head_C);	// draw all vertices.
+
+                    mvpMatrix = popMatrix();
+                    }
+
+                g_modelMatrix = popMatrix();
+                }
+
+                //legs
+                //Thighs
+                pushMatrix(g_modelMatrix);
+                {    
+                    // left front
+                    g_modelMatrix.translate(-0.2,  0.0, 0.1);
+                    
+                    pushMatrix(g_modelMatrix);
+                    {
+                        // thigh 
+                        pushMatrix(mvpMatrix);
+                        {
+                        g_modelMatrix.translate(0.0, g_frontlegs, 0.0);
+                        g_modelMatrix.rotate(g_angle0now, 0, 0, 1);
+
+                        mvpMatrix.multiply(g_modelMatrix);
+                        normalMatrix.setInverseOf(g_modelMatrix);
+                        normalMatrix.transpose();
+                        gl.uniformMatrix4fv(uLoc_MvpMatrix[shaderIdx], false, mvpMatrix.elements);
+                        gl.uniformMatrix4fv(uLoc_NormalMatrix[shaderIdx], false, normalMatrix.elements);
+            
+                        gl.uniformMatrix4fv(uLoc_modelMatrix[shaderIdx], false, g_modelMatrix.elements);
+                        gl.drawArrays(gl.TRIANGLES, fthigh_S, fthigh_C);	// draw all vertices.
+
+                        mvpMatrix = popMatrix();
+                        }
+
+
+                        // calf
+                        pushMatrix(g_modelMatrix);
+                        {
+                            pushMatrix(mvpMatrix);
+                            {
+
+                            g_modelMatrix.translate(0, -0.15, 0);
+                            g_modelMatrix.rotate(g_angle5now, 0, 0, 1);
+
+                            mvpMatrix.multiply(g_modelMatrix);
+                            normalMatrix.setInverseOf(g_modelMatrix);
+                            normalMatrix.transpose();
+                            gl.uniformMatrix4fv(uLoc_MvpMatrix[shaderIdx], false, mvpMatrix.elements);
+                            gl.uniformMatrix4fv(uLoc_NormalMatrix[shaderIdx], false, normalMatrix.elements);
+                
+                            gl.uniformMatrix4fv(uLoc_modelMatrix[shaderIdx], false, g_modelMatrix.elements);
+                            gl.drawArrays(gl.TRIANGLES, fcalf_S, fcalf_C);	// draw all vertices.
+
+                            mvpMatrix = popMatrix();
+                            }
+
+                            // paw
+                            pushMatrix(mvpMatrix);
+                            {
+                            g_modelMatrix.translate(-0.05, -0.15, 0);
+                            g_modelMatrix.rotate(g_angle9now, 0, 0, 1);
+
+                            mvpMatrix.multiply(g_modelMatrix);
+                            normalMatrix.setInverseOf(g_modelMatrix);
+                            normalMatrix.transpose();
+                            gl.uniformMatrix4fv(uLoc_MvpMatrix[shaderIdx], false, mvpMatrix.elements);
+                            gl.uniformMatrix4fv(uLoc_NormalMatrix[shaderIdx], false, normalMatrix.elements);
+                
+                            gl.uniformMatrix4fv(uLoc_modelMatrix[shaderIdx], false, g_modelMatrix.elements);
+                            gl.drawArrays(gl.TRIANGLES, paw_S, paw_C);	// draw all vertices.
+
+                            mvpMatrix = popMatrix();
+                            }
+        
+                        g_modelMatrix = popMatrix();
+                        }
+
+                    g_modelMatrix = popMatrix();
+                    }
+                    // right front
+                    g_modelMatrix.translate(0, 0.0, -0.25);
+                    
+                    pushMatrix(g_modelMatrix);
+                    {
+                        // f thigh
+                        pushMatrix(mvpMatrix);
+                        {
+                        g_modelMatrix.translate(0.0, g_frontlegs, 0.0);
+                        g_modelMatrix.rotate(g_angle1now, 0, 0, 1);
+
+
+                        mvpMatrix.multiply(g_modelMatrix);
+                        normalMatrix.setInverseOf(g_modelMatrix);
+                        normalMatrix.transpose();
+                        gl.uniformMatrix4fv(uLoc_MvpMatrix[shaderIdx], false, mvpMatrix.elements);
+                        gl.uniformMatrix4fv(uLoc_NormalMatrix[shaderIdx], false, normalMatrix.elements);
+                
+                        gl.uniformMatrix4fv(uLoc_modelMatrix[shaderIdx], false, g_modelMatrix.elements);
+                        gl.drawArrays(gl.TRIANGLES, fthigh_S, fthigh_C);	// draw all vertices.
+
+                        mvpMatrix = popMatrix();
+                        }
+
+                        // f calf
+                        pushMatrix(g_modelMatrix);
+                      {
+
+                        pushMatrix(mvpMatrix);
+                        {
+                            g_modelMatrix.translate(0.0, -0.15, 0);
+                            g_modelMatrix.rotate(g_angle6now, 0, 0, 1);
+
+                            mvpMatrix.multiply(g_modelMatrix);
+                            normalMatrix.setInverseOf(g_modelMatrix);
+                            normalMatrix.transpose();
+                            gl.uniformMatrix4fv(uLoc_MvpMatrix[shaderIdx], false, mvpMatrix.elements);
+                            gl.uniformMatrix4fv(uLoc_NormalMatrix[shaderIdx], false, normalMatrix.elements);
+                
+                            gl.uniformMatrix4fv(uLoc_modelMatrix[shaderIdx], false, g_modelMatrix.elements);
+                            gl.drawArrays(gl.TRIANGLES, fcalf_S, fcalf_C);	// draw all vertices.
+
+                        mvpMatrix = popMatrix();
+                        }
+
+                        pushMatrix(mvpMatrix);
+                        {
+                            // paw
+                            g_modelMatrix.translate(-0.05, -0.15, 0);
+                            g_modelMatrix.rotate(g_angle9now, 0, 0, 1);
+
+                            mvpMatrix.multiply(g_modelMatrix);
+                            normalMatrix.setInverseOf(g_modelMatrix);
+                            normalMatrix.transpose();
+                            gl.uniformMatrix4fv(uLoc_MvpMatrix[shaderIdx], false, mvpMatrix.elements);
+                            gl.uniformMatrix4fv(uLoc_NormalMatrix[shaderIdx], false, normalMatrix.elements);
+                
+                            gl.uniformMatrix4fv(uLoc_modelMatrix[shaderIdx], false, g_modelMatrix.elements);
+                            gl.drawArrays(gl.TRIANGLES, paw_S, paw_C);	// draw all vertices.
+
+                        mvpMatrix = popMatrix();
+                        }
+        
+                        g_modelMatrix = popMatrix();
+                      }
+
+                    g_modelMatrix = popMatrix();
+                    }
+                    
+                    //  right back
+                    g_modelMatrix.translate(0.3, 0.0, 0.0);
+                    
+                    pushMatrix(g_modelMatrix);
+                    {
+                        // bthigh
+                        pushMatrix(mvpMatrix);
+                        {
+                        g_modelMatrix.rotate(g_angle2now, 0, 0, 1);
+
+                        mvpMatrix.multiply(g_modelMatrix);
+                        normalMatrix.setInverseOf(g_modelMatrix);
+                        normalMatrix.transpose();
+                        gl.uniformMatrix4fv(uLoc_MvpMatrix[shaderIdx], false, mvpMatrix.elements);
+                        gl.uniformMatrix4fv(uLoc_NormalMatrix[shaderIdx], false, normalMatrix.elements);
+                
+                        gl.uniformMatrix4fv(uLoc_modelMatrix[shaderIdx], false, g_modelMatrix.elements);
+
+                        gl.drawArrays(gl.TRIANGLES, bthigh_S, bthigh_C);	// draw all vertices.
+
+                        mvpMatrix = popMatrix();
+                        }
+
+                        // b calf
+                        pushMatrix(g_modelMatrix);
+                        {
+                            pushMatrix(mvpMatrix);
+                            {
+
+                                g_modelMatrix.translate(0.15, -0.14, 0);
+                                g_modelMatrix.rotate(g_angle7now, 0, 0, 1);
+
+                                mvpMatrix.multiply(g_modelMatrix);
+                                normalMatrix.setInverseOf(g_modelMatrix);
+                                normalMatrix.transpose();
+                                gl.uniformMatrix4fv(uLoc_MvpMatrix[shaderIdx], false, mvpMatrix.elements);
+                                gl.uniformMatrix4fv(uLoc_NormalMatrix[shaderIdx], false, normalMatrix.elements);
+                    
+                                gl.uniformMatrix4fv(uLoc_modelMatrix[shaderIdx], false, g_modelMatrix.elements);
+
+                                gl.drawArrays(gl.TRIANGLES, bcalf_S, bcalf_C);	// draw all vertices.
+
+                            mvpMatrix = popMatrix();
+                            }
+                            // paw
+                            pushMatrix(mvpMatrix);
+                            {
+
+                                g_modelMatrix.translate(-0.05, -0.13, 0);
+                                g_modelMatrix.rotate(g_angle10now, 0, 0, 1);
+                                
+                                mvpMatrix.multiply(g_modelMatrix);
+                                normalMatrix.setInverseOf(g_modelMatrix);
+                                normalMatrix.transpose();
+                                gl.uniformMatrix4fv(uLoc_MvpMatrix[shaderIdx], false, mvpMatrix.elements);
+                                gl.uniformMatrix4fv(uLoc_NormalMatrix[shaderIdx], false, normalMatrix.elements);
+                    
+                                gl.uniformMatrix4fv(uLoc_modelMatrix[shaderIdx], false, g_modelMatrix.elements);
+
+                                gl.drawArrays(gl.TRIANGLES, paw_S, paw_C);	// draw all vertices.
+
+                            mvpMatrix = popMatrix();
+                            }
+                            
+                            g_modelMatrix = popMatrix();
+                        }
+
+                    g_modelMatrix = popMatrix();
+                    }
+                    
+                    // left back thigh
+                    g_modelMatrix.translate(0, 0.0, 0.25);
+                    
+                    pushMatrix(g_modelMatrix);
+                    {
+                        pushMatrix(mvpMatrix);
+                        {
+                            g_modelMatrix.rotate(g_angle3now, 0, 0, 1);
+
+                            mvpMatrix.multiply(g_modelMatrix);
+                            normalMatrix.setInverseOf(g_modelMatrix);
+                            normalMatrix.transpose();
+                            gl.uniformMatrix4fv(uLoc_MvpMatrix[shaderIdx], false, mvpMatrix.elements);
+                            gl.uniformMatrix4fv(uLoc_NormalMatrix[shaderIdx], false, normalMatrix.elements);
+                    
+                            gl.uniformMatrix4fv(uLoc_modelMatrix[shaderIdx], false, g_modelMatrix.elements);
+
+                            gl.drawArrays(gl.TRIANGLES, bthigh_S, bthigh_C);	// draw all vertices.
+                        
+                        mvpMatrix = popMatrix();
+                        }
+                            pushMatrix(g_modelMatrix);
+                            {
+                                // b calf
+                                pushMatrix(mvpMatrix);
+                                {
+                                    g_modelMatrix.translate(0.15, -0.14, 0);
+                                    g_modelMatrix.rotate(g_angle8now, 0, 0, 1);
+
+                                    mvpMatrix.multiply(g_modelMatrix);
+                                    normalMatrix.setInverseOf(g_modelMatrix);
+                                    normalMatrix.transpose();
+                                    gl.uniformMatrix4fv(uLoc_MvpMatrix[shaderIdx], false, mvpMatrix.elements);
+                                    gl.uniformMatrix4fv(uLoc_NormalMatrix[shaderIdx], false, normalMatrix.elements);
+                        
+                                    gl.uniformMatrix4fv(uLoc_modelMatrix[shaderIdx], false, g_modelMatrix.elements);
+
+                                    gl.drawArrays(gl.TRIANGLES, bcalf_S, bcalf_C);	// draw all vertices.
+
+                                mvpMatrix = popMatrix();
+                                }
+                                // paws
+                                pushMatrix(mvpMatrix);
+                                {
+                                    g_modelMatrix.translate(-0.05, -0.13, 0);
+                                    g_modelMatrix.rotate(g_angle10now, 0, 0, 1);
+
+                                    mvpMatrix.multiply(g_modelMatrix);
+                                    normalMatrix.setInverseOf(g_modelMatrix);
+                                    normalMatrix.transpose();
+                                    gl.uniformMatrix4fv(uLoc_MvpMatrix[shaderIdx], false, mvpMatrix.elements);
+                                    gl.uniformMatrix4fv(uLoc_NormalMatrix[shaderIdx], false, normalMatrix.elements);
+                        
+                                    gl.uniformMatrix4fv(uLoc_modelMatrix[shaderIdx], false, g_modelMatrix.elements);
+
+                                    gl.drawArrays(gl.TRIANGLES, paw_S, paw_C);	// draw all vertices.
+
+                                mvpMatrix = popMatrix();
+                                }
+                            g_modelMatrix = popMatrix();
+                            }
+                        
+            
+                        g_modelMatrix = popMatrix();
+                    }
+                    
+                    
+                g_modelMatrix = popMatrix();
+                }
+        
+                // tail
+                
+                pushMatrix(g_modelMatrix);
+                {
+                    
+                    pushMatrix(mvpMatrix);
+                    {
+
+                    g_modelMatrix.translate(0.25, 0.05 + g_tail, 0);
+                    g_modelMatrix.rotate(30, 0, 0, 1);
+                    g_modelMatrix.rotate(g_angle1now*1, 0, 1, 0);
+                    g_modelMatrix.rotate(g_angle0now * 1, 0, 0, 1);
+
+
+                    mvpMatrix.multiply(g_modelMatrix);
+                    normalMatrix.setInverseOf(g_modelMatrix);
+                    normalMatrix.transpose();
+                    gl.uniformMatrix4fv(uLoc_MvpMatrix[shaderIdx], false, mvpMatrix.elements);
+                    gl.uniformMatrix4fv(uLoc_NormalMatrix[shaderIdx], false, normalMatrix.elements);
+                
+                    gl.uniformMatrix4fv(uLoc_modelMatrix[shaderIdx], false, g_modelMatrix.elements);
+
+                    gl.drawArrays(gl.TRIANGLES, tail_S, tail_C);	// draw all vertices.
+
+                    mvpMatrix = popMatrix();
+                    }
+
+                    pushMatrix(mvpMatrix);
+                    {
+                    g_modelMatrix.translate(0.22, -0.01, 0);
+                    g_modelMatrix.scale(0.5, 1, 1);
+                    g_modelMatrix.rotate(30, 0, 0, 1);
+
+                    mvpMatrix.multiply(g_modelMatrix);
+                    normalMatrix.setInverseOf(g_modelMatrix);
+                    normalMatrix.transpose();
+                    gl.uniformMatrix4fv(uLoc_MvpMatrix[shaderIdx], false, mvpMatrix.elements);
+                    gl.uniformMatrix4fv(uLoc_NormalMatrix[shaderIdx], false, normalMatrix.elements);
+                
+                    gl.uniformMatrix4fv(uLoc_modelMatrix[shaderIdx], false, g_modelMatrix.elements);
+
+                    gl.drawArrays(gl.TRIANGLES, tail_S, tail_C);	// draw all vertices.
+
+                    mvpMatrix = popMatrix();
+                    }
+
+                    pushMatrix(mvpMatrix);
+                    {
+                    g_modelMatrix.translate(0.22, -0.01, 0);
+                    g_modelMatrix.scale(0.2, 1, 1);
+                    g_modelMatrix.rotate(30, 0, 0, 1);
+
+                    mvpMatrix.multiply(g_modelMatrix);
+                    normalMatrix.setInverseOf(g_modelMatrix);
+                    normalMatrix.transpose();
+                    gl.uniformMatrix4fv(uLoc_MvpMatrix[shaderIdx], false, mvpMatrix.elements);
+                    gl.uniformMatrix4fv(uLoc_NormalMatrix[shaderIdx], false, normalMatrix.elements);
+                
+                    gl.uniformMatrix4fv(uLoc_modelMatrix[shaderIdx], false, g_modelMatrix.elements);
+
+                    gl.drawArrays(gl.TRIANGLES, tail_S, tail_C);	// draw all vertices.
+
+                    mvpMatrix = popMatrix();
+                    }
+                
+                g_modelMatrix = popMatrix();
+                }
+                
+            g_modelMatrix = popMatrix();
+            }
+            return 0;
+        }
+
+        function cloudV() {
+            // vertices information
+            var v1 = [0.0, 0.1, 0.0, 1.0, 0.0, 0.7, 1.0,];
+            var v2 = [0.1, 0.1, 0.0, 1.0, 0.0, 0.7, 1.0,];
+            var v3 = [0.1, 0.2, 0.0, 1.0, 1.0, 0.9, 1.0,];
+            var v4 = [0.2, 0.2, 0.0, 1.0, 1.0, 0.8, 0.8,];
+            var v5 = [0.2, 0.3, 0.0, 1.0, 1.0, 1.0, 1.0,];
+            var v6 = [0.3, 0.3, 0.0, 1.0, 1.0, 0.9, 0.9,];
+            var v7 = [0.3, 0.2, 0.0, 1.0,  1.0, 0.9, 0.9,];
+            var v8 = [0.4, 0.2, 0.0, 1.0, 1.0, 0.8, 0.8,];
+            var v9 = [0.4, 0.1, 0.0, 1.0, 1.0, 0.8, 0.8,];
+            var v10 = [0.5, 0.1, 0.0, 1.0,  1.0, 0.8, 0.8,];
+            var v11 = [0.5, 0.2, 0.0, 1.0,  1.0, 0.9, 0.9,];
+            var v12 = [0.6, 0.2, 0.0, 1.0,  1.0, 0.8, 0.8,];
+            var v13 = [0.6, 0.1, 0.0, 1.0,  1.0, 1.0, 1.0,];
+            var v14 = [0.7, 0.1, 0.0, 1.0,  1.0, 0.8, 0.8,];
+            var v15 = [0.7, 0.0, 0.0, 1.0, 0.0, 0.5, 1.0,];
+            var v16 = [0.6, 0.0, 0.0, 1.0, 0.0, 0.5, 1.0,];
+            var v17 = [0.6, -0.1, 0.0, 1.0, 0.0, 0.5, 1.0,];
+            var v18 = [0.5, -0.1, 0.0, 1.0, 0.4, 0.4, 0.8,];
+            var v19 = [0.5, 0., 0.0, 1.0, 0.0, 0.5, 1.0,];
+            var v20 = [0.4, 0.0, 0.0, 1.0, 0.0, 0.5, 1.0,];
+            var v21 = [0.4, -0.1, 0.0, 1.0, 0.4, 0.4, 0.8,];
+            var v22 = [0.1, -0.1, 0.0, 1.0, 0.0, 0.5, 1.0,];
+            var v23 = [0.1, 0.0, 0.0, 1.0, 0.4, 0.4, 0.8,];
+            var v24 = [0.0, 0.0, 0.0, 1.0, 0.4, 0.4, 0.8,];
+
+            var v1_b = [0.0, 0.1, 0.1, 1.0, 0.0, 0.7, 1.0,];
+            var v2_b = [0.1, 0.1, 0.1, 1.0, 0.0, 0.7, 1.0,];
+            var v3_b = [0.1, 0.2, 0.1, 1.0, 1.0, 0.9, 1.0,];
+            var v4_b = [0.2, 0.2, 0.1, 1.0, 1.0, 0.8, 0.8,];
+            var v5_b = [0.2, 0.3, 0.1, 1.0, 1.0, 1.0, 1.0,];
+            var v6_b = [0.3, 0.3, 0.1, 1.0, 1.0, 0.9, 0.9,];
+            var v7_b = [0.3, 0.2, 0.1, 1.0,  1.0, 0.9, 0.9,];
+            var v8_b = [0.4, 0.2, 0.1, 1.0, 1.0, 0.8, 0.8,];
+            var v9_b = [0.4, 0.1, 0.1, 1.0, 1.0, 0.8, 0.8,];
+            var v10_b = [0.5, 0.1, 0.1, 1.0,  1.0, 0.8, 0.8,];
+            var v11_b = [0.5, 0.2, 0.1, 1.0,  1.0, 0.9, 0.9,];
+            var v12_b = [0.6, 0.2, 0.1, 1.0,  1.0, 0.8, 0.8,];
+            var v13_b = [0.6, 0.1, 0.1, 1.0,  1.0, 1.0, 1.0,];
+            var v14_b = [0.7, 0.1, 0.1, 1.0,  1.0, 0.8, 0.8,];
+            var v15_b = [0.7, 0.0, 0.1, 1.0, 0.0, 0.5, 1.0,];
+            var v16_b = [0.6, 0.0, 0.1, 1.0, 0.0, 0.5, 1.0,];
+            var v17_b = [0.6, -0.1, 0.1, 1.0, 0.0, 0.5, 1.0,];
+            var v18_b = [0.5, -0.1, 0.1, 1.0, 0.4, 0.4, 0.8,];
+            var v19_b = [0.5, 0., 0.1, 1.0, 0.0, 0.5, 1.0,];
+            var v20_b = [0.4, 0.0, 0.1, 1.0, 0.0, 0.5, 1.0,];
+            var v21_b = [0.4, -0.1, 0.1, 1.0, 0.0, 0.5, 1.0,];
+            var v22_b = [0.1, -0.1, 0.1, 1.0, 0.4, 0.4, 0.8,];
+            var v23_b = [0.1, 0.0, 0.1, 1.0, 0.4, 0.4, 0.8,];
+            var v24_b = [0.0, 0.0, 0.1, 1.0, 0.4, 0.4, 0.8,];
+
+
+
+            var vertices = Array.prototype.concat.call(
+
+                //side:
+                v1, [-1, 0, 0], v1_b, [-1, 0, 0], v24_b, [-1, 0, 0],
+                v1, [-1, 0, 0], v24_b, [-1, 0, 0], v24, [-1, 0, 0],
+
+                v2, [0, 1, 0], v2_b, [0, 1, 0], v1_b, [0, 1, 0],
+                v2, [0, 1, 0], v1_b, [0, 1, 0], v1, [0, 1, 0],
+
+                v3, [-1, 0, 0], v3_b, [-1, 0, 0], v2_b, [-1, 0, 0],
+                v3, [-1, 0, 0], v2_b, [-1, 0, 0], v2, [-1, 0, 0],
+
+                v4, [0, 1, 0], v4_b, [0, 1, 0], v3_b, [0, 1, 0],
+                v4, [0, 1, 0], v3_b, [0, 1, 0], v3, [0, 1, 0],
+
+                v5, [-1, 0, 0], v5_b, [-1, 0, 0], v4_b, [-1, 0, 0],
+                v5, [-1, 0, 0], v4_b, [-1, 0, 0], v4, [-1, 0, 0],
+
+                v6, [0, 1, 0], v6_b, [0, 1, 0], v5_b, [0, 1, 0],
+                v6, [0, 1, 0], v5_b, [0, 1, 0], v5, [0, 1, 0],
+
+                v7, [1, 0, 0], v7_b, [1, 0, 0], v6_b, [1, 0, 0],
+                v7, [1, 0, 0], v6_b, [1, 0, 0], v6, [1, 0, 0],
+
+                v8, [0, 1, 0], v8_b, [0, 1, 0], v7_b, [0, 1, 0],
+                v8, [0, 1, 0], v7_b, [0, 1, 0], v7, [0, 1, 0],
+
+                v9, [1, 0, 0], v9_b, [1, 0, 0], v8_b, [1, 0, 0],
+                v9, [1, 0, 0], v8_b, [1, 0, 0], v8, [1, 0, 0],
+
+                v10, [0, 1, 0], v10_b, [0, 1, 0], v9_b, [0, 1, 0],
+                v10, [0, 1, 0], v9_b, [0, 1, 0], v9, [0, 1, 0],
+
+                v11, [-1, 0, 0], v11_b, [-1, 0, 0], v10_b, [-1, 0, 0],
+                v11, [-1, 0, 0], v10_b, [-1, 0, 0], v10, [-1, 0, 0],
+
+                v12, [0, 1, 0], v12_b, [0, 1, 0], v11_b, [0, 1, 0],
+                v12, [0, 1, 0], v11_b, [0, 1, 0], v11, [0, 1, 0],
+
+                v13, [1, 0, 0], v13_b, [1, 0, 0], v12_b, [1, 0, 0],
+                v13, [1, 0, 0], v12_b, [1, 0, 0], v12, [1, 0, 0],
+
+                v14, [0, 1, 0], v14_b, [0, 1, 0], v13_b, [0, 1, 0],
+                v14, [0, 1, 0], v13_b, [0, 1, 0], v13, [0, 1, 0],
+
+                v15, [1, 0, 0], v15_b, [1, 0, 0], v14_b, [1, 0, 0],
+                v15, [1, 0, 0], v14_b, [1, 0, 0], v14, [1, 0, 0],
+
+                v16, [0, -1, 0], v16_b, [0, -1, 0], v15_b, [0, -1, 0],
+                v16, [0, -1, 0], v15_b, [0, -1, 0], v15, [0, -1, 0],
+
+                v17, [1, 0, 0], v17_b, [1, 0, 0], v16_b, [1, 0, 0],
+                v17, [1, 0, 0], v16_b, [1, 0, 0], v16, [1, 0, 0],
+
+                v18, [0, -1, 0], v18_b, [0, -1, 0], v17_b, [0, -1, 0],
+                v18, [0, -1, 0], v17_b, [0, -1, 0], v17, [0, -1, 0],
+
+                v19, [-1, 0, 0], v19_b, [-1, 0, 0], v18_b, [-1, 0, 0],
+                v19, [-1, 0, 0], v18_b, [-1, 0, 0], v18, [-1, 0, 0],
+
+                v20, [0, -1, 0], v20_b, [0, -1, 0], v19_b, [0, -1, 0],
+                v20, [0, -1, 0], v19_b, [0, -1, 0], v19, [0, -1, 0],
+
+                v21, [1, 0, 0], v21_b, [1, 0, 0], v20_b, [1, 0, 0],
+                v21, [1, 0, 0], v20_b, [1, 0, 0], v20, [1, 0, 0],
+
+                v22, [0, -1, 0], v22_b, [0, -1, 0], v21_b, [0, -1, 0],
+                v22, [0, -1, 0], v21_b, [0, -1, 0], v21, [0, -1, 0],
+
+                v23, [-1, 0, 0], v23_b, [-1, 0, 0], v22_b, [-1, 0, 0],
+                v23, [-1, 0, 0], v22_b, [-1, 0, 0], v22, [-1, 0, 0],
+
+                v24, [0, -1, 0], v24_b, [0, -1, 0], v23_b, [0, -1, 0],
+                v24, [0, -1, 0], v23_b, [0, -1, 0], v23, [0, -1, 0],
+                // front:
+                v2, [0, 0, 1], v1, [0, 0, 1], v24, [0, 0, 1],
+                v2, [0, 0, 1], v24, [0, 0, 1], v23, [0, 0, 1],
+                v1_b, [0, 0, -1], v2_b, [0, 0, -1], v24_b, [0, 0, -1],
+                v2_b, [0, 0, -1], v23_b, [0, 0, -1], v24_b, [0, 0, -1],
+
+                v4, [0, 0, 1], v3, [0, 0, 1], v22, [0, 0, 1],
+                v3_b, [0, 0, -1], v4_b, [0, 0, -1], v22_b, [0, 0, -1],
+                v6, [0, 0, 1], v4, [0, 0, 1], v22, [0, 0, 1],
+                v4_b, [0, 0, -1], v6_b, [0, 0, -1], v22_b, [0, 0, -1],
+                v6, [0, 0, 1], v5, [0, 0, 1], v4, [0, 0, 1],
+                v5_b, [0, 0, -1], v6_b, [0, 0, -1], v4_b, [0, 0, -1],
+                v7, [0, 0, 1], v6, [0, 0, 1], v22, [0, 0, 1],
+                v6_b, [0, 0, -1], v7_b, [0, 0, -1], v22_b, [0, 0, -1],
+                v7, [0, 0, 1], v21, [0, 0, 1], v22, [0, 0, 1],
+                v21_b, [0, 0, -1], v7_b, [0, 0, -1], v22_b, [0, 0, -1],
+                v8, [0, 0, 1], v7, [0, 0, 1], v21, [0, 0, 1],
+                v7_b, [0, 0, -1], v8_b, [0, 0, -1], v21_b, [0, 0, -1],
+
+                v10, [0, 0, 1], v9, [0, 0, 1], v20, [0, 0, 1],
+                v9_b, [0, 0, -1], v10_b, [0, 0, -1], v20_b, [0, 0, -1],
+                v10, [0, 0, 1], v20, [0, 0, 1], v19, [0, 0, 1],
+                v20_b, [0, 0, -1], v10_b, [0, 0, -1], v19_b, [0, 0, -1],
+
+                v11, [0, 0, 1], v18, [0, 0, 1], v12, [0, 0, 1],
+                v18_b, [0, 0, -1], v11_b, [0, 0, -1], v12_b, [0, 0, -1],
+                v12, [0, 0, 1], v18, [0, 0, 1], v17, [0, 0, 1],
+                v18_b, [0, 0, -1], v12_b, [0, 0, -1], v17_b, [0, 0, -1],
+
+                v14, [0, 0, 1], v13, [0, 0, 1], v16, [0, 0, 1],
+                v13_b, [0, 0, -1], v14_b, [0, 0, -1], v16_b, [0, 0, -1],
+                v14, [0, 0, 1], v16, [0, 0, 1], v15, [0, 0, 1],
+                v14_b, [0, 0, -1], v15_b, [0, 0, -1], v16_b, [0, 0, -1],
+            );
+            return vertices;
+        }
+
+        function drawCloud() {
+            matidx = matCloud;
+            setMatrials();
+
+            pushMatrix(g_modelMatrix);
+            {
+                drawAxis();
+
+                pushMatrix(mvpMatrix);
+                {
+                mvpMatrix.multiply(g_modelMatrix);
+                normalMatrix.setInverseOf(g_modelMatrix);
+                normalMatrix.transpose();
+                gl.uniformMatrix4fv(uLoc_MvpMatrix[shaderIdx], false, mvpMatrix.elements);
+                gl.uniformMatrix4fv(uLoc_NormalMatrix[shaderIdx], false, normalMatrix.elements);
+                
+                gl.uniformMatrix4fv(uLoc_modelMatrix[shaderIdx], false, g_modelMatrix.elements);
+
+                gl.drawArrays(gl.TRIANGLES, cloud_S, cloud_C);	// draw all vertices.
+
+                mvpMatrix = popMatrix();
+                }
+
+                pushMatrix(mvpMatrix);
+                {
+                    g_modelMatrix.scale(0.6, 0.6, 0.5);
+                    g_modelMatrix.translate(0.3, 0.05, 0.2);
+
+                    mvpMatrix.multiply(g_modelMatrix);
+                    normalMatrix.setInverseOf(g_modelMatrix);
+                    normalMatrix.transpose();
+                    gl.uniformMatrix4fv(uLoc_MvpMatrix[shaderIdx], false, mvpMatrix.elements);
+                    gl.uniformMatrix4fv(uLoc_NormalMatrix[shaderIdx], false, normalMatrix.elements);
+                
+                    gl.uniformMatrix4fv(uLoc_modelMatrix[shaderIdx], false, g_modelMatrix.elements);
+
+                    gl.drawArrays(gl.TRIANGLES, cloud_S, cloud_C);	// draw all vertices.
+                    
+                mvpMatrix = popMatrix();
+                }
+
+                
+                pushMatrix(mvpMatrix);
+                {
+                    g_modelMatrix.translate(0, 0, -0.3);
+                
+                    mvpMatrix.multiply(g_modelMatrix);
+                    normalMatrix.setInverseOf(g_modelMatrix);
+                    normalMatrix.transpose();
+                    gl.uniformMatrix4fv(uLoc_MvpMatrix[shaderIdx], false, mvpMatrix.elements);
+                    gl.uniformMatrix4fv(uLoc_NormalMatrix[shaderIdx], false, normalMatrix.elements);
+                
+                    gl.uniformMatrix4fv(uLoc_modelMatrix[shaderIdx], false, g_modelMatrix.elements);
+
+                    gl.drawArrays(gl.TRIANGLES, cloud_S, cloud_C);	// draw all vertices.
+
+                    mvpMatrix = popMatrix();
+                }
+
+            g_modelMatrix = popMatrix();
+            }
+        }
+
+    }   // =========== end dog parts ============
 
     function groundgridV() {
         var ans_ver;
@@ -849,9 +2246,9 @@ function bindVertBuff (vertices_array) {
 
     function drawAxis() {
         pushMatrix(g_modelMatrix);
-
-        pushMatrix(mvpMatrix);
-        
+        {
+            pushMatrix(mvpMatrix);
+            {
             g_modelMatrix.rotate(-90, 1, 0, 0);
 
             mvpMatrix.multiply(g_modelMatrix);
@@ -865,11 +2262,23 @@ function bindVertBuff (vertices_array) {
             gl.drawArrays(gl.LINES, axis_S, axis_C);	// draw all vertices.
             
             mvpMatrix = popMatrix();
+            }
         g_modelMatrix = popMatrix();
+        }
 
         return 0;
     }
 
+    function setTarget() {
+        target_x = Math.random() * 4 - 2;
+        target_y = Math.random() * 4 - 1;
+        target_z = Math.random() * 4 - 2;
+
+        a_x = (target_x - cloud_x) / 1000;
+        a_y = (target_y - cloud_y) / 1000;
+        a_z = (target_z - cloud_z) / 1000;
+        return 0;
+    }
 }
 
 // draw all + draw things
@@ -883,7 +2292,6 @@ function drawThings() {
         pushMatrix(g_modelMatrix);
             g_modelMatrix.scale(4, 4, 4);
             drawAxis();
-            
         g_modelMatrix = popMatrix();
     }
 
@@ -896,9 +2304,101 @@ function drawThings() {
             g_modelMatrix.scale(0.5, 0.5, 0.5);
             drawSphere();
 
+            g_modelMatrix.translate(0, 0, -1);
+
+            // loop
+            {
+            pushMatrix(g_modelMatrix);
+                g_modelMatrix.rotate(g_angle4now, 0, 0, 1);
+                drawLoop();
+            g_modelMatrix = popMatrix();
+            }
+            // stuffs
+            
+            
+            //g_modelMatrix.translate(0, 0, 1);
+            // ---------  Cloud start  ----------
+            // ======   Randomly walking   =======
+            {
+            pushMatrix(g_modelMatrix);
+                g_modelMatrix.scale(0.6, 0.6, 0.6);
+                g_modelMatrix.rotate(g_angle11now * 2, 1, 0, 0);
+                g_modelMatrix.rotate(g_angle11now, 0, 1, 0);
+                g_modelMatrix.translate(-0.35, 0, 0);
+    
+                
+                if(Math.abs(cloud_x - target_x) > 0.0001  || Math.abs(cloud_y - target_y) > 0.0001 || Math.abs(cloud_z - target_z) > 0.0001)
+                {
+                    cloud_x = cloud_x + a_x;
+                    cloud_y = cloud_y + a_y;
+                    cloud_z = cloud_z + a_z;
+                    g_modelMatrix.translate(cloud_x, cloud_y, cloud_z);
+                    
+                } else {
+                    setTarget();
+                    g_modelMatrix.translate(cloud_x, cloud_y, cloud_z);
+                }
+                // console.log(target_x, target_y);
+                // console.log(target_y);
+                drawCloud();
+                
+            g_modelMatrix = popMatrix();
+            }
+            // -------  Cloud end  ------------
+    
+            
+            // -------------  Dog  ----------------
+            {
+            if(g_yKmove > 0.1 && g_xKmove < 0.4 && SW && !Run)
+            {
+                Run = true;
+                walk();
+            }
+            if((g_yKmove < 0.1 || g_xKmove > 0.4) && SW && Run)
+            {
+                Run = false;
+                runForBone();
+            }
+    
+            pushMatrix(g_modelMatrix);
+                g_modelMatrix.scale(0.5,0.5,0.5);	
+                g_modelMatrix.translate(0.0, -1.4, 0);
+                drawDog();
+            g_modelMatrix = popMatrix();
+            }
+            // ------------- END Dog ---------------
+            
+            // ------------- Bone -----------------
+            {
+            pushMatrix(g_modelMatrix);
+                g_modelMatrix.translate(-0.6, -0.2, 0);	
+                g_modelMatrix.translate(g_xKmove, g_yKmove, 0);	    
+                // g_modelMatrix.rotate(40, 0, 0, 1);
+                
+
+                quatMatrix.setFromQuat(qTot.x, qTot.y, qTot.z, qTot.w);	// Quaternion-->Matrix
+                g_modelMatrix.concat(quatMatrix);	// apply that matrix.
+                
+                if(keyPressed == "b" && !boneExist)
+                {
+                    keyPressed = "";
+                    boneExist = true;
+                }
+                if(keyPressed == "b" && boneExist ) {
+                    keyPressed = "";
+                    boneExist = false;
+                }
+                
+                if(boneExist)
+                {
+                    drawBone();
+                }
+            g_modelMatrix = popMatrix();
+            }
+        // -------------  END Bone  ---------------
+
         g_modelMatrix = popMatrix();
     }
-
     g_modelMatrix = popMatrix();
     return 0;
 }
@@ -933,7 +2433,6 @@ function drawAll() {
         {
             switchShader(shaderIdx);
         }
-        
     }
     
     matCtl();
@@ -941,7 +2440,6 @@ function drawAll() {
     setCamera();
     
     lightsPosCrl(); // update the light's position adjusted by user
-
     if(lamp0.isLit)
     {
         lightsColorCrl0();
@@ -950,11 +2448,9 @@ function drawAll() {
     {
         lightsColorCrl1();
     }
-
     
     setLights();
-    //setMatrials();
-    
+
     // set perspective:
     gl.viewport(0,											// Viewport lower-left corner
 				0, 			// location(in pixels)
@@ -963,7 +2459,8 @@ function drawAll() {
 
     var vpAspect = g_canvasID.width /			// On-screen aspect ratio for
                     (g_canvasID.height);	// this camera: width/height.
-        
+     
+                    
     if(keyPressed == "c" && !cloudView)
     {
                 keyPressed = "";
@@ -977,9 +2474,9 @@ function drawAll() {
     if(cloudView)
     {
         mvpMatrix.perspective(  30.0,
-            vpAspect,
-            0.1,              // near
-            far);        // far
+                                vpAspect,
+                                0.1,              // near
+                                far);        // far
 
             mvpMatrix.lookAt(   inst_x, inst_y, inst_z + 1  ,	// center of projection
                                 newdirx, newdiry, newdirz,	// look-at point 
@@ -988,21 +2485,18 @@ function drawAll() {
     else {
 
         mvpMatrix.perspective(  30.0,
-            vpAspect,
-            near,              // near
-            far);        // far
+                                vpAspect,
+                                near,              // near
+                                far);        // far
         mvpMatrix.lookAt(   eye_x, eye_y, eye_z,	// center of projection
                             la_x, la_y, la_z,	// look-at point 
                             0.0, 0.0, 1.0);	// View UP vector.
     }
-
-
     // ---------------------------------
     drawThings();
 
     return 0;
 }
-
 }
 
 // input handling
@@ -1018,6 +2512,191 @@ function drawAll() {
                                                                 'j\t Z=' +qTot.z.toFixed(res)+
                                                                 'k\t W=' +qTot.w.toFixed(res)+
                                                                 '<br>length='+qTot.length().toFixed(res);
+    }
+
+    function runForBone() {
+        g_angle0now = -20;       // init Current rotation angle, in degrees
+        g_angle0rate = -60;       // init Rotation angle rate, in degrees/second.
+        g_angle0min = -30;       // init min, max allowed angle, in degrees.
+        g_angle0max = 60;
+        // right front                                //---------------
+        g_angle1now = -20; 			// init Current rotation angle, in degrees > 0
+        g_angle1rate = -60;				// init Rotation angle rate, in degrees/second.
+        g_angle1min = -30;       // init min, max allowed angle, in degrees
+        g_angle1max = 60;
+        // left back                                 //---------------
+        g_angle2now = 20; 			// init Current rotation angle, in degrees.
+        g_angle2rate = 60;				// init Rotation angle rate, in degrees/second.
+        g_angle2min = -60;       // init min, max allowed angle, in degrees
+        g_angle2max = 30;
+        // right back
+        g_angle3now = 20; 			// init Current rotation angle, in degrees.
+        g_angle3rate = 60;				// init Rotation angle rate, in degrees/second.
+        g_angle3min = -60;       // init min, max allowed angle, in degrees
+        g_angle3max = 30;
+    
+        // right back
+        g_angle4now = 0; 			// init Current rotation angle, in degrees.
+        g_angle4rate = 40;				// init Rotation angle rate, in degrees/second.
+
+
+        g_anglebody = 0;
+        g_transheadx = 0.0;
+        g_transheady = 0.0;
+        g_frontlegs = 0.0;
+        g_tail = 0.0;
+    
+        g_angle5now = 0;       // init Current rotation angle, in degrees
+        g_angle5rate = -20;       // init Rotation angle rate, in degrees/second.
+        g_angle5min = 10;       // init min, max allowed angle, in degrees.
+        g_angle5max = 10;
+        // right front                                //---------------
+        g_angle6now = 0; 			// init Current rotation angle, in degrees > 0
+        g_angle6rate = -20;				// init Rotation angle rate, in degrees/second.
+        g_angle6min = 10;       // init min, max allowed angle, in degrees
+        g_angle6max = 10;
+        // left back                                 //---------------
+        g_angle7now = 10 			// init Current rotation angle, in degrees.
+        g_angle7rate = -30;				// init Rotation angle rate, in degrees/second.
+        g_angle7min = 0;       // init min, max allowed angle, in degrees
+        g_angle7max = 30;
+        // right back
+        g_angle8now = 10; 			// init Current rotation angle, in degrees.
+        g_angle8rate = -30;				// init Rotation angle rate, in degrees/second.
+        g_angle8min = 0;       // init min, max allowed angle, in degrees
+        g_angle8max = 30;
+        //front paws
+        g_angle9now = 0 			// init Current rotation angle, in degrees.
+        g_angle9rate = 10;				// init Rotation angle rate, in degrees/second.
+        g_angle9min = 20;       // init min, max allowed angle, in degrees
+        g_angle9max = 30;
+        // back paws
+        g_angle10now = 0; 			// init Current rotation angle, in degrees.
+        g_angle10rate = 10;				// init Rotation angle rate, in degrees/second.
+        g_angle10min = 20;       // init min, max allowed angle, in degrees
+        g_angle10max = 30;
+    
+    }
+    
+    function walk() {
+        g_angle0now = 30;       // init Current rotation angle, in degrees
+        g_angle0rate = 20;       // init Rotation angle rate, in degrees/second.
+        g_angle0min = -10;       // init min, max allowed angle, in degrees.
+        g_angle0max = 30;
+        // right front                                //---------------
+        g_angle1now = -10; 			// init Current rotation angle, in degrees > 0
+        g_angle1rate = -20;				// init Rotation angle rate, in degrees/second.
+        g_angle1min = -10;       // init min, max allowed angle, in degrees
+        g_angle1max = 30;
+        // left back                                 //---------------
+        g_angle2now = 0; 			// init Current rotation angle, in degrees.
+        g_angle2rate = -20;				// init Rotation angle rate, in degrees/second.
+        g_angle2min = -40;       // init min, max allowed angle, in degrees
+        g_angle2max = 0;
+        // right back
+        g_angle3now = -40; 			// init Current rotation angle, in degrees.
+        g_angle3rate = 20;				// init Rotation angle rate, in degrees/second.
+        g_angle3min = -40;       // init min, max allowed angle, in degrees
+        g_angle3max = 0;
+
+        g_angle4now = 0; 			// init Current rotation angle, in degrees.
+        g_angle4rate = 10;				// init Rotation angle rate, in degrees/second.
+    
+        g_anglebody = 0;
+        g_transheadx = 0.0;
+        g_transheady = 0.0;
+        g_frontlegs = 0.0;
+        g_tail = 0.0;
+    
+        g_angle5now = -10;       // init Current rotation angle, in degrees
+        g_angle5rate = -10;       // init Rotation angle rate, in degrees/second.
+        g_angle5min = 10;       // init min, max allowed angle, in degrees.
+        g_angle5max = -10;
+        // right front                                //---------------
+        g_angle6now = 10; 			// init Current rotation angle, in degrees > 0
+        g_angle6rate = 10;				// init Rotation angle rate, in degrees/second.
+        g_angle6min = 10;       // init min, max allowed angle, in degrees
+        g_angle6max = -10;
+        // left back                                 //---------------
+        g_angle7now = 10 			// init Current rotation angle, in degrees.
+        g_angle7rate = 10;				// init Rotation angle rate, in degrees/second.
+        g_angle7min = 10;       // init min, max allowed angle, in degrees
+        g_angle7max = -10;
+        // right back
+        g_angle8now = -10; 			// init Current rotation angle, in degrees.
+        g_angle8rate = -10;				// init Rotation angle rate, in degrees/second.
+        g_angle8min = 10;       // init min, max allowed angle, in degrees
+        g_angle8max = -10;
+    
+        g_angle9now = 0 			// init Current rotation angle, in degrees.
+        g_angle9rate = 5;				// init Rotation angle rate, in degrees/second.
+        g_angle9min = 0;       // init min, max allowed angle, in degrees
+        g_angle9max = 20;
+        // right back
+        g_angle10now = 20; 			// init Current rotation angle, in degrees.
+        g_angle10rate = 2;				// init Rotation angle rate, in degrees/second.
+        g_angle10min = 20;       // init min, max allowed angle, in degrees
+        g_angle10max = 28;
+    }
+    
+    function sit() {
+        g_angle0now = -10.0;
+                g_angle1now = -10.0;
+                g_angle2now = -60.0;
+                g_angle3now = -60.0;
+                g_angle5now = 0.0;
+                g_angle6now = 0.0;
+                g_angle7now = -20.0;
+                g_angle8now = -20.0;
+                g_angle9now = 10.0;
+                g_angle10now = -30.0;
+    
+                g_anglebody = -50;
+                g_transheadx = 0.15;
+                g_transheady = 0.25;
+                g_frontlegs = 0.1;
+                g_tail = -0.2;
+    
+                g_angle0rate = 0.0;
+                g_angle1rate = 0.0;
+                g_angle2rate = 0.0;
+                g_angle3rate = 0.0;
+                g_angle5rate = 0.0;
+                g_angle6rate = 0.0;
+                g_angle7rate = 0.0;
+                g_angle8rate = 0.0;
+                g_angle9rate = 0.0;
+                g_angle10rate = 0.0;
+
+                g_angle4now = 0;
+                g_angle4rate = 0;
+    }
+    
+    function runStop() {
+        // Called when user presses the 'Sit/Walk' button
+        SW = (SW+1)%2; // !
+        console.log("SW", SW);
+    
+        if(SW == 1)                 // walk
+        {
+            runForBone();
+        } else if (SW == 0) {                   // sit
+            sit();
+        }
+    
+    }
+
+    function change() {
+        // Called when user presses the 'Sit/Walk' button
+        SW = (SW+1)%2; // !
+        console.log("SW", SW);
+    
+        if(SW == 1)                 // walk
+        {
+            runForBone();
+        } else if (SW == 0) {                   // sit
+            sit();
+        }
     }
     
     //===================Mouse and Keyboard event-handling Callbacks
@@ -1116,14 +2795,17 @@ function drawAll() {
                                                                 'j\t Z=' +qTot.z.toFixed(res)+
                                                                 'k\t W=' +qTot.w.toFixed(res)+
                                                                 '<br>length='+qTot.length().toFixed(res);
-        };
+    };
 
     function myMouseClick(ev) {
         console.log("myMouseClick() on button: ", ev.button);
     }
     
+    function myMouseDblClick(ev) {
+        console.log("myMouse-DOUBLE-Click() on button: ", ev.button);
     }
-
+    }
+    // Key
     {
     function myKeyDown(kev) {
 
@@ -1263,6 +2945,7 @@ function drawAll() {
         la_x = eye_x + direc_x;
         la_y = eye_y + direc_y;
         la_z = eye_z + direc_z;
+
     }
     
     function myKeyUp(kev) {
@@ -1270,17 +2953,19 @@ function drawAll() {
         // Called when user releases ANY key on the keyboard; captures scancodes well
         console.log('myKeyUp()--keyCode=' + kev.keyCode + ' released.');
     }
-}
     }
+}
 
-
-    
 // functions for muli-shader 
 function normCalc(x1, y1, z1, x2, y2, z2, x3, y3, z3) {
     var u = [x2 - x1, y2 - y1, z2 - z1];
     var v = [x3 - x2, y3 - y2, z3 - z2];
 
     return [u[1] * v[2] - u[2]*v[1], u[2]* v[0] - u[0] * v[2], u[0]* v[1] - u[1] * v[0]];
+}
+
+function normByP(p1, p2, p3) {
+    return normCalc(p1[0], p1[1], p1[2], p2[0], p2[1], p2[2], p3[0], p3[1], p3[2],);
 }
 
 function myInitShaders(VSHADER, FSHADER, name, idx) {
@@ -1398,10 +3083,6 @@ function setMatrials() {
     gl.uniform1f(matl0.uLoc_Kori[shaderIdx], matl0.K_ori);     // Kshiny 
 }
 
-function changeMatels() {
-	matl0.setMatl(matlSel[matidx]);								// set new material reflectances,
-}
-
 // used in every loop of drawAll() since camera is always moving
 function setCamera() {
     gl.uniform3fv(uLoc_eyePosWorld[shaderIdx], [eye_x, eye_y, eye_z]);// use it to set our uniform
@@ -1415,11 +3096,7 @@ function switchShader() {
 
     bindVertBuff(vert);
     console.log("Vertecies binded successfully!");
-
-    // shaderIdx = i;
 }
-
-
 
 
 /// shader swithcing functions:
@@ -1468,6 +3145,7 @@ function switchShader() {
         }
     }
 }
+
 // Light setting functions:
 {
     function lightsPosCrl() {
@@ -1525,7 +3203,6 @@ function switchShader() {
 
     function lightsColorCrl1() {
 
-  
         var a1r = document.getElementById('pRa').value;
         var a1g = document.getElementById('pGa').value;
         var a1b = document.getElementById('pBa').value;
@@ -1581,14 +3258,6 @@ function switchShader() {
             lamp0ambi = [ 0, 0, 0];
             lamp0diff = [ 0, 0, 0];
             lamp0spec = [ 0, 0, 0];
-
-            // lamp0.I_ambi.elements.set(lamp0ambi);   // color rgb
-            // lamp0.I_diff.elements.set(lamp0diff);
-            // lamp0.I_spec.elements.set(lamp0spec);
-
-            // gl.uniform3fv(lamp0.u_ambi[shaderIdx], lamp0.I_ambi.elements);		// ambient
-            // gl.uniform3fv(lamp0.u_diff[shaderIdx], lamp0.I_diff.elements);		// diffuse
-            // gl.uniform3fv(lamp0.u_spec[shaderIdx], lamp0.I_spec.elements);		// Specular
 
             console.log(shaderIdx);
         }

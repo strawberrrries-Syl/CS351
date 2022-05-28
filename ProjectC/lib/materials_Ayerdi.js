@@ -339,7 +339,7 @@ Material.prototype.setMatl = function(nuMatl) {
 			this.K_diff.push(0.50754,  0.50754,  0.50754,  1.0);
 			this.K_spec.push(0.508273, 0.508273, 0.508273, 1.0);  
 			this.K_shiny = 51.2;
-			this.K_ori = 0.8;
+			this.K_ori = 0.6;
 			this.K_name = "MATL_ORIGIN";
 			break;
 		default:
