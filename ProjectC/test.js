@@ -9,6 +9,8 @@ var VSHADER_SOURCE0 =
 '	vec3 diff;\n' +			// Kd: diffuse reflectance (r,g,b)
 '	vec3 spec;\n' + 		// Ks: specular reflectance (r,g,b)
 '	int shiny;\n' +			// Kshiny: specular exponent (integer >= 1; typ. <200)
+'	float ori;\n' +			// Kori, original color portion
+
 '};\n' +
 
 'struct LampT {\n' +		// Describes one point-like Phong light source
@@ -62,6 +64,7 @@ var VSHADER_SOURCE1 =
 	'	vec3 diff;\n' +			// Kd: diffuse reflectance (r,g,b)
 	'	vec3 spec;\n' + 		// Ks: specular reflectance (r,g,b)
 	'	int shiny;\n' +			// Kshiny: specular exponent (integer >= 1; typ. <200)
+    '	float ori;\n' +			// Kori, original color portion
     '};\n' +
 
     // attributes
@@ -113,6 +116,7 @@ var FSHADER_SOURCE1 =
 	'	vec3 diff;\n' +			// Kd: diffuse reflectance (r,g,b)
 	'	vec3 spec;\n' + 		// Ks: specular reflectance (r,g,b)
 	'	int shiny;\n' +			// Kshiny: specular exponent (integer >= 1; typ. <200)
+    '	float ori;\n' +			// Kori, original color portion
     '};\n' +
 
     // uniforms:
@@ -153,8 +157,10 @@ var FSHADER_SOURCE1 =
     '   vec3 ambient = u_LampSet[0].ambi * u_MatlSet[0].ambi + u_LampSet[1].ambi * u_MatlSet[0].ambi;\n' +
     '   vec3 diffuse = u_LampSet[0].diff * v_Kd * nDotL + u_LampSet[1].diff * v_Kd * nDotL1;\n' +
     '	vec3 speculr = u_LampSet[0].spec * u_MatlSet[0].spec * e64 + u_LampSet[1].spec * u_MatlSet[0].spec * e641;\n' +
-    '   gl_FragColor = vec4(emissive + ambient + diffuse + speculr , v_Color );\n' + // 1.0
-    '}\n';
+    '   vec3 light = (emissive + ambient + diffuse + speculr);' +
+    
+    '   gl_FragColor = vec4(light.x  + (v_Color.x - light.x)* u_MatlSet[0].ori, light.y + (v_Color.y - light.y)* u_MatlSet[0].ori, light.z + (v_Color.z - light.z)* u_MatlSet[0].ori, 1.0);\n' + // 1.0
+     '}\n';
 
 
 
@@ -177,6 +183,7 @@ var VSHADER_SOURCE2 =
 	'	vec3 diff;\n' +			// Kd: diffuse reflectance (r,g,b)
 	'	vec3 spec;\n' + 		// Ks: specular reflectance (r,g,b)
 	'	int shiny;\n' +			// Kshiny: specular exponent (integer >= 1; typ. <200)
+    '	float ori;\n' +			// Kori, original color portion
     '};\n' +
 
     // attributes
@@ -219,7 +226,11 @@ var VSHADER_SOURCE2 =
     '   vec3 ambient = u_LampSet[0].ambi * u_MatlSet[0].ambi + u_LampSet[1].ambi * u_MatlSet[0].ambi;\n' +
     '   vec3 diffuse = u_LampSet[0].diff * u_MatlSet[0].diff * nDotL + u_LampSet[1].diff * u_MatlSet[0].diff * nDotL;\n' +
     '	vec3 speculr = u_LampSet[0].spec * u_MatlSet[0].spec * e64 + u_LampSet[1].spec * u_MatlSet[0].spec * e641;\n' +
-    '   v_Color = vec4(emissive + ambient + diffuse + speculr , a_Color);\n' + // 1.0
+    //'   v_Color = vec4((emissive + ambient + diffuse + speculr) * (1-u_MatlSet[0].ori) + u_MatlSet[0].ori *  a_Color, 1.0);\n' + // 1.0
+    '   vec3 light = (emissive + ambient + diffuse + speculr);' +
+    
+    '   v_Color = vec4(light.x  + (a_Color.x - light.x)* u_MatlSet[0].ori, light.y + (a_Color.y - light.y)* u_MatlSet[0].ori, light.z + (a_Color.z - light.z)* u_MatlSet[0].ori, 1.0);\n' + // 1.0
+    
     '}\n';
 // Fragment shader prog
 var FSHADER_SOURCE2 =				
@@ -241,6 +252,7 @@ var VSHADER_SOURCE3 =
 	'	vec3 diff;\n' +			// Kd: diffuse reflectance (r,g,b)
 	'	vec3 spec;\n' + 		// Ks: specular reflectance (r,g,b)
 	'	int shiny;\n' +			// Kshiny: specular exponent (integer >= 1; typ. <200)
+    '	float ori;\n' +			// Kori, original color portion
     '};\n' +
 
     // attributes
@@ -291,6 +303,7 @@ var FSHADER_SOURCE3 =
 	'	vec3 diff;\n' +			// Kd: diffuse reflectance (r,g,b)
 	'	vec3 spec;\n' + 		// Ks: specular reflectance (r,g,b)
 	'	int shiny;\n' +			// Kshiny: specular exponent (integer >= 1; typ. <200)
+    '	float ori;\n' +			// Kori, original color portion
     '};\n' +
     // uniforms:
     'uniform LampT u_LampSet[2];\n' +		// Array of all light sources.
@@ -328,7 +341,9 @@ var FSHADER_SOURCE3 =
     '   vec3 ambient = u_LampSet[0].ambi * u_MatlSet[0].ambi + u_LampSet[1].ambi * u_MatlSet[0].ambi;\n' +
     '   vec3 diffuse = u_LampSet[0].diff * v_Kd * nDotL + u_LampSet[1].diff * v_Kd * nDotL1;\n' +
     '	vec3 speculr = u_LampSet[0].spec * u_MatlSet[0].spec * e64 + u_LampSet[1].spec * u_MatlSet[0].spec * e641;\n' +
-    '   gl_FragColor = vec4(emissive + ambient + diffuse + speculr , v_Color);\n' + // 1.0
+    '   vec3 light = (emissive + ambient + diffuse + speculr);' +
+    '   gl_FragColor = vec4(light.x  + (v_Color.x - light.x)* u_MatlSet[0].ori, light.y + (v_Color.y - light.y)* u_MatlSet[0].ori, light.z + (v_Color.z - light.z)* u_MatlSet[0].ori, 1.0);\n' + // 1.0
+    //'   gl_FragColor = vec4((emissive + ambient + diffuse + speculr , v_Color) * (1-u_MatlSet[0].ori) + u_MatlSet[0].ori *  v_Color, 1.0);\n' + // 1.0
     '}\n';
 
 
@@ -352,6 +367,7 @@ var VSHADER_SOURCE4 =
 	'	vec3 diff;\n' +			// Kd: diffuse reflectance (r,g,b)
 	'	vec3 spec;\n' + 		// Ks: specular reflectance (r,g,b)
 	'	int shiny;\n' +			// Kshiny: specular exponent (integer >= 1; typ. <200)
+    '	float ori;\n' +			// Kori, original color portion
     '};\n' +
 
     // attributes
@@ -393,7 +409,9 @@ var VSHADER_SOURCE4 =
     '   vec3 ambient = u_LampSet[0].ambi * u_MatlSet[0].ambi + u_LampSet[1].ambi * u_MatlSet[0].ambi;\n' +
     '   vec3 diffuse = u_LampSet[0].diff * u_MatlSet[0].diff * nDotL + u_LampSet[1].diff * u_MatlSet[0].diff * nDotL1;\n' +
     '	vec3 speculr = u_LampSet[0].spec * u_MatlSet[0].spec * e64 + u_LampSet[1].spec * u_MatlSet[0].spec * e641;\n' +
-    '   v_Color = vec4(emissive + ambient + diffuse + speculr , a_Color);\n' + // 1.0
+    //'   v_Color = vec4((emissive + ambient + diffuse + speculr , a_Color) * (1-u_MatlSet[0].ori) + u_MatlSet[0].ori *  a_Color, 1.0);\n' + // 1.0
+    '   vec3 light = (emissive + ambient + diffuse + speculr);' +
+    '   v_Color = vec4(light.x  + (a_Color.x - light.x)* u_MatlSet[0].ori, light.y + (a_Color.y - light.y)* u_MatlSet[0].ori, light.z + (a_Color.z - light.z)* u_MatlSet[0].ori, 1.0);\n' + // 1.0
     '}\n';
 // Fragment shader prog
 var FSHADER_SOURCE4 =				
@@ -457,7 +475,7 @@ var lamp1S = document.getElementById('pointS');
 var resetl0 = false; resetl1 = false;
 
 	// ... for our first material:
-var matlSel= MATL_PEARL;				// see keypress(): 'm' key changes matlSel
+var matlSel= MATL_ORIGIN;				// see keypress(): 'm' key changes matlSel
 var matl0 = new Material(matlSel);	
 var matl1 = new Material(matlSel);	
 var matl2 = new Material(matlSel);	
@@ -1327,7 +1345,10 @@ function myInitShaders(VSHADER, FSHADER, name, idx) {
         matl0.uLoc_Kd[idx] = gl.getUniformLocation(gl.program, 'u_MatlSet[0].diff');
         matl0.uLoc_Ks[idx] = gl.getUniformLocation(gl.program, 'u_MatlSet[0].spec');
         matl0.uLoc_Kshiny[idx] = gl.getUniformLocation(gl.program, 'u_MatlSet[0].shiny');
-        if(!matl0.uLoc_Ke[idx] || !matl0.uLoc_Ka[idx] || !matl0.uLoc_Kd[idx] || !matl0.uLoc_Ks[idx] || !matl0.uLoc_Kshiny[idx] ) {
+
+        matl0.uLoc_Kori[idx] = gl.getUniformLocation(gl.program, 'u_MatlSet[0].ori');
+
+        if(!matl0.uLoc_Ke[idx] || !matl0.uLoc_Ka[idx] || !matl0.uLoc_Kd[idx] || !matl0.uLoc_Ks[idx] || !matl0.uLoc_Kshiny[idx] || !matl0.uLoc_Kori[idx]) {
             console.log('Failed to get GPUs Reflectance matl0 storage locationsfor ', name);
             return;
         }
@@ -1346,8 +1367,6 @@ function setLights() {
     lamp0.I_ambi.elements.set(lamp0ambi);   // color rgb
     lamp0.I_diff.elements.set(lamp0diff);
     lamp0.I_spec.elements.set(lamp0spec);
-
-    console.log(shaderIdx, lamp0ambi);
 
     gl.uniform3fv(lamp0.u_pos[shaderIdx],  lamp0.I_pos.elements.slice(0,3));
     gl.uniform3fv(lamp0.u_ambi[shaderIdx], lamp0.I_ambi.elements);		// ambient
@@ -1372,6 +1391,8 @@ function setMatrials() {
     gl.uniform3fv(matl0.uLoc_Kd[shaderIdx], matl0.K_diff.slice(0,3));				// Kd	diffuse
 	gl.uniform3fv(matl0.uLoc_Ks[shaderIdx], matl0.K_spec.slice(0,3));				// Ks specular
 	gl.uniform1i(matl0.uLoc_Kshiny[shaderIdx], parseInt(matl0.K_shiny, 10));     // Kshiny 
+
+    gl.uniform1f(matl0.uLoc_Kori[shaderIdx], matl0.K_ori);     // Kshiny 
 }
 
 function changeMatels(matlSel) {

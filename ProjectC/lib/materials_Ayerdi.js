@@ -40,7 +40,10 @@ var MATL_OBSIDIAN = 		 19;
 var MATL_PEARL = 				 20;
 var MATL_RUBY = 				 21;
 var MATL_TURQUOISE = 		 22;
-var MATL_DEFAULT = 			 23;		// (used for unrecognized material names)
+// var MATL_DEFAULT = 			 23;		// (used for unrecognized material names)
+// var MATL_ORIGIN = 			 24;		// (used for unrecognized material names)
+var MATL_ORIGIN = 			 23;		// (used for unrecognized material names)
+var MATL_DEFAULT = 			 24;		// (used for unrecognized material names)
 
 /*
 The code below defines a JavaScript material-describing object whose type we 
@@ -90,6 +93,9 @@ function Material(opt_Matl) {
 	this.K_diff = [];
 	this.K_spec = [];
 	this.K_shiny = 0.0;
+
+	this.K_ori = 0.0;
+
 	this.K_name = "Undefined Material";		// text string with material name.
 	this.K_matlNum = 	MATL_DEFAULT;				// material number.
 	
@@ -101,6 +107,9 @@ function Material(opt_Matl) {
 	this.uLoc_Kd = [false, false, false, false, false];
 	this.uLoc_Ks = [false, false, false, false, false];
 	this.uLoc_Kshiny = [false, false, false, false, false];
+
+	this.uLoc_Kori = [false, false, false, false, false];
+
 	// THEN: ?Did the user specified a valid material?
 	if(		opt_Matl && opt_Matl >=0 && opt_Matl < MATL_DEFAULT)	{		
 		this.setMatl(opt_Matl);			// YES! set the reflectance values (K_xx)
@@ -122,6 +131,7 @@ Material.prototype.setMatl = function(nuMatl) {
 	this.K_spec = [];
 	this.K_name = [];
 	this.K_shiny = 0.0;
+	this.K_ori = 0.0;
 	//  Set new values ONLY for material reflectances:
 	switch(nuMatl)
 	{
@@ -131,6 +141,7 @@ Material.prototype.setMatl = function(nuMatl) {
 			this.K_diff.push(0.6,     0.0,    0.0,    1.0);
 			this.K_spec.push(0.6,     0.6,    0.6,    1.0);   
 			this.K_shiny = 100.0;
+			this.K_ori = 0.2;
 			this.K_name = "MATL_RED_PLASTIC";
 			break;
 		case MATL_GRN_PLASTIC: // 2
@@ -139,6 +150,7 @@ Material.prototype.setMatl = function(nuMatl) {
 			this.K_diff.push(0.0,     0.6,    0.0,    1.0);
 			this.K_spec.push(0.2,     0.2,    0.2,    1.0);   
 			this.K_shiny = 60.0;
+			this.K_ori = 0.2;
 			this.K_name = "MATL_GRN_PLASTIC";
 			break;
 		case MATL_BLU_PLASTIC: // 3
@@ -147,62 +159,70 @@ Material.prototype.setMatl = function(nuMatl) {
 			this.K_diff.push(0.0,     0.2,    0.6,    1.0);
 			this.K_spec.push(0.1,     0.2,    0.3,    1.0);   
 			this.K_shiny = 5.0;
+			this.K_ori = 0.2;
 			this.K_name = "MATL_BLU_PLASTIC";
 			break;
-		case MATL_BLACK_PLASTIC:
+		case MATL_BLACK_PLASTIC:// 4
 			this.K_emit.push(0.0,     0.0,    0.0,    1.0);
 			this.K_ambi.push(0.0,     0.0,    0.0,    1.0);
 			this.K_diff.push(0.01,    0.01,   0.01,   1.0);
 			this.K_spec.push(0.5,     0.5,    0.5,    1.0);   
 			this.K_shiny = 32.0;
+			this.K_ori = 0.2;
 			this.K_name = "MATL_BLACK_PLASTIC";
 			break;
-		case MATL_BLACK_RUBBER:
+		case MATL_BLACK_RUBBER:	// 5
 			this.K_emit.push(0.0,     0.0,    0.0,    1.0);
 			this.K_ambi.push(0.02,    0.02,   0.02,   1.0);
 			this.K_diff.push(0.01,    0.01,   0.01,   1.0);
 			this.K_spec.push(0.4,     0.4,    0.4,    1.0);   
 			this.K_shiny = 10.0;
+			this.K_ori = 0.2;
 			this.K_name = "MATL_BLACK_RUBBER";
 			break;
-		case MATL_BRASS:
+		case MATL_BRASS:	// 6
 			this.K_emit.push(0.0,      0.0,      0.0,      1.0);
 			this.K_ambi.push(0.329412, 0.223529, 0.027451, 1.0);
 			this.K_diff.push(0.780392, 0.568627, 0.113725, 1.0);
 			this.K_spec.push(0.992157, 0.941176, 0.807843, 1.0);   
 			this.K_shiny = 27.8974;
+			this.K_ori = 0.2;
 			this.K_name = "MATL_BRASS";
 			break;
-		case MATL_BRONZE_DULL:
+		case MATL_BRONZE_DULL:	// 7
 			this.K_emit.push(0.0,      0.0,      0.0,      1.0);
 			this.K_ambi.push(0.2125,   0.1275,   0.054,    1.0);
 			this.K_diff.push(0.714,    0.4284,   0.18144,  1.0);
 			this.K_spec.push(0.393548, 0.271906, 0.166721, 1.0);  
 			this.K_shiny = 25.6;
+			this.K_ori = 0.2;
 			this.K_name = "MATL_BRONZE_DULL";
 			break;
-		case MATL_BRONZE_SHINY:
+		case MATL_BRONZE_SHINY:	// 8
 			this.K_emit.push(0.0,      0.0,      0.0,      1.0);
 			this.K_ambi.push(0.25,     0.148,    0.06475,  1.0);
 			this.K_diff.push(0.4,      0.2368,   0.1036,   1.0);
 			this.K_spec.push(0.774597, 0.458561, 0.200621, 1.0);  
 			this.K_shiny = 76.8;
+			this.K_ori = 0.2;
 			this.K_name = "MATL_BRONZE_SHINY";
 			break;
-		case MATL_CHROME:
+		case MATL_CHROME:	// 9
 			this.K_emit.push(0.0,      0.0,      0.0,      1.0);
 			this.K_ambi.push(0.25,     0.25,     0.25,     1.0);
 			this.K_diff.push(0.4,      0.4,      0.4,      1.0);
 			this.K_spec.push(0.774597, 0.774597, 0.774597, 1.0);  
 			this.K_shiny = 76.8;
+			this.K_ori = 0.2;
 			this.K_name = "MATL_CHROME";
 			break;
-		case MATL_COPPER_DULL:
+		case MATL_COPPER_DULL:	// 10
 			this.K_emit.push(0.0,      0.0,      0.0,      1.0);
 			this.K_ambi.push(0.19125,  0.0735,   0.0225,   1.0);
 			this.K_diff.push(0.7038,   0.27048,  0.0828,   1.0);
 			this.K_spec.push(0.256777, 0.137622, 0.086014, 1.0);  
 			this.K_shiny = 12.8;
+			this.K_ori = 0.2;
 			this.K_name = "MATL_COPPER_DULL";
 			break;
 		case MATL_COPPER_SHINY:
@@ -211,6 +231,7 @@ Material.prototype.setMatl = function(nuMatl) {
 			this.K_diff.push(0.5508,   0.2118,   0.066,     1.0);
 			this.K_spec.push(0.580594, 0.223257, 0.0695701, 1.0);  
 			this.K_shiny = 51.2;
+			this.K_ori = 0.2;
 			this.K_name = "MATL_COPPER_SHINY";
 			break;
 		case MATL_GOLD_DULL:
@@ -219,6 +240,7 @@ Material.prototype.setMatl = function(nuMatl) {
 			this.K_diff.push(0.75164,  0.60648,  0.22648,  1.0);
 			this.K_spec.push(0.628281, 0.555802, 0.366065, 1.0);  
 			this.K_shiny = 51.2;
+			this.K_ori = 0.2;
 			this.K_name = "MATL_GOLD_DULL";
 			break;
 		case MATL_GOLD_SHINY:
@@ -227,6 +249,7 @@ Material.prototype.setMatl = function(nuMatl) {
 			this.K_diff.push(0.34615,  0.3143,   0.0903,   1.0);
 			this.K_spec.push(0.797357, 0.723991, 0.208006, 1.0);  
 			this.K_shiny = 83.2;
+			this.K_ori = 0.2;
 			this.K_name = "MATL_GOLD_SHINY";
 			break;
 		case MATL_PEWTER:
@@ -235,14 +258,16 @@ Material.prototype.setMatl = function(nuMatl) {
 			this.K_diff.push(0.427451, 0.470588, 0.541176, 1.0);
 			this.K_spec.push(0.333333, 0.333333, 0.521569, 1.0);  
 			this.K_shiny = 9.84615;
+			this.K_ori = 0.2;
 			this.K_name = "MATL_PEWTER";
 			break;
-		case MATL_SILVER_DULL:
+		case MATL_SILVER_DULL:	// 15
 			this.K_emit.push(0.0,      0.0,      0.0,      1.0);
 			this.K_ambi.push(0.19225,  0.19225,  0.19225,  1.0);
 			this.K_diff.push(0.50754,  0.50754,  0.50754,  1.0);
 			this.K_spec.push(0.508273, 0.508273, 0.508273, 1.0);  
 			this.K_shiny = 51.2;
+			this.K_ori = 0.2;
 			this.K_name = "MATL_SILVER_DULL";
 			break;
 		case MATL_SILVER_SHINY:
@@ -251,6 +276,7 @@ Material.prototype.setMatl = function(nuMatl) {
 			this.K_diff.push(0.2775,   0.2775,   0.2775,   1.0);
 			this.K_spec.push(0.773911, 0.773911, 0.773911, 1.0);  
 			this.K_shiny = 89.6;
+			this.K_ori = 0.2;
 			this.K_name = "MATL_SILVER_SHINY";
 			break;
 		case MATL_EMERALD:
@@ -259,6 +285,7 @@ Material.prototype.setMatl = function(nuMatl) {
 			this.K_diff.push(0.07568, 0.61424,  0.07568, 0.55);
 			this.K_spec.push(0.633,   0.727811, 0.633,   0.55);   
 			this.K_shiny = 76.8;
+			this.K_ori = 0.2;
 			this.K_name = "MATL_EMERALD";
 			break;
 		case MATL_JADE:
@@ -267,6 +294,7 @@ Material.prototype.setMatl = function(nuMatl) {
 			this.K_diff.push(0.54,     0.89,     0.63,     0.95);
 			this.K_spec.push(0.316228, 0.316228, 0.316228, 0.95);   
 			this.K_shiny = 12.8;
+			this.K_ori = 0.2;
 			this.K_name = "MATL_JADE";
 			break;
 		case MATL_OBSIDIAN:
@@ -275,14 +303,16 @@ Material.prototype.setMatl = function(nuMatl) {
 			this.K_diff.push(0.18275,  0.17,     0.22525,  0.82);
 			this.K_spec.push(0.332741, 0.328634, 0.346435, 0.82);   
 			this.K_shiny = 38.4;
+			this.K_ori = 0.2;
 			this.K_name = "MATL_OBSIDIAN";
 			break;
-		case MATL_PEARL:
+		case MATL_PEARL:	// 20
 			this.K_emit.push(0.0,      0.0,      0.0,      1.0);
 			this.K_ambi.push(0.25,     0.20725,  0.20725,  0.922);
 			this.K_diff.push(1.0,      0.829,    0.829,    0.922);
 			this.K_spec.push(0.296648, 0.296648, 0.296648, 0.922);   
 			this.K_shiny = 11.264;
+			this.K_ori = 0.2;
 			this.K_name = "MATL_PEARL";
 			break;
 		case MATL_RUBY:
@@ -291,6 +321,7 @@ Material.prototype.setMatl = function(nuMatl) {
 			this.K_diff.push(0.61424,  0.04136,  0.04136,  0.55);
 			this.K_spec.push(0.727811, 0.626959, 0.626959, 0.55);   
 			this.K_shiny = 76.8;
+			this.K_ori = 0.2;
 			this.K_name = "MATL_RUBY";
 			break;
 		case MATL_TURQUOISE: // 22
@@ -299,7 +330,17 @@ Material.prototype.setMatl = function(nuMatl) {
 			this.K_diff.push(0.396,    0.74151,  0.69102,  0.8);
 			this.K_spec.push(0.297254, 0.30829,  0.306678, 0.8);   
 			this.K_shiny = 12.8;
+			this.K_ori = 0.2;
 			this.K_name = "MATL_TURQUOISE";
+			break;
+		case MATL_ORIGIN: // 24
+			this.K_emit.push(0.0,      0.0,      0.0,      1.0);
+			this.K_ambi.push(0.19225,  0.19225,  0.19225,  1.0);
+			this.K_diff.push(0.50754,  0.50754,  0.50754,  1.0);
+			this.K_spec.push(0.508273, 0.508273, 0.508273, 1.0);  
+			this.K_shiny = 51.2;
+			this.K_ori = 0.8;
+			this.K_name = "MATL_ORIGIN";
 			break;
 		default:
 			// ugly featureless (emissive-only) red:
@@ -308,6 +349,7 @@ Material.prototype.setMatl = function(nuMatl) {
 			this.K_diff.push(0.0, 0.0, 0.0, 1.0); //              diffuse reflectance
 			this.K_spec.push(0.0, 0.0, 0.0, 1.0); //              specular reflectance
 			this.K_shiny = 1.0;       // Default (don't set specular exponent to zero!)
+			this.K_ori = 0.2;
 			this.K_name = "DEFAULT_RED";
 			break;
 	}
