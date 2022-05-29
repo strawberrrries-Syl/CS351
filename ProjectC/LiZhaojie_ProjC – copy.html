@@ -15,16 +15,15 @@
 			 (where? look inside main(), inside its 'tick()' function, where we
 			 display the 'current angle' value.
 		-->
-		<b>Press "J", "L", "I", "K" to control the camera direction! </b>
-		
-		<b>“↑” Go forward, “↓” go backward, “←” strafe left, “→” strafe right.</b>
+		Press "J", "L", "I", "K" to control the camera direction! “↑” Go forward, “↓” go backward, “←” strafe left, “→” strafe right. 
+		Giving sit/run command!
+		<button type="button" onclick="runStop()">Sit/Run</button>
 		<br>
-		<b> Or try to press "C" to play as the CLOUD! </b>
 
 				<!--- camera light --->
 		<hr><b>Lighting/Shading Methods: </b>
-		<br>
-			Default Shader: <button type="button" onclick="resetDefaultShader()">ON/OFF</button>
+		
+			Cartoonish Shader: <button type="button" onclick="resetDefaultShader()">ON/OFF</button>
 
 			Shading Method: 
 
@@ -33,134 +32,15 @@
 					<option selected = "selected" value = "p_S"> Phong</option>
 				</select>
 
-
 			Lighting Method: 
 				<select id = 'LightM' name = 'LightM'>
 					<option value = "p_L"> Phong</option>
 					<option selected = "selected" value = "bp_L"> Blinn-Phong</option>
 				</select> 
-
-			
-		
-		<hr><b>Lights:</b>
-
-		<hr> <b>Light1:</b>
-			<select id = 'directL' name = 'directL'>
-				<option value = "dx"> OFF</option>
-				<option selected = "selected" value = "do"> ON</option>
-				
-			</select>
-			
-			Ambient:
-			<select id = 'directA' name = "directA">
-				<option value = "dax"> OFF</option>
-				<option selected = "selected" value = "dao"> ON</option>
-			</select>
-
-			Diffuse:
-			<select id = 'directD' name = "directD">
-				<option value = "ddx"> OFF</option>
-				<option selected = "selected" value = "ddo"> ON</option>
-			</select>
-
-			Specular:
-			<select id = 'directS' name = "directS">
-				<option selected = "selected", value = "dsx"> OFF</option>
-				<option selected = "selected", value = "dso"> ON</option>
-			</select>
-			<br>
-			Color: 	
-			<br> Ambi:
-					R<input type = "range" id = "dRa" value = "0.4" min = "0" max = "1" step = "0.05" onchange = "dra.value=this.value"/>
-					<output id = "dra" for="dRa"></output>
-					G<input type = "range" id = "dGa" value = "0.4" min = "0" max = "1" step = "0.05" onchange = "dga.value=this.value"/>
-					<output id = "dga" for="dGa"></output>
-					B<input type = "range" id = "dBa" value = "0.4" min = "0" max = "1" step = "0.05" onchange = "dba.value=this.value"/>
-					<output id = "dba" for="dBa"></output>
-			<br> Diff:
-					R<input type = "range" id = "dRd" value = "0.4" min = "0" max = "1" step = "0.05" onchange = "drd.value=this.value"/>
-					<output id = "drd" for="dRd"></output>
-					G<input type = "range" id = "dGd" value = "0.4" min = "0" max = "1" step = "0.05" onchange = "dgd.value=this.value"/>
-					<output id = "dgd" for="dGd"></output>
-					B<input type = "range" id = "dBd" value = "0.4" min = "0" max = "1" step = "0.05" onchange = "dbd.value=this.value"/>
-					<output id = "dbd" for="dBd"></output>
-			<br> Spec:
-					R<input type = "range" id = "dRs" value = "0.8" min = "0" max = "1" step = "0.05" onchange = "drs.value=this.value"/>
-					<output id = "drs" for="dRs"></output>
-					G<input type = "range" id = "dGs" value = "0.8" min = "0" max = "1" step = "0.05" onchange = "dgs.value=this.value"/>
-					<output id = "dgs" for="dGs"></output>
-					B<input type = "range" id = "dBs" value = "0.8" min = "0" max = "1" step = "0.05" onchange = "dbs.value=this.value"/>
-					<output id = "dbs" for="dBs"></output>
-			<br>
-			Pos: 
-					Up/Down<input type = "range" id = "dMup" value = "6" min = "-12" max = "12" step = "0.5" onchange = "dMu.value=this.value"/>
-					<output id = "dMu" for="dMup"></output>
-					Left/Right<input type = "range" id = "dMleft" value = "0" min = "-12" max = "12" step = "0.5" onchange = "dMl.value=this.value"/>
-					<output id = "dMl" for="dMleft"></output>
-					Fwd/Bwd<input type = "range" id = "dMfwd" value = "0" min = "-12" max = "12" step = "0.5" onchange = "dMf.value=this.value"/>
-					<output id = "dMf" for="dMfwd"></output>
 			
 
-
-		<hr> <b>Light2</b>
-			<select id = 'pointL' name = "pointL">
-				<option value = "px"> OFF</option>
-				<option selected = "selected" value = "po"> ON</option>
-			</select>
-			
-			Ambient:
-			<select id = 'pointA' name = "pointA">
-				<option value = "pax"> OFF</option>
-				<option selected = "selected" value = "pao"> ON</option>
-			</select>
-
-			Diffuse:
-			<select id = 'pointD' name = "pointD">
-				<option value = "pdx"> OFF</option>
-				<option selected = "selected" value = "pdo"> ON</option>
-			</select>
-
-			Specular:
-			<select id = 'pointS' name = "pointS">
-				<option selected = "selected", value = "psx"> OFF</option>
-				<option selected = "selected", value = "pso"> ON</option>
-			</select>
-			<br>
-			Color: 	
-			<br> Ambi:
-					R<input type = "range" id = "pRa" value = "0.4" min = "0" max = "1" step = "0.05" onchange = "pra.value=this.value"/>
-					<output id = "pra" for="pRa"></output>
-					G<input type = "range" id = "pGa" value = "0.4" min = "0" max = "1" step = "0.05" onchange = "pga.value=this.value"/>
-					<output id = "pga" for="pGa"></output>
-					B<input type = "range" id = "pBa" value = "0.4" min = "0" max = "1" step = "0.05" onchange = "pba.value=this.value"/>
-					<output id = "pba" for="pBa"></output>
-			<br> Diff:
-					R<input type = "range" id = "pRd" value = "0.4" min = "0" max = "1" step = "0.05" onchange = "prd.value=this.value"/>
-					<output id = "prd" for="pRd"></output>
-					G<input type = "range" id = "pGd" value = "0.4" min = "0" max = "1" step = "0.05" onchange = "pgd.value=this.value"/>
-					<output id = "pgd" for="pGd"></output>
-					B<input type = "range" id = "pBd" value = "0.4" min = "0" max = "1" step = "0.05" onchange = "pbd.value=this.value"/>
-					<output id = "pbd" for="pBd"></output>
-			<br> Spec:
-					R<input type = "range" id = "pRs" value = "0.8" min = "0" max = "1" step = "0.05" onchange = "prs.value=this.value"/>
-					<output id = "prs" for="pRs"></output>
-					G<input type = "range" id = "pGs" value = "0.8" min = "0" max = "1" step = "0.05" onchange = "pgs.value=this.value"/>
-					<output id = "pgs" for="pGs"></output>
-					B<input type = "range" id = "pBs" value = "0.8" min = "0" max = "1" step = "0.05" onchange = "pbs.value=this.value"/>
-					<output id = "pbs" for="pBs"></output>
-			<br>
-			Pos: 
-					Up/Down<input type = "range" id = "pMup" value = "6" min = "-12" max = "12" step = "0.5" onchange = "pMu.value=this.value"/>
-					<output id = "pMu" for="pMup"></output>
-					Left/Right<input type = "range" id = "pMdown" value = "0" min = "-12" max = "12" step = "0.5" onchange = "pMd.value=this.value"/>
-					<output id = "pMd" for="pMdown"></output>
-					Fwd/Bwd<input type = "range" id = "pMfwd" value = "-3" min = "-12" max = "12" step = "0.5" onchange = "pMf.value=this.value"/>
-					<output id = "pMf" for="pMfwd"></output>
-
-
-		<hr> <b> Material:</b>
-		<br>
-			Sphere: <select id = "sphereM" name = "sphereM">
+		<hr> <b> Materials:</b>
+			Spheres and Grid: <select id = "sphereM" name = "sphereM">
 						<option selected = "selected", value = "1"> Red Plastic</option>
 						<option selected = "selected", value = "2"> Jade</option>
 						<option selected = "selected", value = "3"> Turquoise</option>
@@ -168,14 +48,14 @@
 						<option selected = "selected", value = "5"> Default</option>
 					</select>
 		
-			Loop: 	<select id = "loopM" name = "loopM">
+			Ring: 	<select id = "loopM" name = "loopM">
 						<option selected = "selected", value = "1"> Red Plastic</option>
 						<option selected = "selected", value = "2"> Jade</option>
 						<option selected = "selected", value = "3"> Turquoise</option>
 						<option selected = "selected", value = "4"> Silver Shiny</option>
 						<option selected = "selected", value = "5"> Default</option>
 					</select>
-			Bone: 	<select id = "boneM" name = "boneM">
+			Bone(pleas press "b/B"): 	<select id = "boneM" name = "boneM">
 						<option selected = "selected", value = "1"> Red Plastic</option>
 						<option selected = "selected", value = "2"> Jade</option>
 						<option selected = "selected", value = "3"> Turquoise</option>
@@ -196,31 +76,133 @@
 						<option selected = "selected", value = "4"> Silver Shiny</option>
 						<option selected = "selected", value = "5"> Default</option>
 					</select>
+		
+		<hr> <b>Light1:</b>
+			<select id = 'directL' name = 'directL'>
+				<option value = "dx"> OFF</option>
+				<option selected = "selected" value = "do"> ON</option>
+			</select>
 
+			Pos:
+					Up/Down<input type = "range" id = "dMup" value = "6" min = "-12" max = "12" step = "0.5" onchange = "dMu.value=this.value"/>
+					<output id = "dMu" for="dMup"></output>
+					Left/Right<input type = "range" id = "dMleft" value = "0" min = "-12" max = "12" step = "0.5" onchange = "dMl.value=this.value"/>
+					<output id = "dMl" for="dMleft"></output>
+					Fwd/Bwd<input type = "range" id = "dMfwd" value = "0" min = "-12" max = "12" step = "0.5" onchange = "dMf.value=this.value"/>
+					<output id = "dMf" for="dMfwd"></output>
+			<br>
+			Ambient:
+			<select id = 'directA' name = "directA">
+				<option value = "dax"> OFF</option>
+				<option selected = "selected" value = "dao"> ON</option>
+			</select>
 
+			
+					R<input type = "range" id = "dRa" value = "0.4" min = "0" max = "1" step = "0.05" onchange = "dra.value=this.value"/>
+					<output id = "dra" for="dRa"></output>
+					G<input type = "range" id = "dGa" value = "0.4" min = "0" max = "1" step = "0.05" onchange = "dga.value=this.value"/>
+					<output id = "dga" for="dGa"></output>
+					B<input type = "range" id = "dBa" value = "0.4" min = "0" max = "1" step = "0.05" onchange = "dba.value=this.value"/>
+					<output id = "dba" for="dBa"></output>
+					<br> 
+
+			Diffuse:
+			<select id = 'directD' name = "directD">
+				<option value = "ddx"> OFF</option>
+				<option selected = "selected" value = "ddo"> ON</option>
+			</select>
+
+			
+					R<input type = "range" id = "dRd" value = "0.4" min = "0" max = "1" step = "0.05" onchange = "drd.value=this.value"/>
+					<output id = "drd" for="dRd"></output>
+					G<input type = "range" id = "dGd" value = "0.4" min = "0" max = "1" step = "0.05" onchange = "dgd.value=this.value"/>
+					<output id = "dgd" for="dGd"></output>
+					B<input type = "range" id = "dBd" value = "0.4" min = "0" max = "1" step = "0.05" onchange = "dbd.value=this.value"/>
+					<output id = "dbd" for="dBd"></output>
+			<br>
+
+			Specular:
+			<select id = 'directS' name = "directS">
+				<option selected = "selected", value = "dsx"> OFF</option>
+				<option selected = "selected", value = "dso"> ON</option>
+			</select>
+
+			R<input type = "range" id = "dRs" value = "0.8" min = "0" max = "1" step = "0.05" onchange = "drs.value=this.value"/>
+					<output id = "drs" for="dRs"></output>
+					G<input type = "range" id = "dGs" value = "0.8" min = "0" max = "1" step = "0.05" onchange = "dgs.value=this.value"/>
+					<output id = "dgs" for="dGs"></output>
+					B<input type = "range" id = "dBs" value = "0.8" min = "0" max = "1" step = "0.05" onchange = "dbs.value=this.value"/>
+					<output id = "dbs" for="dBs"></output>
+			<br>
+
+		<hr> <b>Light2</b>
+			<select id = 'pointL' name = "pointL">
+				<option value = "px"> OFF</option>
+				<option selected = "selected" value = "po"> ON</option>
+			</select>
+
+			Pos: 
+					Up/Down<input type = "range" id = "pMup" value = "6" min = "-12" max = "12" step = "0.5" onchange = "pMu.value=this.value"/>
+					<output id = "pMu" for="pMup"></output>
+					Left/Right<input type = "range" id = "pMdown" value = "0" min = "-12" max = "12" step = "0.5" onchange = "pMd.value=this.value"/>
+					<output id = "pMd" for="pMdown"></output>
+					Fwd/Bwd<input type = "range" id = "pMfwd" value = "-3" min = "-12" max = "12" step = "0.5" onchange = "pMf.value=this.value"/>
+					<output id = "pMf" for="pMfwd"></output>
+			<br>
+			Ambient:
+			<select id = 'pointA' name = "pointA">
+				<option value = "pax"> OFF</option>
+				<option selected = "selected" value = "pao"> ON</option>
+			</select>
+
+			R<input type = "range" id = "pRa" value = "0.4" min = "0" max = "1" step = "0.05" onchange = "pra.value=this.value"/>
+					<output id = "pra" for="pRa"></output>
+					G<input type = "range" id = "pGa" value = "0.4" min = "0" max = "1" step = "0.05" onchange = "pga.value=this.value"/>
+					<output id = "pga" for="pGa"></output>
+					B<input type = "range" id = "pBa" value = "0.4" min = "0" max = "1" step = "0.05" onchange = "pba.value=this.value"/>
+					<output id = "pba" for="pBa"></output>
+			<br>
+
+			Diffuse:
+			<select id = 'pointD' name = "pointD">
+				<option value = "pdx"> OFF</option>
+				<option selected = "selected" value = "pdo"> ON</option>
+			</select>
+
+			R<input type = "range" id = "pRd" value = "0.4" min = "0" max = "1" step = "0.05" onchange = "prd.value=this.value"/>
+					<output id = "prd" for="pRd"></output>
+					G<input type = "range" id = "pGd" value = "0.4" min = "0" max = "1" step = "0.05" onchange = "pgd.value=this.value"/>
+					<output id = "pgd" for="pGd"></output>
+					B<input type = "range" id = "pBd" value = "0.4" min = "0" max = "1" step = "0.05" onchange = "pbd.value=this.value"/>
+					<output id = "pbd" for="pBd"></output>
+			<br>
+
+			Specular:
+			<select id = 'pointS' name = "pointS">
+				<option selected = "selected", value = "psx"> OFF</option>
+				<option selected = "selected", value = "pso"> ON</option>
+			</select>
+
+			R<input type = "range" id = "pRs" value = "0.8" min = "0" max = "1" step = "0.05" onchange = "prs.value=this.value"/>
+					<output id = "prs" for="pRs"></output>
+					G<input type = "range" id = "pGs" value = "0.8" min = "0" max = "1" step = "0.05" onchange = "pgs.value=this.value"/>
+					<output id = "pgs" for="pGs"></output>
+					B<input type = "range" id = "pBs" value = "0.8" min = "0" max = "1" step = "0.05" onchange = "pbs.value=this.value"/>
+					<output id = "pbs" for="pBs"></output>
+			<br>
+												
 		<hr> <!-- petting -- Interaction with the dog --->
-		<b>Try press "B" to give him a bone!</b> 
+		<b> Try to press "C" to watch the whole scene as the floating CLOUD! </b><br>
+		<b>	Try to press "B" to give him a bone!</b> 
 		<br>
 		Current Quaternion: w + xi + yj + zk where (i,j,k) are 3-way imaginary numbers:
 		<div id=QuatValue>  X=0i, Y=0j, Z=0k, W=1.  length=1. <button type="button" onClick="resetQuat()">Reset</button></div>
-		Telling the dog to sit or run by pressing "Sit/Run" button!
-		
-			<!--BUTTONS: commands below create HTML push-buttons with labels
-				Spin <<, runStop, and Spin >>.  
-			When users click the button, HTML calls JavaScript functions
-				"spinDown()", "runStop()" and "spinUp()"   
-		  <button type="button" onclick="spinDown()">Spin << </button>
-		  
-		  <button type="button" onclick="spinUp()">Spin >> </button> -->
-		  
-		  <button type="button" onclick="runStop()">Sit/Run</button>
+
 		<br>
 		<!-- Draw a horizontal-line separator------------->
 		<b>
 		Try dragging the screen or press "W", "A", "S", or "D"! 
 		</b>    When the bone is far away above his head, he will get upset and start walking slowly :(
-		
-		
 			<br>
 			<span id='KeyDownResult'  > KeyDown:    </span> <!-- myKeyDown() modifies this span object -->		
 			<br>
@@ -232,21 +214,11 @@
 		<div id='Mouse'> Mouse Drag totals (CVV coords) </div>
 		<button type="button" onClick='clearDrag()'>Clear</button>
 
-
-        <!--
-        <p> 
-            <input type = "button" id = "A0button" onclick = "A0_runStop()" value = "Angle 0 ON">
-            <input type = "button" id = "A1button" onclick = "A1_runStop()" value = "Angle 1 ON">
-            <input type = "button" id = "A2button" onclick = "A2_runStop()" value = "Angle 2 ON">
-            <! these commands create a push-button with labels 'Angle 0', 'Angle 1', etc.
-            When users click the button, call the function name held in 'onclick'>
-        </p>
-		--->
         <script src="lib/webgl-utils.js"></script>
         <script src="lib/webgl-debug.js"></script>
         <script src="lib/cuon-utils.js"></script>
 		<script src="lib/cuon-matrix-quat03.js"></script>
-		<script src="lib/JT_VBObox-Lib.js"></script>
+		<!-- <script src="lib/JT_VBObox-Lib.js"></script> -->
 		<script src="lib/lights-JT.js"></script>
 		<script src="lib/materials_Ayerdi.js"></script>
 		<script src="test.js"></script>
